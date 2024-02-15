@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export function Sidebar() {
-  const [navHidden, setNavHidden] = useState(true);
+  const [navHidden, setNavHidden] = useState(false);
   const sideBarRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const currentPath = pathname.split("/")[2];
@@ -33,7 +33,7 @@ export function Sidebar() {
     <aside className="h-full">
       <Button
         onClick={() => handleToggleNav()}
-        className="md:hidden bg-white/60 absolute top-20 left-48 z-50"
+        className="bg-white/60 absolute top-20 left-48 z-50"
         style={navHidden ? navSheetHiddenStyle : {}}
         variant="outline"
       >
@@ -44,7 +44,7 @@ export function Sidebar() {
         )}
       </Button>
       <div
-        className="pb-12 border-r h-full w-64 md:block hidden"
+        className="pb-12 border-r h-full w-64"
         ref={sideBarRef}
       >
         <div className="space-y-4 py-4">

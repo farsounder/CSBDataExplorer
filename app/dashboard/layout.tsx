@@ -1,5 +1,6 @@
 "use client";
 import Header from "@/components/header";
+import Footer from "@/components/footer";
 import { Sidebar } from "@/components/sidebar";
 
 export default function DashboardLayout({
@@ -14,6 +15,7 @@ export default function DashboardLayout({
         <Sidebar />
         <div className="m-0 p-0 w-full h-full">{children}</div>
       </div>
+      <Footer />
     </section>
   );
 }
