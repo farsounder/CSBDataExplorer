@@ -15,21 +15,21 @@ const cards = [
   },
   {
     title: "Participating Organizations",
-    description: "A blurby blurb about the Seakeeper's Society and how they are involved in the project, with IHO, NOAA, and Seabed 2030.",
+    description: "A blurby blurb about the Seakeepers Society and how they are involved in the project, with IHO, NOAA, and Seabed 2030.",
     icon: <BuildingLibraryIcon className="h-6 w-6 text-gray-800" />,
-    link: "/participating-organizations",
+    link: "/",
   },
   {
     title: "Importance of CSB Data",
     description: "Information about CSB and other crowdsourced data, why is it important, etc.",
     icon: <ShareIcon className="h-6 w-6 text-gray-800" />,
-    link: "/importance-of-csb-data",
+    link: "/",
   },
   {
     title: "Get Involved!",
     description: "This page will have some information about the different ways to get involved in CSB",
     icon: <QuestionMarkCircleIcon className="h-6 w-6 text-gray-800" />,
-    link: "/get-involved",
+    link: "/",
   }
 ]
 
@@ -41,14 +41,14 @@ export default function Hero() {
           <div className="flex flex-col justify-center space-y-8 text-center">
             <div className="space-y-2">
               <h1 className="text-3xl p-2 font-bold tracking-tighter sm:text-5xl xl:text-6xl/none bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-blue-800">
-                FarSounder's CSB Data Explorer
+                Crowd-sourced Bathymetry (CSB) Data Explorer
               </h1>
               <h2 className=" max-w-[600px] text-2xl md:text-xl mx-auto">
-                Supporting collaboration with International Seakeeper's Society,
+                Supporting collaboration with International Seakeepers Society,
                 Seabed 2030, and the IHO CSB Database hosted by DCDB at NOAA.
               </h2>
               <p className="max-w-[600px] text-gray-600 md:text-xl mx-auto">
-                Here you can explore the data collected and shared by{" "}
+                Explore the data collected and shared by{" "}
                 <span className="font-semibold">YOU</span> and other mariners 
                 users like you
               </p>

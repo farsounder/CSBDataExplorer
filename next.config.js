@@ -6,6 +6,14 @@ const nextConfig = {
       exprContextCritical: false,
     }
     return config
+  },
+  async redirects() {
+    return [
+    {
+      source: '/dashboard',
+      destination: '/dashboard/map',
+      permanent: true,
+    }]
   }
 };
 
