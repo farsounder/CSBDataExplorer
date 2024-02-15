@@ -1,7 +1,4 @@
-# FarSounder's Crowdsourced Bathymetry Viewer
-
-This requires auth (authenticates with csb server). It shows an overview of
-data contributions and some other interesting layers and stats.
+# Crowdsourced Bathymetry Viewer
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
