@@ -7,7 +7,7 @@ import { SeakeepersLogo } from "./icons/seakeepers";
 
 export default function Footer() {
   return (
-    <footer className="flex flex-col w-full border-t-2 border-t-gray-200">
+    <footer className="flex flex-col w-full border-t-1 border-t-gray-200">
       <div className="w-full text-center p-2 pb-0 md:hidden">
         Made possible by the following organizations:
       </div>
