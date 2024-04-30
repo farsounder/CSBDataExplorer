@@ -1,6 +1,6 @@
 const FSLogo = () => (
   <svg
-    width="240"
+    width="150"
     height="40"
     version="1.1"
     viewBox="0 0 440.07 70.063"

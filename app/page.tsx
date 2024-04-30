@@ -15,19 +15,19 @@ const cards = [
   },
   {
     title: "Participating Organizations",
-    description: "A blurby blurb about the Seakeepers Society and how they are involved in the project, with IHO, NOAA, and Seabed 2030.",
+    description: "A number of organizations including: Seakeepers Society, the IHO, NOAA, and many other industry partners collaborate to collect and share CSB data with Seabed 2030 and beyond.",
     icon: <BuildingLibraryIcon className="h-6 w-6 text-gray-800" />,
     link: "/",
   },
   {
-    title: "Importance of CSB Data",
-    description: "Information about CSB and other crowdsourced data, why is it important, etc.",
+    title: "Learn More",
+    description: "This page should link to the new CSB website...",
     icon: <ShareIcon className="h-6 w-6 text-gray-800" />,
     link: "/",
   },
   {
     title: "Get Involved!",
-    description: "This page will have some information about the different ways to get involved in CSB",
+    description: "This page should link to the new CSB website...",
     icon: <QuestionMarkCircleIcon className="h-6 w-6 text-gray-800" />,
     link: "/",
   }
