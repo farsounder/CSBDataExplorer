@@ -35,7 +35,16 @@ const mapLayerIdToInfo = new Map<string, string>([
   ],
 ]);
 
-const CSB_INFO_TEXT = "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected. Keep in mind that there is a geographic filter applied to this data, so you may not see all of your data if the country you are in does not support Crowdsourced Bathymetry.";
+const mapLayerIdToDefaultVisibility = new Map<string, boolean>([
+  [OSM_BASE_LAYER_NAME, true],
+  [NOAA_S57_LAYER_NAME, false],
+  [FS_BATHY_HS_LAYER_NAME, false],
+  [FS_BATHY_LAYER_NAME, false],
+  [NOAA_CSB_LAYER_NAME, false],
+]);
+
+const CSB_INFO_TEXT =
+  "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected. Keep in mind that there is a geographic filter applied to this data, so you may not see all of your data if the country you are in does not support Crowdsourced Bathymetry.";
 
 // Viewport settings
 const INITIAL_VIEW_STATE = {
@@ -77,7 +86,7 @@ const LayerVisibilityControl = ({
             {mapLayerIdToInfo.has(layer.id) ? (
               <span>{layer.id}</span>
             ) : (
-              "Your data"
+              <span>{USER_CSB_LAYER_NAME}</span>
             )}
           </label>
           <div className="group relative duration-300">
@@ -243,6 +252,7 @@ const getDefaultLayers = (): Layer[] => {
       minZoom: 0,
       maxZoom: 19,
       tileSize: 256,
+      visible: mapLayerIdToDefaultVisibility.get(OSM_BASE_LAYER_NAME) || false,
       renderSubLayers: (props) => {
         const {
           boundingBox: [[west, south], [east, north]],
@@ -256,6 +266,7 @@ const getDefaultLayers = (): Layer[] => {
     }),
     new TileLayer({
       id: NOAA_S57_LAYER_NAME,
+      visible: mapLayerIdToDefaultVisibility.get(NOAA_S57_LAYER_NAME) || false,
       getTileData: (tile) => {
         const bbox = tile.bbox as GeoBoundingBox;
         const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
@@ -285,6 +296,7 @@ const getDefaultLayers = (): Layer[] => {
     }),
     new BitmapLayer({
       id: FS_BATHY_HS_LAYER_NAME,
+      visible: mapLayerIdToDefaultVisibility.get(FS_BATHY_HS_LAYER_NAME) || false,
       bounds: [
         [-71.457633569, 41.383995775],
         [-71.457633569, 41.671457779],
@@ -295,6 +307,7 @@ const getDefaultLayers = (): Layer[] => {
     }),
     new BitmapLayer({
       id: FS_BATHY_LAYER_NAME,
+      visible: mapLayerIdToDefaultVisibility.get(FS_BATHY_LAYER_NAME) || false,
       bounds: [
         [-71.457633569, 41.383995775],
         [-71.457633569, 41.671457779],
@@ -306,6 +319,7 @@ const getDefaultLayers = (): Layer[] => {
     }),
     new MVTLayer({
       id: NOAA_CSB_LAYER_NAME,
+      visible: mapLayerIdToDefaultVisibility.get(NOAA_CSB_LAYER_NAME) || false,
       data: "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/csb_vector_tiles/VectorTileServer/tile/{z}/{y}/{x}",
       lineWidthUnits: "pixels",
       getLineWidth: 1,
