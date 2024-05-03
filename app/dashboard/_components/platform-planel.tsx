@@ -11,19 +11,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "./ui/select";
+} from "../../../components/ui/select";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@radix-ui/react-tooltip";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { TooltipContent, TooltipProvider, TooltipTrigger } from "../../../components/ui/tooltip";
 
 type NOAAPlatformId = string;
 type UserData = {
@@ -60,6 +60,9 @@ function SelectShipModal() {
       .then((res) => res.json())
       .then((data) => {
         setAvailablePlatforms(data);
+      }).catch((err) => {
+        console.error(err);
+        throw new Error("Failed to fetch NOAA platforms info");
       });
   }, []);
 
@@ -189,17 +192,10 @@ function PlatformDisplay() {
   );
 }
 
-export default function Header() {
-  const { isSignedIn, user, isLoaded } = useUser();
+export default function PlatformDisplayPanel() {
+  const { isSignedIn, isLoaded } = useUser();
   const pathname = usePathname();
   return (
-    <header className="flex flex-col w-full">
-      <div className="border-b flex items-center justify-between">
-        <div className="flex py-4 items-center px-4 gap-8">
-          <h1 className="text-2xl md:text-4xl font-bold text-blue-800">
-            CSB Data Explorer
-          </h1>
-        </div>
         <div className="px-8 flex gap-6 items-center">
           {isLoaded && isSignedIn ? (
             <>
@@ -210,7 +206,5 @@ export default function Header() {
             <SignInButton mode="modal" fallbackRedirectUrl={pathname} />
           )}
         </div>
-      </div>
-    </header>
   );
 }
