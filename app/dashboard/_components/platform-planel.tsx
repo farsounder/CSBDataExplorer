@@ -23,18 +23,17 @@ import {
 } from "../../../components/ui/select";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@radix-ui/react-tooltip";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "../../../components/ui/tooltip";
+import {
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../../../components/ui/tooltip";
 
-type NOAAPlatformId = string;
-type UserData = {
-  noaa_id: NOAAPlatformId;
-  platform_name: string;
-  platform_nickname: string;
-};
+import { UserData } from "@/lib/types";
 
 type AvailablePlatforms = {
   platforms: string[];
-  noaa_ids: NOAAPlatformId[];
+  noaa_ids: string[];
 };
 
 // TODO(Heath): needs input validation for the nickname
@@ -60,7 +59,8 @@ function SelectShipModal() {
       .then((res) => res.json())
       .then((data) => {
         setAvailablePlatforms(data);
-      }).catch((err) => {
+      })
+      .catch((err) => {
         console.error(err);
         throw new Error("Failed to fetch NOAA platforms info");
       });
@@ -108,12 +108,16 @@ function SelectShipModal() {
                 setNewUserData({
                   ...newUserData,
                   platform_name: name,
+                  noaa_id: "",
                 });
               }}
             >
               <SelectTrigger>
                 <SelectValue
-                  placeholder={newUserData.platform_name || "Select a vessel"}
+                  placeholder={
+                    newUserData.platform_name ||
+                    "Only required if no NOAA ID selected below"
+                  }
                 ></SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -129,6 +133,7 @@ function SelectShipModal() {
                 setNewUserData({
                   ...newUserData,
                   noaa_id: id,
+                  platform_name: "",
                 });
               }}
             >
@@ -177,10 +182,15 @@ function PlatformDisplay() {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <div>{userData.platform_nickname} 🚢</div>
+            <div>🚢{userData.platform_nickname}</div>
           </TooltipTrigger>
           <TooltipContent>
-            <div className="p-4"> Platform Name: {userData.platform_name}</div>
+            {userData.platform_name && (
+              <div className="p-4">
+                {" "}
+                Platform Name: {userData.platform_name}
+              </div>
+            )}
             {userData.noaa_id && (
               <div className="p-4"> NOAA ID: {userData.noaa_id}</div>
             )}
@@ -196,15 +206,15 @@ export default function PlatformDisplayPanel() {
   const { isSignedIn, isLoaded } = useUser();
   const pathname = usePathname();
   return (
-        <div className="px-8 flex gap-6 items-center">
-          {isLoaded && isSignedIn ? (
-            <>
-              <PlatformDisplay />
-              <UserButton afterSignOutUrl={pathname} />
-            </>
-          ) : (
-            <SignInButton mode="modal" fallbackRedirectUrl={pathname} />
-          )}
-        </div>
+    <div className="px-8 flex gap-6 items-center">
+      {isLoaded && isSignedIn ? (
+        <>
+          <PlatformDisplay />
+          <UserButton afterSignOutUrl={pathname} />
+        </>
+      ) : (
+        <SignInButton mode="modal" fallbackRedirectUrl={pathname} />
+      )}
+    </div>
   );
 }

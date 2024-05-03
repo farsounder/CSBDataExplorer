@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import proj4 from "proj4";
 import DeckGL from "@deck.gl/react/typed";
@@ -10,12 +10,16 @@ import type { TooltipContent } from "@deck.gl/core/typed/lib/tooltip";
 import InfoIcon from "../../../../components/icons/infoicon";
 import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "../../../../components/ui/button";
+import { useUser } from "@clerk/nextjs";
 
-const NOAA_CSB_LAYER_NAME = "CSB Data";
+import { UserData } from "@/lib/types";
+
+const NOAA_CSB_LAYER_NAME = "All CSB Data";
 const NOAA_S57_LAYER_NAME = "US S57";
 const OSM_BASE_LAYER_NAME = "OSM Base";
 const FS_BATHY_HS_LAYER_NAME = "FS Bathy (hs)";
 const FS_BATHY_LAYER_NAME = "FS Bathy";
+const USER_CSB_LAYER_NAME = "Your Data";
 
 const mapLayerIdToInfo = new Map<string, string>([
   [OSM_BASE_LAYER_NAME, "A simple baselayer from OpenStreetMap."],
@@ -29,25 +33,11 @@ const mapLayerIdToInfo = new Map<string, string>([
     NOAA_CSB_LAYER_NAME,
     "Tracks from the DCDB Crowdsourced Bathymetry database.",
   ],
+  [
+    USER_CSB_LAYER_NAME,
+    "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected. Keep in mind that there is a geographic filter applied to this data, so you may not see all of your data if the country you are in does not support Crowdsourced Bathymetry.",
+  ],
 ]);
-
-// Type to represent vector grids
-interface GridData {
-  properties: {
-    depth_meters: number;
-    row_updated_time: string;
-    grid_product_id: number;
-    number_of_points: number;
-  };
-}
-
-interface DepthSounderData {
-  properties: {
-    depth_meters: number;
-    sent_to_dcdb: boolean;
-    user_id: number;
-  };
-}
 
 // Viewport settings
 const INITIAL_VIEW_STATE = {
@@ -57,6 +47,8 @@ const INITIAL_VIEW_STATE = {
   pitch: 0,
   bearing: 0,
 };
+
+type ViewState = typeof INITIAL_VIEW_STATE;
 
 const getTooltip = (info: PickingInfo): TooltipContent => {
   return null;
@@ -98,15 +90,66 @@ const LayerVisibilityControl = ({
   );
 };
 
-const mapDepthToColor = (depth: number | undefined): number[] => {
-  // TODO(Heath): this is where we can implement a color scale
-  return [230, 0, 0];
+const getLayerFilterString = (userData: UserData): string => {
+  if (userData.platform_name) {
+    return `UPPER(PLATFORM) LIKE '${userData.platform_name.toUpperCase()}'`;
+  }
+  if (userData.noaa_id) {
+    return `UPPER(EXTERNAL_ID) LIKE '${userData.noaa_id.toUpperCase()}'`;
+  }
+  return "";
+};
+
+const getCSBLayer = (userData: UserData): TileLayer | null => {
+  if (!userData.noaa_id && !userData.platform_name) {
+    return null;
+  }
+
+  const baseUrl =
+    "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
+
+  const layer = new TileLayer({
+    id: USER_CSB_LAYER_NAME,
+    getTileData: (tile) => {
+      const bbox = tile.bbox as GeoBoundingBox;
+      const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
+        bbox.west,
+        bbox.south,
+      ]);
+      const [east, north] = proj4("EPSG:4326", "EPSG:3857", [
+        bbox.east,
+        bbox.north,
+      ]);
+      const bboxString = `bbox=${west},${south},${east},${north}`;
+      const sizeString = "size=256,256";
+      // this filters the data to only show the users data
+      const filterStr = getLayerFilterString(userData);
+      const layerDefs = `layerDefs={"0": "${filterStr}", "1": "${filterStr}"}`;
+      return `${baseUrl}&${bboxString}&bboxSR=3857&imageSR=3857&${sizeString}&f=image&${layerDefs}`;
+    },
+    renderSubLayers: (props) => {
+      const {
+        boundingBox: [[west, south], [east, north]],
+      } = props.tile;
+      return new BitmapLayer(props, {
+        data: undefined,
+        image: props.data,
+        bounds: [west, south, east, north],
+      });
+    },
+  });
+  return layer;
 };
 
 export default function MapViewer() {
+  const { isLoaded, isSignedIn, user } = useUser();
+
+  const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
+
   const [layers, setLayers] = useState<Layer[]>(getDefaultLayers());
   const [legendVisible, setLegendVisible] = useState(false);
   const legendRef = useRef<HTMLDivElement>(null);
+
   const handleToggleLayerVisibility = (layerId: string) => {
     const newLayers = layers.map((layer) => {
       if (layer.id === layerId) {
@@ -116,6 +159,31 @@ export default function MapViewer() {
     });
     setLayers(newLayers);
   };
+
+  useEffect(() => {
+    const storedViewState = localStorage.getItem("viewState");
+    if (storedViewState) {
+      setViewState(JSON.parse(storedViewState));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      const userData = user?.unsafeMetadata as UserData;
+      // metadata is empty :(
+      if (Object.keys(userData).length == 0) {
+        return;
+      }
+      // add a layer for the user's data, use platform name if it exists,
+      // otherwise use the platform id
+      const userCSBLayer = getCSBLayer(userData);
+      if (userCSBLayer) {
+        setLayers([...getDefaultLayers(), userCSBLayer]);
+      }
+      return;
+    }
+    setLayers(getDefaultLayers());
+  }, [isLoaded, isSignedIn]);
 
   const handleToggleLegendVisible = () => {
     if (legendRef.current) {
@@ -127,10 +195,17 @@ export default function MapViewer() {
   return (
     <div className="relative h-full">
       <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
+        initialViewState={viewState}
         controller={true}
         layers={layers}
         getTooltip={getTooltip}
+        onViewStateChange={(e) => {
+          const { viewState } = e;
+          if (!viewState) {
+            return;
+          }
+          localStorage.setItem("viewState", JSON.stringify(viewState));
+        }}
       />
       <Button
         variant="outline"
