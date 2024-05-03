@@ -33,11 +33,9 @@ const mapLayerIdToInfo = new Map<string, string>([
     NOAA_CSB_LAYER_NAME,
     "Tracks from the DCDB Crowdsourced Bathymetry database.",
   ],
-  [
-    USER_CSB_LAYER_NAME,
-    "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected. Keep in mind that there is a geographic filter applied to this data, so you may not see all of your data if the country you are in does not support Crowdsourced Bathymetry.",
-  ],
 ]);
+
+const CSB_INFO_TEXT = "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected. Keep in mind that there is a geographic filter applied to this data, so you may not see all of your data if the country you are in does not support Crowdsourced Bathymetry.";
 
 // Viewport settings
 const INITIAL_VIEW_STATE = {
@@ -76,12 +74,16 @@ const LayerVisibilityControl = ({
             onChange={() => handler(layer.id)}
           />
           <label className="pl-2" htmlFor={layer.id}>
-            {layer.id}
+            {mapLayerIdToInfo.has(layer.id) ? (
+              <span>{layer.id}</span>
+            ) : (
+              "Your data"
+            )}
           </label>
           <div className="group relative duration-300">
             <InfoIcon />
             <span className="absolute hidden group-hover:flex top-12 -left-64 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm">
-              {mapLayerIdToInfo.get(layer.id)}
+              {mapLayerIdToInfo.get(layer.id) || CSB_INFO_TEXT}
             </span>
           </div>
         </div>
@@ -109,7 +111,7 @@ const getCSBLayer = (userData: UserData): TileLayer | null => {
     "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
   const layer = new TileLayer({
-    id: USER_CSB_LAYER_NAME,
+    id: userData.platform_name || userData.noaa_id,
     getTileData: (tile) => {
       const bbox = tile.bbox as GeoBoundingBox;
       const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
@@ -180,9 +182,7 @@ export default function MapViewer() {
       if (userCSBLayer) {
         setLayers([...getDefaultLayers(), userCSBLayer]);
       }
-      return;
     }
-    setLayers(getDefaultLayers());
   }, [isLoaded, isSignedIn, user?.unsafeMetadata]);
 
   const handleToggleLegendVisible = () => {
