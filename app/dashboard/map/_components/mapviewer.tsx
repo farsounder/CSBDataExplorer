@@ -183,7 +183,7 @@ export default function MapViewer() {
       return;
     }
     setLayers(getDefaultLayers());
-  }, [isLoaded, isSignedIn]);
+  }, [isLoaded, isSignedIn, user?.unsafeMetadata]);
 
   const handleToggleLegendVisible = () => {
     if (legendRef.current) {

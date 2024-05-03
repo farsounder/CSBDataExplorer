@@ -9,7 +9,7 @@ export default function Header() {
             CSB Data Explorer
           </h1>
           <div className="sm:text-sm text-gray-600 italic text-xs">
-            A view of the data <span className="text-blue-600 font-extrabold">YOU</span>'ve collected and sent to the IHO DCDB
+            A view of the data <span className="text-blue-600 font-extrabold">YOU</span>&apos;ve collected and sent to the IHO DCDB
           </div>
         </div>
         <PlatformDisplayPanel />
