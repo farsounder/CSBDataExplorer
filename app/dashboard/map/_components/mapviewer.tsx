@@ -182,7 +182,9 @@ export default function MapViewer() {
       if (userCSBLayer) {
         setLayers([...getDefaultLayers(), userCSBLayer]);
       }
+      return;
     }
+    setLayers(getDefaultLayers());
   }, [isLoaded, isSignedIn, user?.unsafeMetadata]);
 
   const handleToggleLegendVisible = () => {
