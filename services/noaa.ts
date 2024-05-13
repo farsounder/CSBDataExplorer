@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { AvailablePlatforms } from "@/lib/types";
 
 const PLATFORM_URL =
   "https://gis.ngdc.noaa.gov/mapviewer-support/csb/platform_names.groovy";
@@ -25,7 +25,7 @@ function getIds() {
     .then((data) => data.items.map((item: any) => item.id));
 }
 
-export async function GET() {
+export default async function getPlatformInfoFromNoaa(): Promise<AvailablePlatforms> {
   const [platforms, ids] = await Promise.all([getPlatforms(), getIds()]);
-  return NextResponse.json({ platforms, noaa_ids: ids });
+  return { platforms, noaa_ids: ids };
 }

@@ -1,6 +1,9 @@
+import getPlatformInfoFromNoaa from "@/services/noaa";
 import PlatformDisplayPanel from "./platform-planel";
 
-export default function Header() {
+
+export default async function Header() {
+  const availablePlatforms = await getPlatformInfoFromNoaa();
   return (
     <header className="flex flex-col w-full">
       <div className="border-b flex items-center justify-between">
@@ -9,10 +12,14 @@ export default function Header() {
             CSB Data Explorer
           </h1>
           <div className="sm:text-sm text-gray-600 italic text-xs">
-            A view of the data <span className="text-blue-600 font-extrabold">YOU</span>&apos;ve collected and sent to the IHO DCDB
+            A view of the data{" "}
+            <span className="text-blue-600 font-extrabold">YOU</span>&apos;ve
+            collected and sent to the IHO DCDB
           </div>
         </div>
-        <PlatformDisplayPanel />
+        {availablePlatforms && (
+          <PlatformDisplayPanel availablePlatforms={availablePlatforms} />
+        )}
       </div>
     </header>
   );

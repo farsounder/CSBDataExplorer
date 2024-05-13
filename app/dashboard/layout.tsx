@@ -2,7 +2,7 @@ import Header from "@/app/dashboard/_components/header";
 import Footer from "@/app/dashboard/_components/footer";
 
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -3,3 +3,8 @@ export type UserData = {
   platform_name: string;
   platform_nickname: string;
 };
+
+export type AvailablePlatforms = {
+  platforms: string[];
+  noaa_ids: string[];
+};
