@@ -185,8 +185,6 @@ export default function MapViewer() {
       if (Object.keys(userData).length == 0) {
         return;
       }
-      // add a layer for the user's data, use platform name if it exists,
-      // otherwise use the platform id
       const userCSBLayer = getCSBLayer(userData);
       if (userCSBLayer) {
         setLayers([...getDefaultLayers(), userCSBLayer]);
@@ -296,7 +294,8 @@ const getDefaultLayers = (): Layer[] => {
     }),
     new BitmapLayer({
       id: FS_BATHY_HS_LAYER_NAME,
-      visible: mapLayerIdToDefaultVisibility.get(FS_BATHY_HS_LAYER_NAME) || false,
+      visible:
+        mapLayerIdToDefaultVisibility.get(FS_BATHY_HS_LAYER_NAME) || false,
       bounds: [
         [-71.457633569, 41.383995775],
         [-71.457633569, 41.671457779],
