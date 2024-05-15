@@ -28,7 +28,7 @@ export default function PlatformDisplayPanel({
         variant: "default",
       });
     }
-  }, []);
+  }, [availablePlatforms, toast]);
 
   const userData = user?.unsafeMetadata as UserData;
   if (!user || !userData) {
