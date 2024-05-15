@@ -22,9 +22,9 @@ export default function PlatformDisplayPanel({
   useEffect(() => {
     if (!validPlatforms(availablePlatforms)) {
       toast({
-        title: "Warning: Fetch Failed - No NOAA Platforms Available in NOAA API",
+        title: "Fetch Failed - No NOAA Platforms Available from NOAA API",
         description:
-          "There are no platforms available to select, if your already picked a platform, you don't need to worry about it. If you haven't please try again later.",
+          "There are no platforms available to select, if your already picked a platform, you don't need to worry about it. If you haven't please try again later, or contact us if the problem persists.",
         variant: "default",
       });
     }
