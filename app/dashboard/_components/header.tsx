@@ -1,9 +1,9 @@
 import getPlatformInfoFromNoaa from "@/services/noaa";
 import PlatformDisplayPanel from "./platform-planel";
 
-
 export default async function Header() {
   const availablePlatforms = await getPlatformInfoFromNoaa();
+
   return (
     <header className="flex flex-col w-full">
       <div className="border-b flex items-center justify-between">

@@ -20,6 +20,7 @@ import {
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { UserData } from "@/lib/types";
+import { useToast } from "@/components/ui/use-toast";
 
 import { AvailablePlatforms } from "@/lib/types";
 
@@ -31,6 +32,7 @@ export function SelectShipModal({
   startingUserData: UserData;
 }) {
   const { user, isLoaded } = useUser();
+  const { toast } = useToast();
   const [newUserData, setNewUserData] = useState<UserData>(startingUserData);
 
   if (!user?.unsafeMetadata || !isLoaded) {
@@ -132,6 +134,16 @@ export function SelectShipModal({
                     unsafeMetadata: {
                       ...newUserData,
                     },
+                  }).then(() => {
+                    toast({
+                      description: "Your platform has been updated",
+                    });
+                  }).catch((e) => {
+                    toast({
+                      title: "Error",
+                      description: "There was an error updating your platform.",
+                      variant: "destructive",
+                    });
                   });
                 }}
               >
