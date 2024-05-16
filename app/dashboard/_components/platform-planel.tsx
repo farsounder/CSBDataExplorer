@@ -1,5 +1,5 @@
 "use client";
-import { AvailablePlatforms, UserData } from "@/lib/types";
+import { CSBPlatform, UserData } from "@/lib/types";
 import { SelectShipModal } from "./select-ship-modal";
 import UserShipInfo from "./user-ship-info";
 import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
@@ -7,20 +7,17 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 
-const validPlatforms = (ap: AvailablePlatforms): boolean => {
-  return ap && ap.noaa_ids.length > 0 && ap.platforms.length > 0;
-};
-
 export default function PlatformDisplayPanel({
   availablePlatforms,
 }: {
-  availablePlatforms: AvailablePlatforms;
+  availablePlatforms: CSBPlatform[];
 }) {
   const { user } = useUser();
   const { toast } = useToast();
+  const userData = user?.unsafeMetadata as UserData;
 
   useEffect(() => {
-    if (!validPlatforms(availablePlatforms)) {
+    if (!availablePlatforms || availablePlatforms.length === 0) {
       toast({
         title: "Fetch Failed - No NOAA Platforms Available from NOAA API",
         description:
@@ -30,7 +27,6 @@ export default function PlatformDisplayPanel({
     }
   }, [availablePlatforms, toast]);
 
-  const userData = user?.unsafeMetadata as UserData;
   if (!user || !userData) {
     return (
       <div className="px-4">

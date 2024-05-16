@@ -102,17 +102,15 @@ const LayerVisibilityControl = ({
 };
 
 const getLayerFilterString = (userData: UserData): string => {
-  if (userData.platform_name) {
-    return `UPPER(PLATFORM) LIKE '${userData.platform_name.toUpperCase()}'`;
-  }
-  if (userData.noaa_id) {
-    return `UPPER(EXTERNAL_ID) LIKE '${userData.noaa_id.toUpperCase()}'`;
+  const { noaa_id } = userData.csbPlatform;
+  if (noaa_id) {
+    return `UPPER(EXTERNAL_ID) LIKE '${noaa_id.toUpperCase()}'`;
   }
   return "";
 };
 
 const getCSBLayer = (userData: UserData): TileLayer | null => {
-  if (!userData.noaa_id && !userData.platform_name) {
+  if (!userData.csbPlatform.noaa_id) {
     return null;
   }
 
@@ -120,7 +118,7 @@ const getCSBLayer = (userData: UserData): TileLayer | null => {
     "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
   const layer = new TileLayer({
-    id: userData.platform_name || userData.noaa_id,
+    id: userData.csbPlatform.noaa_id,
     getTileData: (tile) => {
       const bbox = tile.bbox as GeoBoundingBox;
       const [west, south] = proj4("EPSG:4326", "EPSG:3857", [

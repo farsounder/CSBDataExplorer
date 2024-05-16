@@ -1,10 +1,10 @@
 export type UserData = {
-  noaa_id: string;
-  platform_name: string;
-  platform_nickname: string;
+  csbPlatform: CSBPlatform
+  platform_nickname: string
 };
 
-export type AvailablePlatforms = {
-  platforms: string[];
-  noaa_ids: string[];
+export type CSBPlatform = {
+  platform: string;
+  noaa_id: string;
+  provider: string;
 };

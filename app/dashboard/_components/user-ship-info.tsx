@@ -8,25 +8,28 @@ import {
 
 import { UserData } from "@/lib/types";
 
-
-export default function UserShipInfo(
-  { userData }: { userData: UserData }
-) {
+export default function UserShipInfo({ userData }: { userData: UserData }) {
   return (
     <div className="flex gap-4 justify-center items-center">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            <div>🚢{userData.platform_nickname}</div>
+            {userData?.platform_nickname && (
+              <div>🚢{userData?.platform_nickname}</div>
+            )}
           </TooltipTrigger>
           <TooltipContent>
-            {userData.platform_name && (
+            {userData?.csbPlatform?.platform && (
               <div className="p-4">
-                {" "} Platform Name: {userData.platform_name}
+                {" "}
+                Platform Name: {userData.csbPlatform.platform}
               </div>
             )}
-            {userData.noaa_id && (
-              <div className="p-4"> NOAA ID: {userData.noaa_id}</div>
+            {userData?.csbPlatform?.noaa_id && (
+              <div className="p-4">
+                {" "}
+                NOAA ID: {userData.csbPlatform.noaa_id}
+              </div>
             )}
           </TooltipContent>
         </Tooltip>
