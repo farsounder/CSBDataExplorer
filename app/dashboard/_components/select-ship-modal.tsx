@@ -56,17 +56,7 @@ export function SelectShipModal({
     .map((ap) => ap.noaa_id);
 
   return (
-    <Dialog
-      onOpenChange={(open) => {
-        if (open) return;
-        // clear the form after closing, waiting because of the transition
-        setTimeout(() => {
-          setNewUserData(
-            (user?.unsafeMetadata as UserData) || startingUserData
-          );
-        }, 100);
-      }}
-    >
+    <Dialog>
       <DialogTrigger asChild>
         <Button variant="secondary">Change Platform</Button>
       </DialogTrigger>
