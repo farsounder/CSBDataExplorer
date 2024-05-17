@@ -1,12 +1,10 @@
-import { CSBPlatform } from "@/lib/types";
-import { platform } from "os";
+import { CSBData, CSBPlatform } from "@/lib/types";
 
-const PLATFORM_URL =
-  "https://gis.ngdc.noaa.gov/mapviewer-support/csb/platform_names.groovy";
-const PLATFORM_IDS_URL =
-  "https://gis.ngdc.noaa.gov/mapviewer-support/csb/platform_ids.groovy";
+const NOAA_BASE = "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json" 
+
 const NOAA_REST_URL =
-  "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?where=1%3D1&outFields=EXTERNAL_ID,PROVIDER,PLATFORM&returnGeometry=false&orderByFields=EXTERNAL_ID&returnDistinctValues=true&f=json";
+  `${NOAA_BASE}&where=1%3D1&outFields=EXTERNAL_ID,PROVIDER,PLATFORM&returnGeometry=false&orderByFields=EXTERNAL_ID&returnDistinctValues=true`;
+
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
   return fetch(NOAA_REST_URL, {
@@ -35,7 +33,7 @@ async function getAllPlatforms(): Promise<CSBPlatform[]> {
     );
 }
 
-export default async function getPlatformInfoFromNoaa(): Promise<
+export async function getPlatformInfoFromNoaa(): Promise<
   CSBPlatform[]
 > {
   try {
@@ -44,4 +42,55 @@ export default async function getPlatformInfoFromNoaa(): Promise<
     console.error(error);
     return [];
   }
+}
+
+// just wrapped this up because it's a bit of a mess
+const getStatsUrl = (provider: string, time_window_days: number): string => {
+  const outStatistics = [
+    {
+      statisticType: "sum",
+      onStatisticField: "FILE_SIZE",
+      outStatisticFieldName: "total_data_size",
+    },
+  ];
+
+  const where = `UPPER(PROVIDER) LIKE '${provider}' AND ARRIVAL_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`
+  return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(outStatistics)}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from ARRIVAL_DATE),EXTRACT(DAY from ARRIVAL_DATE),EXTRACT(YEAR FROM ARRIVAL_DATE)`
+}
+
+export async function getProviderData({
+  provider,
+  time_window_days,
+}: {
+  provider: string;
+  time_window_days: number;
+}): Promise<CSBData[]> {
+  const url = getStatsUrl(provider.toUpperCase(), time_window_days);
+  return fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-application-name": "FarSounder CSB Viewer App",
+    },
+  })
+    .then((res) => {
+      if (!res.ok) {
+        console.log(res);
+        throw new Error(
+          `Failed to fetch NOAA data. Code: ${res.status}, text: ${res.statusText}`
+        );
+      }
+      return res.json();
+    })
+    .then((data) =>
+      data.features.map((item: any) => {
+        console.log(item);
+        return {
+          provider: item.attributes.EXPR1,
+          month: item.attributes.EXPR2,
+          day: item.attributes.EXPR3,
+          year: item.attributes.EXPR4,
+          dataSize: item.attributes.TOTAL_DATA_SIZE,
+        };
+      })
+    );
 }

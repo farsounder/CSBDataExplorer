@@ -1,4 +1,4 @@
-import getPlatformInfoFromNoaa from "@/services/noaa";
+import { getPlatformInfoFromNoaa } from "@/services/noaa";
 import PlatformDisplayPanel from "./platform-planel";
 
 export default async function Header() {
