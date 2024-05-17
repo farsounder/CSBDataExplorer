@@ -227,6 +227,7 @@ export default function MapViewer() {
     setLayers(newLayers);
   };
 
+  // Load view state from local storage for ux (keeps map position on reload)
   useEffect(() => {
     const storedViewState = localStorage.getItem("viewState");
     if (storedViewState) {
@@ -234,6 +235,8 @@ export default function MapViewer() {
     }
   }, []);
 
+  // Add data layer for CSB from this user when auth state changes or they
+  // add the information to their account
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       const userData = user?.unsafeMetadata as UserData;
@@ -276,7 +279,7 @@ export default function MapViewer() {
         variant="outline"
         className="absolute top-4 right-4 bg-white/60 visbile md:hidden"
         onClick={handleToggleLegendVisible}
-        style={legendVisible ? { right: 200 } : {}}
+        style={legendVisible ? { right: 180 } : {}}
       >
         {legendVisible ? (
           <XMarkIcon className="h-6 w-6 text-gray-600" />
