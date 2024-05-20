@@ -10,7 +10,7 @@ import { UserData } from "@/lib/types";
 
 export default function UserShipInfo({ userData }: { userData: UserData }) {
   return (
-    <div className="flex py-2 gap-4 justify-center items-center">
+    <div className="flex py-2 gap-4 justify-center items-center  sm:text-sm w-full">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>

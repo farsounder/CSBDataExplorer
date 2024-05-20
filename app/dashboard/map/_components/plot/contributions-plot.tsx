@@ -43,7 +43,7 @@ export default function ContributionsPlot({
           title: "Date",
         },
         yaxis: {
-          title: "Amount of Data (bytes)",
+          title: "Data (bytes)",
         },
       }}
       config={{ responsive: true }}
