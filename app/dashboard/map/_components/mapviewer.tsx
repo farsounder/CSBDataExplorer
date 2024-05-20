@@ -39,7 +39,7 @@ const mapLayerIdToDefaultVisibility = new Map<string, boolean>([
 ]);
 
 const CSB_INFO_TEXT =
-  "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected. Keep in mind that there is a geographic filter applied to this data, so you may not see all of your data if the country you are in does not support Crowdsourced Bathymetry.";
+  "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected.";
 
 // Viewport settings
 const INITIAL_VIEW_STATE = {
@@ -116,6 +116,7 @@ const getDefaultLayers = (): Layer[] => {
       maxZoom: 19,
       tileSize: 256,
       visible: mapLayerIdToDefaultVisibility.get(OSM_BASE_LAYER_NAME) || false,
+      attribution: "© OpenStreetMap contributors",
       renderSubLayers: (props) => {
         const {
           boundingBox: [[west, south], [east, north]],
@@ -130,6 +131,7 @@ const getDefaultLayers = (): Layer[] => {
     new TileLayer({
       id: NOAA_S57_LAYER_NAME,
       visible: mapLayerIdToDefaultVisibility.get(NOAA_S57_LAYER_NAME) || false,
+      attibuion: "NOAA ENC S57 Data",
       getTileData: (tile) => {
         const bbox = tile.bbox as GeoBoundingBox;
         const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
@@ -166,6 +168,7 @@ const getDefaultLayers = (): Layer[] => {
       getLineColor: [10, 10, 10],
       pickable: false,
       opacity: 0.5,
+      attribution: "NOAA/DCDB CSB Database",
     }),
   ];
 };
