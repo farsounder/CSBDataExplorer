@@ -1,10 +1,9 @@
 import { CSBData, CSBPlatform } from "@/lib/types";
 
-const NOAA_BASE = "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json" 
+const NOAA_BASE =
+  "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
 
-const NOAA_REST_URL =
-  `${NOAA_BASE}&where=1%3D1&outFields=EXTERNAL_ID,PROVIDER,PLATFORM&returnGeometry=false&orderByFields=EXTERNAL_ID&returnDistinctValues=true`;
-
+const NOAA_REST_URL = `${NOAA_BASE}&where=1%3D1&outFields=EXTERNAL_ID,PROVIDER,PLATFORM&returnGeometry=false&orderByFields=EXTERNAL_ID&returnDistinctValues=true`;
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
   return fetch(NOAA_REST_URL, {
@@ -33,9 +32,7 @@ async function getAllPlatforms(): Promise<CSBPlatform[]> {
     );
 }
 
-export async function getPlatformInfoFromNoaa(): Promise<
-  CSBPlatform[]
-> {
+export async function getPlatformInfoFromNoaa(): Promise<CSBPlatform[]> {
   try {
     return await getAllPlatforms();
   } catch (error) {
@@ -54,9 +51,11 @@ const getStatsUrl = (provider: string, time_window_days: number): string => {
     },
   ];
 
-  const where = `UPPER(PROVIDER) LIKE '${provider}' AND ARRIVAL_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`
-  return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(outStatistics)}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from ARRIVAL_DATE),EXTRACT(DAY from ARRIVAL_DATE),EXTRACT(YEAR FROM ARRIVAL_DATE)`
-}
+  const where = `UPPER(PROVIDER) LIKE '${provider}' AND ARRIVAL_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`;
+  return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(
+    outStatistics
+  )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from ARRIVAL_DATE),EXTRACT(DAY from ARRIVAL_DATE),EXTRACT(YEAR FROM ARRIVAL_DATE)`;
+};
 
 export async function getProviderData({
   provider,
