@@ -2,6 +2,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { UserData } from "@/lib/types";
 import { getPlatformData, getProviderData } from "@/services/noaa";
 import dynamic from "next/dynamic";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
 // was getting an ssr error with the plotly plot, this should force it to be
 // completely client side, we need this file to be server side rendered so it
@@ -15,6 +16,18 @@ const validPlatform = (userData: UserData): boolean => {
     userData?.csbPlatform &&
     userData.csbPlatform?.noaa_id &&
     userData.csbPlatform?.provider
+  );
+};
+
+const ErrorMessage = () => {
+  return (
+    <div className="flex flex-col justify-center items-center h-full px-8 text-center">
+      <ExclamationTriangleIcon className="w-16 h-16 text-gray-500" />
+      <h3 className="text-lg text-gray-600">No data available</h3>
+      <p className="text-sm text-gray-500">
+        Reload to try again, or contact us to report the issue
+      </p>
+    </div>
   );
 };
 
@@ -46,16 +59,18 @@ export default async function PlotContainer({
     time_window_days: time_window_days,
   });
 
-  if (!providerData || providerData.length === 0) {
-    return "Failed to fetch stats data for plot";
-  }
+  const showPlot = providerData && providerData.length > 0;
 
   return (
     <div className="w-full sm:w-96 h-2/5 sm:h-80 sm:absolute sm:top-4 sm:left-4 z-50 bg-white rounded-lg p-1 shadow-md">
-      <ContributionsPlot
-        providerContributions={providerData}
-        userContributions={platformData}
-      />
+      {showPlot ? (
+        <ContributionsPlot
+          providerContributions={providerData}
+          userContributions={platformData}
+        />
+      ) : (
+        <ErrorMessage />
+      )}
     </div>
   );
 }
