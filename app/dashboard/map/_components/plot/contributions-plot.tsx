@@ -35,7 +35,6 @@ export default function ContributionsPlot({
         },
         margin: {
           l: 60,
-          r: 20,
           b: 60,
           t: 20,
         },
