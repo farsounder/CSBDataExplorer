@@ -7,20 +7,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/ui/select";
+} from "@/components/ui/select";
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
+import forceRefresh from "@/app/actions";
 
 import { CSBPlatform } from "@/lib/types";
 
@@ -182,6 +183,7 @@ export function SelectShipModal({
                         variant: "destructive",
                       });
                     });
+                  forceRefresh();
                 }}
               >
                 Save

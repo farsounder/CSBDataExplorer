@@ -16,3 +16,7 @@ export type CSBData = {
   day: number;
   month: number
 };
+
+export type CSBPlatformData = {
+  noaa_id: string;
+} & CSBData;
