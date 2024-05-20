@@ -51,9 +51,11 @@ export default async function PlotContainer({
   }
 
   return (
-    <ContributionsPlot
-      providerContributions={providerData}
-      userContributions={platformData}
-    />
+    <div className="w-full sm:w-96 h-2/5 sm:h-80 sm:absolute sm:top-4 sm:left-4 z-50 bg-white rounded-lg p-1 shadow-md">
+      <ContributionsPlot
+        providerContributions={providerData}
+        userContributions={platformData}
+      />
+    </div>
   );
 }
