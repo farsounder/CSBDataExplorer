@@ -62,7 +62,7 @@ export default async function PlotContainer({
   const showPlot = providerData && providerData.length > 0;
 
   return (
-    <div className="w-full sm:w-96 h-2/5 sm:h-80 sm:absolute sm:top-4 sm:left-4 z-50 bg-white rounded-lg p-1 shadow-md">
+    <div className="w-full sm:w-96 h-2/5 sm:h-80 sm:absolute sm:top-4 sm:left-4 z-50 bg-white rounded-lg p-1 shadow-md lg:w-1/3 lg:h-1/4">
       {showPlot ? (
         <ContributionsPlot
           providerContributions={providerData}
