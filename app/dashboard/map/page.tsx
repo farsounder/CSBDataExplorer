@@ -5,7 +5,7 @@ import ThreeDotsIcon from "@/components/icons/three-dots";
 import ToggleChartButton from "./_components/plot/toggle-chart-button";
 import { currentUser } from "@clerk/nextjs/server";
 
-const DEFAULT_PLOT_WINDOW_DAYS = 14;
+const DEFAULT_PLOT_WINDOW_DAYS = 30;
 
 const LoadingMessage = () => {
   return (
