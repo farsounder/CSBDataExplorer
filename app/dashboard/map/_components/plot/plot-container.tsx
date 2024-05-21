@@ -19,13 +19,14 @@ const validPlatform = (userData: UserData): boolean => {
   );
 };
 
-const ErrorMessage = () => {
+const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
   return (
     <div className="flex flex-col justify-center items-center h-full px-8 text-center">
       <ExclamationTriangleIcon className="w-16 h-16 text-gray-500" />
-      <h3 className="text-lg text-gray-600">No data available</h3>
+      <h3 className="text-lg text-gray-600">No data available in the</h3>
       <p className="text-sm text-gray-500">
-        Reload to try again, or contact us to report the issue
+        No data found for the last {time_window_days} days. Reload to try again,
+        or contact us to report the issue.
       </p>
     </div>
   );
@@ -69,7 +70,7 @@ export default async function PlotContainer({
           userContributions={platformData}
         />
       ) : (
-        <ErrorMessage />
+        <ErrorMessage time_window_days={time_window_days} />
       )}
     </>
   );
