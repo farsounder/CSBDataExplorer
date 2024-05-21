@@ -3,6 +3,7 @@ import MapViewer from "@/app/dashboard/map/_components/mapviewer";
 import PlotContainer from "@/app/dashboard/map/_components/plot/plot-container";
 import ThreeDotsIcon from "@/components/icons/three-dots";
 import ToggleChartButton from "./_components/plot/toggle-chart-button";
+import { currentUser } from "@clerk/nextjs/server";
 
 const DEFAULT_PLOT_WINDOW_DAYS = 14;
 
@@ -25,13 +26,18 @@ export default async function Page({
 }) {
   const time_window_days =
     Number(searchParams?.time_window_days) || DEFAULT_PLOT_WINDOW_DAYS;
+
+  const user = await currentUser();
+
   return (
     <div className="flex flex-col p-0 m-0 h-full relative">
-      <ToggleChartButton>
-        <Suspense fallback={<LoadingMessage />}>
-          <PlotContainer time_window_days={time_window_days} />
-        </Suspense>
-      </ToggleChartButton>
+      {user ? (
+        <ToggleChartButton>
+          <Suspense fallback={<LoadingMessage />}>
+            <PlotContainer time_window_days={time_window_days} />
+          </Suspense>
+        </ToggleChartButton>
+      ) : null}
       <MapViewer />
     </div>
   );
