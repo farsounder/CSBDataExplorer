@@ -280,7 +280,7 @@ export default function MapViewer() {
       />
       <Button
         variant="outline"
-        className="absolute top-4 right-4 bg-white/60 visbile md:hidden"
+        className="absolute top-4 right-4 bg-white/60 visible md:hidden"
         onClick={handleToggleLegendVisible}
         style={legendVisible ? { right: 180 } : {}}
       >
