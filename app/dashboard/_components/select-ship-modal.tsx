@@ -46,7 +46,7 @@ export function SelectShipModal({
       (ap, index, self) =>
         index === self.findIndex((t) => t.platform === ap.platform)
     )
-    .map((ap) => ap.platform);
+    .map((ap) => ap.platform).sort();
 
   // remove duplicates for noaa_id list dropdown
   const uniqueNoaaIds = availablePlatforms
@@ -54,7 +54,7 @@ export function SelectShipModal({
       (ap, index, self) =>
         index === self.findIndex((t) => t.noaa_id === ap.noaa_id)
     )
-    .map((ap) => ap.noaa_id);
+    .map((ap) => ap.noaa_id).sort();
 
   return (
     <Dialog>
@@ -121,7 +121,6 @@ export function SelectShipModal({
               </SelectTrigger>
               <SelectContent>
                 {uniquePlatforms.map((platform) => {
-                  // don't want to allow selecting anonymous platforms
                   return (
                     <SelectItem key={platform} value={platform}>
                       {platform}
@@ -172,6 +171,7 @@ export function SelectShipModal({
                     })
                     .then(() => {
                       toast({
+                        title: "Success!",
                         description: "Your platform has been updated",
                       });
                     })
