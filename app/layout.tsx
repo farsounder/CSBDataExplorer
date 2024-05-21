@@ -1,28 +1,56 @@
-import './globals.css'
-import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
-import { Toaster } from '@/components/ui/toaster'
+import "./globals.css";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Toaster } from "@/components/ui/toaster";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
+
+const title = "Crowdsourced Data Explorer";
+const description =
+  "Crowdsourced Data Explorer for FarSounder, Seakeepers Society, Seabed 2030, and other contributors to the IHO CSB Database hosted by DCDB at NOAA. This is a simple viewer meant to show off some of the data collected by mariners and other users like you in one place.";
+const ogImageUrl = "https://mycsb.farsounder.com/social.png";
 
 export const metadata: Metadata = {
-  title: 'Crowdsourced Data Explorer',
-  description: 'Crowdsourced Data Explorer for FarSounder, Seakeeper\'s Society, Seabed 2030, and the IHO CSB Database hosted by DCDB at NOAA. This is a simple viewer meant to show off some of the data collected by mariners and other users like you in one place.',
-}
+  title: title,
+  description: description,
+  authors: [
+    {
+      name: "FarSounder Team",
+      url: "https://farsounder.com",
+    },
+  ],
+  openGraph: {
+    title: title,
+    type: "website",
+    description: description,
+    images: [
+      {
+        url: ogImageUrl,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    description: description,
+    creator: "@FarSounder",
+    site: "https://mycsb.farsounder.com",
+    images: ogImageUrl,
+  },
+};
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1.0,
   minimumScale: 1.0,
   maximumScale: 1.0,
   userScalable: false,
-}
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <ClerkProvider>
@@ -33,5 +61,5 @@ export default function RootLayout({
         </body>
       </html>
     </ClerkProvider>
-  )
+  );
 }
