@@ -1,8 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import FSLogo from "../../../components/icons/fslogo";
-import { Seabed2030Logo } from "../../../components/icons/seabed";
-import { SeakeepersLogo } from "../../../components/icons/seakeepers";
+import Seabed2030Logo from "../../../components/icons/seabed";
+import SeakeepersLogo from "../../../components/icons/seakeepers";
 
 export default function Footer() {
   return (
