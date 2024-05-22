@@ -50,7 +50,7 @@ export default function Hero() {
               </h1>
               <h2 className=" max-w-[600px] text-2xl md:text-xl mx-auto">
                 Supporting collaboration with International Seakeepers Society,
-                Seabed 2030, and the IHO CSB Database hosted by DCDB at NOAA.
+                Seabed 2030, the IHO CSB Database hosted by DCDB at NOAA, and many others.
               </h2>
               <p className="max-w-[600px] text-gray-600 md:text-xl mx-auto">
                 Explore the data collected and shared by{" "}
