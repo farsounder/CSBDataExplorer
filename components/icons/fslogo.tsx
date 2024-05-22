@@ -1,7 +1,8 @@
-const FSLogo = () => (
+const FSLogo = (props: any) => (
   <svg
     width="150"
     height="40"
+    {...props}
     version="1.1"
     viewBox="0 0 440.07 70.063"
     xmlns="http://www.w3.org/2000/svg"
