@@ -72,7 +72,7 @@ export default function UserShipInfo({ userData }: { userData: UserData }) {
             {userData?.platform_nickname && <ShareCard userData={userData} />}
           </TooltipTrigger>
           <TooltipContent>
-            Click to share the stats for this platform!
+            Click to generate a sharable stats summary this platform! (opens in new tab)
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

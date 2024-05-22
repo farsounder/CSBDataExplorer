@@ -7,8 +7,13 @@ import NoaaLogo from "../../../../components/icons/noaalogo";
 import FSLogo from "../../../../components/icons/fslogo";
 
 // This is just estimated based on some recent submissions size vs number of
-// of depth points
-const bytesToDepthPoints = (bytes: number) => Math.round(bytes * 0.0025);
+// of depth points and the reported size of the data from the dcdb endpoint,
+// they must be compressing it because the sizes of we have cached that we sent
+// are larger than what they are reporting, but compressing would make sense.
+// I used a day of data from a vessel that conbributed about 90k depth points,
+// and the reported size from data from the dcdb endpoint for that day was
+// about 3.2MB, so going with 36 bytes per depth point.
+const bytesToDepthPoints = (bytes: number) => Math.round(bytes / 36);
 
 const timeWindowValid = (
   minDays: number,
