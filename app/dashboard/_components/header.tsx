@@ -13,7 +13,7 @@ export default async function Header() {
             <h1 className="hidden sm:block text-xl md:text-4xl font-bold text-blue-800">
               CSB Data Explorer
             </h1>
-            <div className="hidden sm:block sm:text-sm text-gray-600 italic text-xs">
+            <div className="hidden sm:block md:text-sm text-gray-600 italic text-xs">
               A view of the data{" "}
               <span className="text-blue-600 font-extrabold">YOU</span>&apos;ve
               collected and sent to the IHO DCDB

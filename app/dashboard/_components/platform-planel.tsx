@@ -37,8 +37,8 @@ export default function PlatformDisplayPanel({
     );
   }
   return (
-    <div className="px-8 flex gap-6 items-center">
-      <div className="flex gap-4 justify-center items-center">
+    <div className="px-8 flex gap-2 items-center justify-center">
+      <div className="flex justify-center items-center">
         <UserShipInfo userData={userData} />
         <SelectShipModal
           availablePlatforms={availablePlatforms}

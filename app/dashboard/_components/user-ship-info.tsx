@@ -41,7 +41,7 @@ export default function UserShipInfo({ userData }: { userData: UserData }) {
     <div className="flex py-2 gap-2 justify-center items-center sm:text-sm w-full z-50">
       <TooltipProvider>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger className="hover:cursor-default">
             {userData?.platform_nickname && <ShipCard userData={userData} />}
           </TooltipTrigger>
           <TooltipContent>
