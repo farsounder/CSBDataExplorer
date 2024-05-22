@@ -29,9 +29,11 @@ export default async function Page({
 
   const user = await currentUser();
 
+  const csbPlatform = user?.unsafeMetadata?.csbPlatform;
+
   return (
     <div className="flex flex-col p-0 m-0 h-full relative">
-      {user ? (
+      {user && csbPlatform ? (
         <ToggleChartButton>
           <Suspense fallback={<LoadingMessage />}>
             <PlotContainer time_window_days={time_window_days} />

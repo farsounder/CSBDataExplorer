@@ -36,10 +36,6 @@ export function SelectShipModal({
   const { toast } = useToast();
   const [newUserData, setNewUserData] = useState<UserData>(startingUserData);
 
-  if (!user?.unsafeMetadata || !isLoaded) {
-    return null;
-  }
-
   // remove duplicates for platform list dropdown
   const uniquePlatforms = useMemo(
     () =>
@@ -65,6 +61,10 @@ export function SelectShipModal({
         .sort(),
     [availablePlatforms]
   );
+
+  if (!user?.unsafeMetadata || !isLoaded) {
+    return null;
+  }
 
   return (
     <Dialog>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const NoaaLogo = (props) => (
+const NoaaLogo = (props: any) => (
   <svg {...props} viewBox="0 0 340.02 73.34" xmlns="http://www.w3.org/2000/svg">
     <g data-name="NOAA Logo">
       <circle fill="#fff" cx="36.5" cy="36.69" r="36.5" />

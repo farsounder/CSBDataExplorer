@@ -260,6 +260,7 @@ export async function GET(
             <img
               src="https://mycsb.farsounder.com/iho-csb-logo.png"
               width="275px"
+              alt="IHO CSB Logo"
             />
           </div>
         </div>
