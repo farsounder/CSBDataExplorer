@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
@@ -41,20 +41,30 @@ export function SelectShipModal({
   }
 
   // remove duplicates for platform list dropdown
-  const uniquePlatforms = availablePlatforms
-    .filter(
-      (ap, index, self) =>
-        index === self.findIndex((t) => t.platform === ap.platform)
-    )
-    .map((ap) => ap.platform).sort();
+  const uniquePlatforms = useMemo(
+    () =>
+      availablePlatforms
+        .filter(
+          (ap, index, self) =>
+            index === self.findIndex((t) => t.platform === ap.platform)
+        )
+        .map((ap) => ap.platform)
+        .sort(),
+    [availablePlatforms]
+  );
 
   // remove duplicates for noaa_id list dropdown
-  const uniqueNoaaIds = availablePlatforms
-    .filter(
-      (ap, index, self) =>
-        index === self.findIndex((t) => t.noaa_id === ap.noaa_id)
-    )
-    .map((ap) => ap.noaa_id).sort();
+  const uniqueNoaaIds = useMemo(
+    () =>
+      availablePlatforms
+        .filter(
+          (ap, index, self) =>
+            index === self.findIndex((t) => t.noaa_id === ap.noaa_id)
+        )
+        .map((ap) => ap.noaa_id)
+        .sort(),
+    [availablePlatforms]
+  );
 
   return (
     <Dialog>
