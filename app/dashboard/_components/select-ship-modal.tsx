@@ -24,6 +24,7 @@ import { useToast } from "@/components/ui/use-toast";
 import forceRefresh from "@/app/actions";
 
 import { CSBPlatform } from "@/lib/types";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
 export function SelectShipModal({
   availablePlatforms,
@@ -74,14 +75,25 @@ export function SelectShipModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            Which NOAA Platform would you like to track?
+            <div className="sm:text-xl">
+              Which NOAA Platform would you like to track?
+            </div>
           </DialogTitle>
           <DialogDescription>
-            Select a platform (vessel) in the DCDB database to track its stats
-            and compare to other platforms in the database. Some providers and
-            trusted nodes submit data annonymously, so if you don&apol;t see
-            your vessel here - contact your provider and they can tell help you
-            find the NOAA Platform ID for your vessel.
+            <div className="">
+              <div className="py-2">
+                Select a platform (vessel) in the DCDB database to track its
+                stats and see current tracks from submitted data.
+              </div>
+              <div className="p-2 bg-blue-100 text-blue-700 border-l-4 border-blue-500 rounded-md text-sm flex gap-4 ">
+                <ExclamationCircleIcon className="w-16 h-16 inline-block" />
+                <p>
+                  <span className="font-semibold">Note: </span>
+                  If you do not see your vessel here, contact your provider.
+                  They can help you find the NOAA Platform ID for your vessel.
+                </p>
+              </div>
+            </div>
           </DialogDescription>
           <div className="flex flex-col justity-center items-center gap-2">
             <div className="flex gap-4 w-full">
