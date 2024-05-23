@@ -25,6 +25,7 @@ export const metadata: Metadata = {
     title: title,
     type: "website",
     description: description,
+    url: baseUrl,
     images: [
       {
         url: ogImageUrl,
