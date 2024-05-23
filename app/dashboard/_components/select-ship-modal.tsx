@@ -63,6 +63,11 @@ export function SelectShipModal({
     [availablePlatforms]
   );
 
+  const isButtonDisabled =
+    !newUserData?.csbPlatform?.platform ||
+    !newUserData?.csbPlatform?.noaa_id ||
+    !newUserData?.platform_nickname;
+
   if (!user?.unsafeMetadata || !isLoaded) {
     return null;
   }
@@ -75,7 +80,7 @@ export function SelectShipModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <div className="sm:text-xl">
+            <div className="sm:text-xl text-gray-800">
               Which NOAA Platform would you like to track?
             </div>
           </DialogTitle>
@@ -95,9 +100,9 @@ export function SelectShipModal({
               </div>
             </div>
           </DialogDescription>
-          <div className="flex flex-col justity-center items-center gap-2">
-            <div className="flex gap-4 w-full">
-              <Label htmlFor="nickname" className="sr-only">
+          <div className="flex flex-col justity-center items-center gap-2 text-gray-600">
+            <div className="flex w-full flex-col gap-1 pb-4">
+              <Label htmlFor="nickname" className="pb-1 pl-1">
                 Nickname
               </Label>
               <Input
@@ -115,75 +120,80 @@ export function SelectShipModal({
                 }}
               />
             </div>
-            <Select
-              value={newUserData?.csbPlatform?.platform}
-              onValueChange={(name: string) => {
-                // get the noaa_id from the selected platform name
-                const platform = availablePlatforms.find(
-                  (ap) => ap.platform === name
-                );
-                setNewUserData((prev) => ({
-                  ...prev,
-                  csbPlatform: {
-                    ...prev.csbPlatform,
-                    platform: name,
-                    noaa_id: platform?.noaa_id || "",
-                    provider: platform?.provider || "",
-                  },
-                }));
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    startingUserData?.csbPlatform?.platform ||
-                    "Only required if no NOAA ID selected below"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {uniquePlatforms.map((platform) => {
-                  return (
-                    <SelectItem key={platform} value={platform}>
-                      {platform}
-                    </SelectItem>
+            <div className="text-left w-full pl-4">Select one of:</div>
+            <div className="border p-4 rounded-lg">
+              <Select
+                value={newUserData?.csbPlatform?.platform}
+                onValueChange={(name: string) => {
+                  // get the noaa_id from the selected platform name
+                  const platform = availablePlatforms.find(
+                    (ap) => ap.platform === name
                   );
-                })}
-              </SelectContent>
-            </Select>
-            <Select
-              value={newUserData?.csbPlatform?.noaa_id}
-              onValueChange={(id) => {
-                // get the platform name from the selected id
-                const platform = availablePlatforms.find(
-                  (ap) => ap.noaa_id === id
-                );
-                setNewUserData((prev) => ({
-                  ...prev,
-                  csbPlatform: {
-                    ...prev.csbPlatform,
-                    noaa_id: id,
-                    platform: platform?.platform || "",
-                    provider: platform?.provider || "",
-                  },
-                }));
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Only required if anonymous" />
-              </SelectTrigger>
-              <SelectContent>
-                {uniqueNoaaIds.map((id) => (
-                  <SelectItem key={id} value={id}>
-                    {id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  setNewUserData((prev) => ({
+                    ...prev,
+                    csbPlatform: {
+                      ...prev.csbPlatform,
+                      platform: name,
+                      noaa_id: platform?.noaa_id || "",
+                      provider: platform?.provider || "",
+                    },
+                  }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      startingUserData?.csbPlatform?.platform ||
+                      "Only required if no NOAA ID selected below"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {uniquePlatforms.map((platform) => {
+                    return (
+                      <SelectItem key={platform} value={platform}>
+                        {platform}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+              <div className="text-center py-2 text-sm">-- or --</div>
+              <Select
+                value={newUserData?.csbPlatform?.noaa_id}
+                onValueChange={(id) => {
+                  // get the platform name from the selected id
+                  const platform = availablePlatforms.find(
+                    (ap) => ap.noaa_id === id
+                  );
+                  setNewUserData((prev) => ({
+                    ...prev,
+                    csbPlatform: {
+                      ...prev.csbPlatform,
+                      noaa_id: id,
+                      platform: platform?.platform || "",
+                      provider: platform?.provider || "",
+                    },
+                  }));
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Only required if anonymous" />
+                </SelectTrigger>
+                <SelectContent>
+                  {uniqueNoaaIds.map((id) => (
+                    <SelectItem key={id} value={id}>
+                      {id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <DialogTrigger asChild>
               <Button
                 type="submit"
-                className="px-3"
+                className="px-3 bg-blue-700"
+                disabled={isButtonDisabled}
                 onClick={() => {
                   user
                     ?.update({
