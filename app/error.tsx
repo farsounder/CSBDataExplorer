@@ -22,7 +22,7 @@ export default function Error({
           Something went wrong!
         </h2>
         <p className="mt-2 text-gray-500">
-          We're sorry for the inconvenience. Please try again.
+          We&lsquo;re sorry for the inconvenience. Please try again.
         </p>
         <Button
           className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500"
