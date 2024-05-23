@@ -3,7 +3,7 @@ import { GithubIcon } from "lucide-react";
 
 export default function SplashPageFooter() {
   return (
-    <footer className="w-full p-2 flex items-center justify-center bg-white">
+    <footer className="w-full p-2 flex items-center justify-center bg-white shadow-inner">
       <div>
         Hosted by{" "}
         <Link

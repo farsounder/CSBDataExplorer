@@ -80,8 +80,8 @@ export function SelectShipModal({
             </div>
           </DialogTitle>
           <DialogDescription>
-            <div className="">
-              <div className="py-2">
+            <div className="pb-4">
+              <div className="py-4">
                 Select a platform (vessel) in the DCDB database to track its
                 stats and see current tracks from submitted data.
               </div>
