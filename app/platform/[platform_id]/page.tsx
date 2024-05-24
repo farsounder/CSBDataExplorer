@@ -16,9 +16,16 @@ export async function generateMetadata({
     title: `CSB Data for ID: ${params.platform_id}`,
     description: `CSB data collected by platform ${params.platform_id} in the DCDB Crowd-sourced Bathymetry  Database.`,
     openGraph: {
-      images: [`/api/og/platform/${params.platform_id}.png`],
+      title: `CSB Data for ID: ${params.platform_id}`,
+      images: [
+        {
+          url: `/api/og/platform/${params.platform_id}.png`,
+        },
+      ],
+      url: `/platform/${params.platform_id}`,
     },
     twitter: {
+      site: `/platform/${params.platform_id}`,
       images: `/api/og/platform/${params.platform_id}.png`,
     },
   };
