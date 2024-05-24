@@ -23,9 +23,9 @@ export async function generateMetadata({
 
 function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
   return (
-    <div className="absolute bottom-0 left-0 p-2 m-2 bg-white bg-opacity-50 rounded-lg flex items-center">
+    <div className="absolute bottom-2 left-2 p-2 m-2 bg-white bg-opacity-50 rounded-lg flex items-center">
       <div className="p-2">
-        <ShipIcon className="w-4 h-4 sm:w-8 sm:h-8 text-blue-800" />
+        <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-800" />
       </div>
       <div>
         <div className="text-sm font-bold text-blue-800">Displaying data for:</div>

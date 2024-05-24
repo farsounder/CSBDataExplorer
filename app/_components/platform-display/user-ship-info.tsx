@@ -19,7 +19,9 @@ function ShareCard({ userData }: { userData: UserData }) {
     <Link href={`/api/og/platform/${noaa_id}`} target="_blank">
       <div className="flex flex-col items-center">
         <ChartPieIcon className="w-4 h-4 sm:w-8 sm:h-8 text-blue-800" />
-        <div className="text-xs sm:text-sm text-gray-400">Stats Summary</div>
+        <div className="text-xs sm:text-sm text-gray-400">
+          30 Day Stats Summary
+        </div>
       </div>
     </Link>
   );
