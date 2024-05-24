@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@auth/core": "^0.15.2",
-    "@clerk/nextjs": "^5.0.5",
     "@heroicons/react": "^2.0.18",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",

@@ -18,24 +18,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMemo, useState } from "react";
-import { useUser } from "@clerk/nextjs";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
-import forceRefresh from "@/app/actions";
 
 import { CSBPlatform } from "@/lib/types";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import { useRouter } from "next/navigation";
 
 export function SelectShipModal({
   availablePlatforms,
-  startingUserData,
+  selectedUserData,
+  saveUserData,
 }: {
   availablePlatforms: CSBPlatform[];
-  startingUserData: UserData;
+  selectedUserData?: UserData;
+  saveUserData: (userData: UserData) => void;
 }) {
-  const { user, isLoaded } = useUser();
   const { toast } = useToast();
-  const [newUserData, setNewUserData] = useState<UserData>(startingUserData);
+  const router = useRouter();
 
   // remove duplicates for platform list dropdown
   const uniquePlatforms = useMemo(
@@ -64,13 +64,8 @@ export function SelectShipModal({
   );
 
   const isButtonDisabled =
-    !newUserData?.csbPlatform?.platform ||
-    !newUserData?.csbPlatform?.noaa_id ||
-    !newUserData?.platform_nickname;
-
-  if (!user?.unsafeMetadata || !isLoaded) {
-    return null;
-  }
+    !selectedUserData?.csbPlatform?.platform ||
+    !selectedUserData?.csbPlatform?.noaa_id;
 
   return (
     <Dialog>
@@ -101,50 +96,30 @@ export function SelectShipModal({
             </div>
           </DialogDescription>
           <div className="flex flex-col justity-center items-center gap-2 text-gray-600">
-            <div className="flex w-full flex-col gap-1 pb-4">
-              <Label htmlFor="nickname" className="pb-1 pl-1">
-                Nickname
-              </Label>
-              <Input
-                id="nickname"
-                placeholder={
-                  startingUserData?.platform_nickname || "Platform Nickname"
-                }
-                value={newUserData?.platform_nickname || ""}
-                type="text"
-                onChange={(e) => {
-                  setNewUserData((prev) => ({
-                    ...prev,
-                    platform_nickname: e.target.value,
-                  }));
-                }}
-              />
-            </div>
             <div className="text-left w-full pl-4">Select one of:</div>
-            <div className="border p-4 rounded-lg">
+            <div className="border p-4 rounded-lg w-full">
               <Select
-                value={newUserData?.csbPlatform?.platform}
+                value={selectedUserData?.csbPlatform?.platform}
                 onValueChange={(name: string) => {
                   // get the noaa_id from the selected platform name
                   const platform = availablePlatforms.find(
                     (ap) => ap.platform === name
                   );
-                  setNewUserData((prev) => ({
-                    ...prev,
+                  saveUserData({
+                    ...selectedUserData,
                     csbPlatform: {
-                      ...prev.csbPlatform,
+                      ...selectedUserData?.csbPlatform,
                       platform: name,
                       noaa_id: platform?.noaa_id || "",
                       provider: platform?.provider || "",
                     },
-                  }));
+                  } as UserData);
                 }}
               >
                 <SelectTrigger>
                   <SelectValue
                     placeholder={
-                      startingUserData?.csbPlatform?.platform ||
-                      "Only required if no NOAA ID selected below"
+                      "Platform Name: required if no unique id selected below"
                     }
                   />
                 </SelectTrigger>
@@ -160,25 +135,25 @@ export function SelectShipModal({
               </Select>
               <div className="text-center py-2 text-sm">-- or --</div>
               <Select
-                value={newUserData?.csbPlatform?.noaa_id}
+                value={selectedUserData?.csbPlatform?.noaa_id}
                 onValueChange={(id) => {
                   // get the platform name from the selected id
                   const platform = availablePlatforms.find(
                     (ap) => ap.noaa_id === id
                   );
-                  setNewUserData((prev) => ({
-                    ...prev,
+                  saveUserData({
+                    ...selectedUserData,
                     csbPlatform: {
-                      ...prev.csbPlatform,
+                      ...selectedUserData?.csbPlatform,
                       noaa_id: id,
                       platform: platform?.platform || "",
                       provider: platform?.provider || "",
                     },
-                  }));
+                  } as UserData);
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Only required if anonymous" />
+                  <SelectValue placeholder="Unique id: required if no Platform Name (Anonymous)" />
                 </SelectTrigger>
                 <SelectContent>
                   {uniqueNoaaIds.map((id) => (
@@ -195,27 +170,17 @@ export function SelectShipModal({
                 className="px-3 bg-blue-700"
                 disabled={isButtonDisabled}
                 onClick={() => {
-                  user
-                    ?.update({
-                      unsafeMetadata: {
-                        ...newUserData,
-                      },
-                    })
-                    .then(() => {
-                      toast({
-                        title: "Success!",
-                        description: "Your platform has been updated",
-                      });
-                    })
-                    .catch((e) => {
-                      toast({
-                        title: "Error",
-                        description:
-                          "There was an error updating your platform.",
-                        variant: "destructive",
-                      });
-                    });
-                  forceRefresh();
+                  if (!selectedUserData) {
+                    return;
+                  }
+                  saveUserData(selectedUserData);
+                  toast({
+                    title: "Success!",
+                    description: "Your platform has been updated",
+                  });
+                  router.push(
+                    `/platform/${selectedUserData.csbPlatform.noaa_id}`
+                  );
                 }}
               >
                 Save

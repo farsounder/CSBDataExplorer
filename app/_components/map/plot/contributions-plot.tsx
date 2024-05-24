@@ -33,6 +33,7 @@ export default function ContributionsPlot({
         legend: {
           x: 0,
         },
+        showlegend: true,
         margin: {
           l: 60,
           b: 60,

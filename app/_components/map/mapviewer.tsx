@@ -7,18 +7,16 @@ import { TileLayer, MVTLayer, GeoBoundingBox } from "@deck.gl/geo-layers/typed";
 import { BitmapLayer } from "@deck.gl/layers/typed";
 import { Layer, PickingInfo } from "@deck.gl/core/typed";
 import type { TooltipContent } from "@deck.gl/core/typed/lib/tooltip";
-import InfoIcon from "../../../../components/icons/infoicon";
+import InfoIcon from "../../../components/icons/infoicon";
 import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Button } from "../../../../components/ui/button";
-import { useUser } from "@clerk/nextjs";
+import { Button } from "../../../components/ui/button";
 
-import { UserData } from "@/lib/types";
 
 /* Constants, magic strings, types, etc */
-const NOAA_CSB_LAYER_NAME = "All CSB Data";
-const NOAA_S57_LAYER_NAME = "US S57";
-const OSM_BASE_LAYER_NAME = "OSM Base";
-const USER_CSB_LAYER_NAME = "Your Data";
+const NOAA_CSB_LAYER_NAME = "IHO CSB Data";
+const NOAA_S57_LAYER_NAME = "US S57 ENCs";
+const OSM_BASE_LAYER_NAME = "Base Map";
+const USER_CSB_LAYER_NAME = "Your CSB Data";
 
 const mapLayerIdToInfo = new Map<string, string>([
   [OSM_BASE_LAYER_NAME, "A simple baselayer from OpenStreetMap."],
@@ -52,30 +50,25 @@ const INITIAL_VIEW_STATE = {
 type ViewState = typeof INITIAL_VIEW_STATE;
 type TypeToggleLayerHandler = (layerId: string) => void;
 
-
 /* Helpers for components - getting default / specific layers, etc */
 const getTooltip = (info: PickingInfo): TooltipContent => {
   return null;
 };
 
-const getLayerFilterString = (userData: UserData): string => {
-  const { noaa_id } = userData.csbPlatform;
-  if (noaa_id) {
-    return `UPPER(EXTERNAL_ID) LIKE '${noaa_id.toUpperCase()}'`;
+const getLayerFilterString = (noaaId: string): string => {
+  if (noaaId) {
+    return `UPPER(EXTERNAL_ID) LIKE '${noaaId.toUpperCase()}'`;
   }
   return "";
 };
 
-const getCSBLayer = (userData: UserData): TileLayer | null => {
-  if (!userData.csbPlatform.noaa_id) {
-    return null;
-  }
+const getCSBLayer = (noaaId: string): TileLayer | null => {
 
   const baseUrl =
     "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
   const layer = new TileLayer({
-    id: userData.csbPlatform.noaa_id,
+    id: noaaId,
     getTileData: (tile) => {
       const bbox = tile.bbox as GeoBoundingBox;
       const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
@@ -89,7 +82,7 @@ const getCSBLayer = (userData: UserData): TileLayer | null => {
       const bboxString = `bbox=${west},${south},${east},${north}`;
       const sizeString = "size=256,256";
       // this filters the data to only show the users data
-      const filterStr = getLayerFilterString(userData);
+      const filterStr = getLayerFilterString(noaaId);
       const layerDefs = `layerDefs={"0": "${filterStr}", "1": "${filterStr}"}`;
       return `${baseUrl}&${bboxString}&bboxSR=3857&imageSR=3857&${sizeString}&f=image&${layerDefs}`;
     },
@@ -211,9 +204,11 @@ function LayerLegend({
   );
 }
 
-export default function MapViewer() {
-  const { isLoaded, isSignedIn, user } = useUser();
-
+export default function MapViewer({
+  platformId,
+}: {
+  platformId?: string;
+}) {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
 
   const [layers, setLayers] = useState<Layer[]>(getDefaultLayers());
@@ -241,20 +236,15 @@ export default function MapViewer() {
   // Add data layer for CSB from this user when auth state changes or they
   // add the information to their account
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      const userData = user?.unsafeMetadata as UserData;
-      // metadata is empty :(
-      if (Object.keys(userData).length == 0) {
-        return;
-      }
-      const userCSBLayer = getCSBLayer(userData);
+    if (platformId) {
+      const userCSBLayer = getCSBLayer(platformId);
       if (userCSBLayer) {
         setLayers([...getDefaultLayers(), userCSBLayer]);
       }
       return;
     }
     setLayers(getDefaultLayers());
-  }, [isLoaded, isSignedIn, user?.unsafeMetadata]);
+  }, [platformId]);
 
   const handleToggleLegendVisible = () => {
     if (legendRef.current) {

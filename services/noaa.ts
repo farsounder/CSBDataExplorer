@@ -101,7 +101,7 @@ export async function getProviderData({
       return res.json();
     })
     .then((data) =>
-      data.features.map((item: any) => {
+      data.features?.map((item: any) => {
         return {
           provider: item.attributes.EXPR1,
           month: item.attributes.EXPR2,
@@ -139,7 +139,7 @@ export async function getPlatformData({
       return res.json();
     })
     .then((data) =>
-      data.features.map((item: any) => {
+      data.features?.map((item: any) => {
         return {
           provider: item.attributes.EXPR1,
           noaa_id: noaa_id,
