@@ -245,7 +245,7 @@ export async function GET(
               }}
             >
               This app hosted by
-              <FSLogo width={"200px"} height={"53px"} />
+              <FSLogo width="314px" height="50px" />
               <div
                 style={{
                   display: "flex",
