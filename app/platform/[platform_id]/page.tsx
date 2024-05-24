@@ -13,8 +13,8 @@ export async function generateMetadata({
   params: { platform_id: string };
 }) {
   return {
-    title: `Platform ${params.platform_id}`,
-    description: `View data for platform ${params.platform_id}`,
+    title: `CSB Data for ID: ${params.platform_id}`,
+    description: `CSB data collected by platform ${params.platform_id} in the DCDB Crowd-sourced Bathymetry  Database.`,
     openGraph: {
       images: [`/api/og/platform/${params.platform_id}.png`],
     },
@@ -31,7 +31,9 @@ function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
         <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-800" />
       </div>
       <div>
-        <div className="text-sm font-bold text-blue-800">Displaying data for:</div>
+        <div className="text-sm font-bold text-blue-800">
+          Displaying data for:
+        </div>
         <div className="text-xs">Unique id: {platform.noaa_id}</div>
         <div className="text-xs">Platform: {platform.platform}</div>
         <div className="text-xs">Trusted Node: {platform.provider}</div>
