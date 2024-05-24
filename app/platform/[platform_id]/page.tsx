@@ -42,8 +42,8 @@ function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
         <div className="text-sm font-bold text-blue-800">
           Displaying data for:
         </div>
-        <div className="text-xs">Unique id: {platform.noaa_id}</div>
-        <div className="text-xs">Platform: {platform.platform}</div>
+        <div className="text-xs">Unique ID: {platform.noaa_id}</div>
+        <div className="text-xs">Vessel: {platform.platform}</div>
         <div className="text-xs">Trusted Node: {platform.provider}</div>
       </div>
     </div>

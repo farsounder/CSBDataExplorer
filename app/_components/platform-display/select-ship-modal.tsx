@@ -70,7 +70,7 @@ export function SelectShipModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="secondary">Change Platform</Button>
+        <Button variant="secondary">Change Vessel</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
