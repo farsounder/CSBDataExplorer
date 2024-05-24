@@ -16,10 +16,10 @@ export async function generateMetadata({
     title: `Platform ${params.platform_id}`,
     description: `View data for platform ${params.platform_id}`,
     openGraph: {
-      images: [`/api/og/platform/${params.platform_id}`],
+      images: [`/api/og/platform/${params.platform_id}.png`],
     },
     twitter: {
-      images: `/api/og/platform/${params.platform_id}`,
+      images: `/api/og/platform/${params.platform_id}.png`,
     },
   };
 }

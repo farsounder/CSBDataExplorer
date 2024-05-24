@@ -91,6 +91,11 @@ export async function GET(
   if (!params.noaa_id) {
     return new Response("no id provided", { status: 404 });
   }
+  // strip out the .png if it was included
+  if (params.noaa_id.includes(".png")) {
+    params.noaa_id = params.noaa_id.replace(".png", "");
+  }
+
 
   const { searchParams } = new URL(request.url);
   const time_window_days = Number(searchParams.get("time_window_days")) || 30;
