@@ -18,6 +18,9 @@ export async function generateMetadata({
     openGraph: {
       images: [`/api/og/platform/${params.platform_id}`],
     },
+    twitter: {
+      images: `/api/og/platform/${params.platform_id}`,
+    },
   };
 }
 
