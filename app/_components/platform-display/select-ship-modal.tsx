@@ -65,8 +65,7 @@ export function SelectShipModal({
 
   const isButtonDisabled =
     !selectedUserData?.csbPlatform?.platform ||
-    !selectedUserData?.csbPlatform?.noaa_id ||
-    !selectedUserData?.platform_nickname;
+    !selectedUserData?.csbPlatform?.noaa_id;
 
   return (
     <Dialog>
@@ -119,7 +118,9 @@ export function SelectShipModal({
               >
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={"Only required if no NOAA ID selected below"}
+                    placeholder={
+                      "Platform Name: required if no unique id selected below"
+                    }
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -152,7 +153,7 @@ export function SelectShipModal({
                 }}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Only required if anonymous" />
+                  <SelectValue placeholder="Unique id: required if no Platform Name (Anonymous)" />
                 </SelectTrigger>
                 <SelectContent>
                   {uniqueNoaaIds.map((id) => (
