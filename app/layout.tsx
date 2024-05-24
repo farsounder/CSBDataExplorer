@@ -1,8 +1,9 @@
 import "./globals.css";
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "@/components/ui/toaster";
+import Header from "./_components/header";
+import Footer from "./_components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,6 +14,7 @@ const description =
 const ogImageUrl = `${baseUrl}/social.png`;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: title,
   description: description,
   authors: [
@@ -50,18 +52,24 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({
+  params,
   children,
 }: {
+  params: { platform_id: string };
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en">
-        <body className={inter.className}>
-          {children}
-          <Toaster />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en">
+      <body className={inter.className}>
+        <section className="flex flex-col w-full h-full overflow-hidden">
+          <Header />
+          <div className="flex h-full">
+            <div className="m-0 p-0 w-full h-full">{children}</div>
+          </div>
+          <Footer />
+        </section>
+        <Toaster />
+      </body>
+    </html>
   );
 }

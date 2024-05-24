@@ -1,5 +1,3 @@
-import { currentUser } from "@clerk/nextjs/server";
-import { UserData } from "@/lib/types";
 import { getPlatformData, getProviderData } from "@/services/noaa";
 import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
@@ -11,13 +9,6 @@ const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
   ssr: false,
 });
 
-const validPlatform = (userData: UserData): boolean => {
-  return !!(
-    userData?.csbPlatform &&
-    userData.csbPlatform?.noaa_id &&
-    userData.csbPlatform?.provider
-  );
-};
 
 const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
   return (
@@ -33,30 +24,22 @@ const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
 };
 
 export default async function PlotContainer({
+  platformId,
+  provider,
   time_window_days,
 }: {
+  platformId: string;
+  provider: string;
   time_window_days: number;
 }) {
-  const user = await currentUser();
-  // nothing to render until we have a user signed in to look up stats for
-  if (!user) {
-    return null;
-  }
-
-  const userData = user.unsafeMetadata as UserData;
-
-  if (!validPlatform(userData)) {
-    return null;
-  }
-
   // if we have a valid platform, we can get the data and render the plot
   const providerData = await getProviderData({
-    provider: userData.csbPlatform.provider,
+    provider: provider,
     time_window_days: time_window_days,
   });
 
   const platformData = await getPlatformData({
-    noaa_id: userData.csbPlatform.noaa_id,
+    noaa_id: platformId,
     time_window_days: time_window_days,
   });
 
