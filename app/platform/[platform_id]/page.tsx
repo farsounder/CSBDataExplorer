@@ -25,6 +25,7 @@ export async function generateMetadata({
       url: `/platform/${params.platform_id}`,
     },
     twitter: {
+      card: "summary_large_image",
       site: `/platform/${params.platform_id}`,
       images: `/api/og/platform/${params.platform_id}.png`,
     },
