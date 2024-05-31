@@ -19,7 +19,7 @@ export default function ToggleStatsCard({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="z-50 border-0 bg-white/60">
+        <Button variant="outline" className="z-50 border-0 bg-white/80">
           <TableCellsIcon className="w-6 h-6 text-gray-500" />
         </Button>
       </DialogTrigger>
