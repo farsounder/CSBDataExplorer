@@ -96,7 +96,6 @@ export async function GET(
     params.noaa_id = params.noaa_id.replace(".png", "");
   }
 
-
   const { searchParams } = new URL(request.url);
   const time_window_days = Number(searchParams.get("time_window_days")) || 30;
 
@@ -193,8 +192,8 @@ export async function GET(
               }}
             >
               <CoolNumber
-                number={time_window_days}
-                subtitle="day time window"
+                number={data.length}
+                subtitle={`of ${time_window_days} days with data`}
               />
               <CoolNumber
                 number={total_data_size}
