@@ -1,9 +1,12 @@
 import MapViewer from "@/app/_components/map/mapviewer";
-import PlotContainer from "@/app/_components/map/plot/plot-container";
-import ToggleChartButton from "@/app/_components/map/plot/toggle-chart-button";
+import PlotContainer from "@/app/platform/[platform_id]/_components/plot/plot-container";
+import ToggleChartButton from "@/app/platform/[platform_id]/_components/plot/toggle-chart-button";
 import { CSBPlatform } from "@/lib/types";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
+import { Stats } from "fs";
 import { ShipIcon } from "lucide-react";
+import StatsCard from "./_components/stats/stats-card";
+import ToggleStatsCard from "./_components/stats/toggle-stats-card";
 
 const DEFAULT_PLOT_WINDOW_DAYS = 30;
 
@@ -36,7 +39,7 @@ function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
   return (
     <div className="absolute bottom-2 left-2 p-2 m-2 bg-white bg-opacity-50 rounded-lg flex items-center">
       <div className="p-2">
-        <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-800" />
+        <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
       </div>
       <div>
         <div className="text-sm font-bold text-blue-800">
@@ -92,6 +95,16 @@ export default async function Page({
       )}
       <MapViewer platformId={platform_id} />
       {platform && <VesselInfoDisplay platform={platform} />}
+      {platform && (
+        <div className="absolute bottom-28 left-4">
+          <ToggleStatsCard>
+            <StatsCard
+              platformId={platform_id}
+              timeWindowDays={time_window_days}
+            />
+          </ToggleStatsCard>
+        </div>
+      )}
     </div>
   );
 }

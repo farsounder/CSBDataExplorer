@@ -1,7 +1,6 @@
 "use client";
 import { CSBPlatform, UserData } from "@/lib/types";
 import { SelectShipModal } from "./select-ship-modal";
-import UserShipInfo from "./user-ship-info";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -35,7 +34,6 @@ export default function PlatformDisplayPanel({
       const platform = availablePlatforms.find(
         (ap) => ap.noaa_id.toUpperCase() === platformId.toUpperCase()
       );
-      console.log(platform, platformId)
       if (platform) {
         saveUserData({
           platform_nickname: "My boat",
@@ -60,7 +58,6 @@ export default function PlatformDisplayPanel({
   return (
     <div className="px-8 flex gap-2 items-center justify-center">
       <div className="flex justify-center items-center">
-        {userData && <UserShipInfo userData={userData} />}
         <SelectShipModal
           availablePlatforms={availablePlatforms}
           selectedUserData={userData}

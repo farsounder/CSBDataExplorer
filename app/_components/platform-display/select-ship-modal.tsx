@@ -75,9 +75,9 @@ export function SelectShipModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <div className="sm:text-xl text-gray-800">
+            <span className="sm:text-xl text-gray-800">
               Which NOAA Platform would you like to track?
-            </div>
+            </span>
           </DialogTitle>
           <DialogDescription>
             <div className="pb-4">
