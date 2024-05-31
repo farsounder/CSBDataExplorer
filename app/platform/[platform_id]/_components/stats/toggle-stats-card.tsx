@@ -7,9 +7,9 @@ import {
   DialogContent,
   DialogTrigger,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { TableCellsIcon } from "@heroicons/react/24/outline";
-import { DialogDescription } from "@radix-ui/react-dialog";
 
 export default function ToggleStatsCard({
   children,
