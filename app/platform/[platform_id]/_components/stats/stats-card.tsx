@@ -69,7 +69,7 @@ export default async function StatsCard({
     time_window_days: timeWindowDays,
   });
 
-  if (!data) {
+  if (!data || data.length === 0) {
     return (
       <NoDataCard platformId={platformId} timeWindowDays={timeWindowDays} />
     );
