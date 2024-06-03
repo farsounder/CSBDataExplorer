@@ -66,8 +66,10 @@ export default async function Page({
   const { platform_id } = params;
   const validPlatforms = await getPlatformInfoFromNoaa();
 
-  if (!validPlatforms) {
-    throw new Error("No valid platforms found");
+  if (!validPlatforms || validPlatforms.length === 0) {
+    throw new Error(
+      "No valid platforms returned from NOAA endpoint."
+    );
   }
 
   const validPlatformIds = validPlatforms.map((platform) =>

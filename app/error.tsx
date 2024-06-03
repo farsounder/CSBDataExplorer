@@ -21,6 +21,15 @@ export default function Error({
         <h2 className="mt-4 text-2xl font-semibold text-gray-700">
           Something went wrong!
         </h2>
+        <p>
+          {error.message ? (
+            <span className="text-gray-700 text-sm">
+              Error: {error.message}
+            </span>
+          ) : (
+            "An error occurred while loading this page."
+          )}
+        </p>
         <p className="mt-2 text-gray-500">
           We&lsquo;re sorry for the inconvenience. Please try again.
         </p>
