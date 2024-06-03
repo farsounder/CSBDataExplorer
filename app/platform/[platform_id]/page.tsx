@@ -1,9 +1,9 @@
+import { Suspense } from "react";
 import MapViewer from "@/app/_components/map/mapviewer";
 import PlotContainer from "@/app/platform/[platform_id]/_components/plot/plot-container";
 import ToggleChartButton from "@/app/platform/[platform_id]/_components/plot/toggle-chart-button";
 import { CSBPlatform } from "@/lib/types";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
-import { Stats } from "fs";
 import { ShipIcon } from "lucide-react";
 import StatsCard from "./_components/stats/stats-card";
 import ToggleStatsCard from "./_components/stats/toggle-stats-card";
@@ -97,12 +97,14 @@ export default async function Page({
       {platform && <VesselInfoDisplay platform={platform} />}
       {platform && (
         <div className="absolute bottom-28 left-4">
-          <ToggleStatsCard>
-            <StatsCard
-              platformId={platform_id}
-              timeWindowDays={time_window_days}
-            />
-          </ToggleStatsCard>
+          <Suspense fallback={<div>Loading...</div>}>
+            <ToggleStatsCard>
+              <StatsCard
+                platformId={platform_id}
+                timeWindowDays={time_window_days}
+              />
+            </ToggleStatsCard>
+          </Suspense>
         </div>
       )}
     </div>

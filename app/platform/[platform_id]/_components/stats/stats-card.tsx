@@ -1,29 +1,24 @@
-import { getPlatformData } from "@/services/noaa";
 import {
   BuildingOfficeIcon,
   CalendarIcon,
   FaceFrownIcon,
 } from "@heroicons/react/24/outline";
-import { FacebookIcon, LinkIcon, LinkedinIcon } from "lucide-react";
+import { PrismaClient } from "@prisma/client";
+import { getPlatformData } from "@/services/noaa";
+import { formatNumber } from "@/lib/utils";
+import Link from "next/link";
+import SocialButtons from "./socials";
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+// TODO: dry this up, used in three places now
 // This is just estimated based on some recent submissions size vs number of
 // of depth points and the reported size of the data from the dcdb endpoint,
 // they must be compressing it because the sizes of we have cached that we sent
 // are larger than what they are reporting, but compressing would make sense.
 const bytesToDepthPoints = (bytes: number) => Math.round(bytes / 20);
 
-const formatNumber = (num: number): string => {
-  if (num > 1000000000) {
-    return `${(num / 1000000000).toFixed(1)}B`;
-  }
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return `${num}`;
-};
+const prisma = new PrismaClient();
 
 function NoDataCard({
   platformId,
@@ -75,6 +70,16 @@ export default async function StatsCard({
     );
   }
 
+  // insert a record in prisma for the platform id, so that the share links
+  // are unique
+  const { id } = await prisma.platformIdentifier.create({
+    data: {
+      platformId,
+    },
+  });
+
+  const shareUrl = `${baseUrl}/api/og/share/${id}`;
+
   const totalDataSize = data.reduce((acc, { dataSize }) => acc + dataSize, 0);
   const provider = data[0].provider;
   return (
@@ -108,11 +113,7 @@ export default async function StatsCard({
       </div>
       <div className="pt-4 flex flex-col gap-1">
         {/*Social media share buttons*/}
-        <div className="flex justify-center gap-4">
-          <LinkedinIcon className="w-4 h-4 text-blue-800" />
-          <FacebookIcon className="w-4 h-4 text-blue-800" />
-          <LinkIcon className="w-4 h-4 text-blue-800" />
-        </div>
+        <SocialButtons shareUrl={shareUrl} />
       </div>
     </div>
   );
