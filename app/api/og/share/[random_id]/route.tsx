@@ -33,10 +33,22 @@ export async function GET(
     return new Response("invalid identifier", { status: 404 });
   }
 
-  const data = await getPlatformData({
-    noaa_id: row.platformId,
-    time_window_days: time_window_days,
-  });
+
+  let data;
+  try {
+    data = await getPlatformData({
+      noaa_id: row.platformId,
+      time_window_days: time_window_days,
+    });
+  } catch (e: any) {
+    console.log(`${e.message}`);
+    return new Response(
+      "Failed to fetch data from NOAA endpoint, please try again later.",
+      {
+        status: 500,
+      }
+    );
+  }
 
   if (!timeWindowValid(0, 365, time_window_days)) {
     return new Response(
