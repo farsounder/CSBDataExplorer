@@ -6,11 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@auth/core": "^0.15.2",
     "@heroicons/react": "^2.0.18",
+    "@prisma/client": "^5.14.0",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-label": "^2.0.2",
     "@radix-ui/react-select": "^2.0.0",
@@ -21,6 +23,7 @@
     "@types/proj4": "^2.5.3",
     "@types/react": "18.2.21",
     "@types/react-dom": "18.2.7",
+    "@vercel/postgres": "^0.8.0",
     "autoprefixer": "10.4.15",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
@@ -30,8 +33,10 @@
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "lucide-react": "^0.268.0",
     "next": "^14.2.3",
+    "next-share": "^0.27.0",
     "plotly.js": "^2.32.0",
     "postcss": "8.4.31",
+    "prisma": "^5.14.0",
     "proj4": "^2.9.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
