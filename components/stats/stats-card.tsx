@@ -3,12 +3,9 @@ import {
   CalendarIcon,
   FaceFrownIcon,
 } from "@heroicons/react/24/outline";
-import db from "@/lib/db";
 import { getPlatformData } from "@/services/noaa";
 import { formatNumber } from "@/lib/utils";
-import SocialButtons from "./socials";
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
 // TODO: dry this up, used in three places now
 // This is just estimated based on some recent submissions size vs number of
@@ -52,9 +49,11 @@ function CoolNumber({ stat, label }: { stat: number; label: string }) {
 export default async function StatsCard({
   platformId,
   timeWindowDays,
+  children,
 }: {
   platformId: string;
   timeWindowDays: number;
+  children: React.ReactNode;
 }) {
   const data = await getPlatformData({
     noaa_id: platformId,
@@ -66,16 +65,6 @@ export default async function StatsCard({
       <NoDataCard platformId={platformId} timeWindowDays={timeWindowDays} />
     );
   }
-
-  // insert a record in prisma for the platform id, so that the share links
-  // are unique
-  const { id } = await db.platformIdentifier.create({
-    data: {
-      platformId,
-    },
-  });
-
-  const shareUrl = `${baseUrl}/api/og/share/${id}?time_window_days=${timeWindowDays}`;
 
   const totalDataSize = data.reduce((acc, { dataSize }) => acc + dataSize, 0);
   const provider = data[0].provider;
@@ -109,8 +98,7 @@ export default async function StatsCard({
         </div>
       </div>
       <div className="pt-4 flex flex-col gap-1">
-        {/*Social media share buttons*/}
-        <SocialButtons shareUrl={shareUrl} />
+        {children}
       </div>
     </div>
   );

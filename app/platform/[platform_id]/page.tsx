@@ -5,8 +5,9 @@ import ToggleChartButton from "@/app/platform/[platform_id]/_components/plot/tog
 import { CSBPlatform } from "@/lib/types";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
 import { ShipIcon } from "lucide-react";
-import StatsCard from "./_components/stats/stats-card";
-import ToggleStatsCard from "./_components/stats/toggle-stats-card";
+import StatsCard from "@/components/stats/stats-card";
+import ToggleStatsCard from "@/components/stats/toggle-stats-card";
+import SocialButtons from "@/components/stats/social-buttons-with-create";
 
 const DEFAULT_PLOT_WINDOW_DAYS = 30;
 
@@ -67,9 +68,7 @@ export default async function Page({
   const validPlatforms = await getPlatformInfoFromNoaa();
 
   if (!validPlatforms || validPlatforms.length === 0) {
-    throw new Error(
-      "No valid platforms returned from NOAA endpoint."
-    );
+    throw new Error("No valid platforms returned from NOAA endpoint.");
   }
 
   const validPlatformIds = validPlatforms.map((platform) =>
@@ -104,7 +103,12 @@ export default async function Page({
               <StatsCard
                 platformId={platform_id}
                 timeWindowDays={time_window_days}
-              />
+              >
+                <SocialButtons
+                  platformId={platform_id}
+                  timeWindowDays={time_window_days}
+                />
+              </StatsCard>
             </ToggleStatsCard>
           </Suspense>
         </div>
