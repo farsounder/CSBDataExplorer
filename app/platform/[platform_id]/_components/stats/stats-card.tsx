@@ -3,10 +3,9 @@ import {
   CalendarIcon,
   FaceFrownIcon,
 } from "@heroicons/react/24/outline";
-import { PrismaClient } from "@prisma/client";
+import db from "@/lib/db";
 import { getPlatformData } from "@/services/noaa";
 import { formatNumber } from "@/lib/utils";
-import Link from "next/link";
 import SocialButtons from "./socials";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -17,8 +16,6 @@ const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 // they must be compressing it because the sizes of we have cached that we sent
 // are larger than what they are reporting, but compressing would make sense.
 const bytesToDepthPoints = (bytes: number) => Math.round(bytes / 20);
-
-const prisma = new PrismaClient();
 
 function NoDataCard({
   platformId,
@@ -72,13 +69,13 @@ export default async function StatsCard({
 
   // insert a record in prisma for the platform id, so that the share links
   // are unique
-  const { id } = await prisma.platformIdentifier.create({
+  const { id } = await db.platformIdentifier.create({
     data: {
       platformId,
     },
   });
 
-  const shareUrl = `${baseUrl}/api/og/share/${id}`;
+  const shareUrl = `${baseUrl}/api/og/share/${id}?time_window_days=${timeWindowDays}`;
 
   const totalDataSize = data.reduce((acc, { dataSize }) => acc + dataSize, 0);
   const provider = data[0].provider;

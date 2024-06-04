@@ -1,9 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import db from "../../../../../lib/db";
 import { getPlatformData } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
-
-const prisma = new PrismaClient();
 
 export async function GET(
   request: Request,
@@ -25,7 +23,7 @@ export async function GET(
   const time_window_days = Number(searchParams.get("time_window_days")) || 30;
 
   // get platform id for the random_id from prisma
-  const row = await prisma.platformIdentifier.findFirst({
+  const row = await db.platformIdentifier.findFirst({
     where: { id: params.random_id },
   });
 

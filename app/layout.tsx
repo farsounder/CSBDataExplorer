@@ -7,7 +7,7 @@ import Footer from "./_components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
-const baseUrl = "https://mycsb.farsounder.com";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 const title = "Crowdsourced Data Explorer";
 const description =
   "Crowdsourced Data Explorer for FarSounder, Seakeepers Society, Seabed 2030, and other contributors to the IHO CSB Database hosted by DCDB at NOAA. This is a simple viewer meant to show off some of the data collected by mariners and other users like you in one place.";
