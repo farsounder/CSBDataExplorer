@@ -2,8 +2,34 @@ import SocialButtons from "@/components/stats/social-buttons";
 import StatsCard from "@/components/stats/stats-card";
 import db from "@/lib/db";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
+import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
 
-const DEFAULT_PLOT_WINDOW_DAYS = 30;
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { unique_id: string };
+  searchParams?: { time_window_days: string };
+}) {
+  const time_window_days =
+    Number(searchParams?.time_window_days) || DEFAULT_PLOT_WINDOW_DAYS;
+  return {
+    title: `My CSB Data Summary | ${time_window_days} days`,
+    description: `CSB data collected in the DCDB Crowd-sourced Bathymetry  Database.`,
+    openGraph: {
+      title: `My CSB Data summary for ${time_window_days} days`,
+      images: [
+        {
+          url: `/api/og/share/${params.unique_id}.png?time_window_days=${time_window_days}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      images: `/api/og/share/${params.unique_id}.png?time_window_days=${time_window_days}`,
+    },
+  };
+}
 
 export default async function Page({
   params,

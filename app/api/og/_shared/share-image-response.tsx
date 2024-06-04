@@ -4,7 +4,7 @@ import { CoolNumber } from "./cool-number";
 import Seabed2030Logo from "../../../../components/icons/seabed";
 import NoaaLogo from "../../../../components/icons/noaalogo";
 import FSLogo from "../../../../components/icons/fslogo";
-import { bytesToDepthPoints } from "./utils";
+import { bytesToDepthPoints } from "../../../../lib/utils";
 
 export const shareImageResponse = ({
   data_length,

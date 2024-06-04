@@ -4,15 +4,8 @@ import {
   FaceFrownIcon,
 } from "@heroicons/react/24/outline";
 import { getPlatformData } from "@/services/noaa";
-import { formatNumber } from "@/lib/utils";
+import { formatNumber, bytesToDepthPoints } from "@/lib/utils";
 
-
-// TODO: dry this up, used in three places now
-// This is just estimated based on some recent submissions size vs number of
-// of depth points and the reported size of the data from the dcdb endpoint,
-// they must be compressing it because the sizes of we have cached that we sent
-// are larger than what they are reporting, but compressing would make sense.
-const bytesToDepthPoints = (bytes: number) => Math.round(bytes / 20);
 
 function NoDataCard({
   platformId,

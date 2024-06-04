@@ -8,8 +8,7 @@ import { ShipIcon } from "lucide-react";
 import StatsCard from "@/components/stats/stats-card";
 import ToggleStatsCard from "@/components/stats/toggle-stats-card";
 import SocialButtons from "@/components/stats/social-buttons-with-create";
-
-const DEFAULT_PLOT_WINDOW_DAYS = 30;
+import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
 
 export async function generateMetadata({
   params,

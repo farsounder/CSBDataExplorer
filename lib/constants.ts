@@ -1,0 +1,1 @@
+export const DEFAULT_PLOT_WINDOW_DAYS = 30;
