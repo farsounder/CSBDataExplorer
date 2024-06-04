@@ -11,7 +11,7 @@ export default function SocialButtons({
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const shareLink = `/share/${uniqueId}?time_window_days=${timeWindowDays}`;
-  const linkedInLink = `https://www.linkedin.com/sharing/share-offsite/?url=${baseUrl}/{shareLink}`;
+  const linkedInLink = `https://www.linkedin.com/sharing/share-offsite/?url=${baseUrl}/${encodeURIComponent(shareLink)}`;
   return (
     <div className="flex justify-center space-x-4">
       <Link href={linkedInLink}>
