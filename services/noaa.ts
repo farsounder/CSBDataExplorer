@@ -53,10 +53,10 @@ const getStatsUrl = (provider: string, time_window_days: number): string => {
     },
   ];
 
-  const where = `UPPER(PROVIDER) LIKE '${provider}' AND ARRIVAL_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`;
+  const where = `UPPER(PROVIDER) LIKE '${provider}' AND START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`;
   return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(
     outStatistics
-  )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from ARRIVAL_DATE),EXTRACT(DAY from ARRIVAL_DATE),EXTRACT(YEAR FROM ARRIVAL_DATE)`;
+  )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)`;
 };
 
 // just wrapped this up because it's a bit of a mess
@@ -71,10 +71,10 @@ const getPlatformStatsUrl = (
       outStatisticFieldName: "total_data_size",
     },
   ];
-  const where = `UPPER(EXTERNAL_ID) LIKE '${noaa_id}' AND ARRIVAL_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`;
+  const where = `UPPER(EXTERNAL_ID) LIKE '${noaa_id}' AND START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`;
   return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(
     outStatistics
-  )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from ARRIVAL_DATE),EXTRACT(DAY from ARRIVAL_DATE),EXTRACT(YEAR FROM ARRIVAL_DATE)`;
+  )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)`;
 };
 
 
