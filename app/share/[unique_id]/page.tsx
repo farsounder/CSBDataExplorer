@@ -1,5 +1,5 @@
-import SocialButtons from "@/components/stats/social-buttons";
-import StatsCard from "@/components/stats/stats-card";
+import SocialButtons from "@/app/_components/stats/social-buttons";
+import StatsCard from "@/app/_components/stats/stats-card";
 import db from "@/lib/db";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";

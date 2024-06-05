@@ -5,9 +5,9 @@ import ToggleChartButton from "@/app/platform/[platform_id]/_components/plot/tog
 import { CSBPlatform } from "@/lib/types";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
 import { ShipIcon } from "lucide-react";
-import StatsCard from "@/components/stats/stats-card";
-import ToggleStatsCard from "@/components/stats/toggle-stats-card";
-import SocialButtons from "@/components/stats/social-buttons-with-create";
+import StatsCard from "@/app/_components/stats/stats-card";
+import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
+import SocialButtons from "@/app/_components/stats/social-buttons-with-create";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
 
 export async function generateMetadata({

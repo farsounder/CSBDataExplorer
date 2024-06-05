@@ -16,11 +16,13 @@ export default function IconTriggeredModal({
   title,
   description,
   link,
+  socialLinks,
 }: {
   icon: React.ReactNode;
   title: string;
   description: string;
   link: string;
+  socialLinks?: { name: string; link: string; icon: React.ReactNode }[];
 }) {
   return (
     <Dialog>
@@ -49,8 +51,22 @@ export default function IconTriggeredModal({
           </a>
         </div>
         <DialogFooter>
-          <div className="w-full p-2 flex flex-col justify-center items-center">
+          <div className="w-full p-2 flex flex-col justify-center items-center gap-4">
             {icon}
+            {socialLinks && (
+              <div className="flex justify-center items-center space-x-4">
+                {socialLinks.map((socialLink) => (
+                  <a
+                    key={socialLink.name}
+                    href={socialLink.link}
+                    target="_blank"
+                    className="hover:cursor-pointer"
+                  >
+                    {socialLink.icon}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>
