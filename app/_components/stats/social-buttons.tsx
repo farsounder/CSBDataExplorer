@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import { CopyIcon, LinkedinIcon } from "lucide-react";
-import { toast } from "../ui/use-toast";
+import { CopyIcon, FacebookIcon, LinkedinIcon } from "lucide-react";
+import { toast } from "../../../components/ui/use-toast";
 
 export default function SocialButtons({
   uniqueId,
@@ -15,10 +15,16 @@ export default function SocialButtons({
   const shareUrl = `/share/${uniqueId}?time_window_days=${timeWindowDays}`;
   const fullShareUrl = `${baseUrl}${shareUrl}`;
   const linkedInLink = `${linkedIn}${encodeURIComponent(fullShareUrl)}`;
+  const facebookLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    fullShareUrl
+  )}`;
   return (
     <div className="flex justify-center space-x-4">
       <Link href={linkedInLink}>
         <LinkedinIcon className="w-8 h-8 text-blue-800" />
+      </Link>
+      <Link href={facebookLink}>
+        <FacebookIcon className="w-8 h-8 text-blue-800" />
       </Link>
       <CopyIcon
         className="w-8 h-8 text-blue-800 hover:cursor-pointer"
