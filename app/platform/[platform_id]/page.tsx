@@ -12,25 +12,28 @@ import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: {
   params: { platform_id: string };
+  searchParams?: { time_window_days: string };
 }) {
+  const time_window_days = Number(searchParams?.time_window_days) || 30;
   return {
-    title: `CSB Data for ID: ${params.platform_id}`,
-    description: `CSB data collected by platform ${params.platform_id} in the DCDB Crowd-sourced Bathymetry  Database.`,
+    title: `CSB Data for ID: ${params.platform_id} | ${time_window_days} Days`,
+    description: `CSB data collected by platform ${params.platform_id} in the DCDB Crowd-sourced Bathymetry Database over the last ${time_window_days} days.`,
     openGraph: {
-      title: `CSB Data for ID: ${params.platform_id}`,
+      title: `CSB Data for ID: ${params.platform_id} | ${time_window_days} Days`,
       images: [
         {
-          url: `/api/og/platform/${params.platform_id}.png`,
+          url: `/api/og/platform/${params.platform_id}.png?time_window_days=${time_window_days}`,
         },
       ],
-      url: `/platform/${params.platform_id}`,
+      url: `/platform/${params.platform_id}?time_window_days=${time_window_days}`,
     },
     twitter: {
       card: "summary_large_image",
-      site: `/platform/${params.platform_id}`,
-      images: `/api/og/platform/${params.platform_id}.png`,
+      site: `/platform/${params.platform_id}?time_window_days=${time_window_days}`,
+      images: `/api/og/platform/${params.platform_id}.png?time_window_days=${time_window_days}`,
     },
   };
 }
@@ -95,7 +98,6 @@ export default async function Page({
       )}
       <MapViewer platformId={platform_id} />
       <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
-
         {platform && (
           <Suspense fallback={<div>Loading...</div>}>
             <ToggleStatsCard>
