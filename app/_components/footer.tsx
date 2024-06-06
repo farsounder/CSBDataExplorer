@@ -103,11 +103,11 @@ const SponsorDetails = [
     ],
   },
   {
-    name: "DCDB and IHO CSB Database",
+    name: "The DCDB and IHO CSB Database",
     icon: (
       <Image src="/iho-csb-logo.png" width={128} height={64} alt="IHO logo" />
     ),
-    title: "DCDB and IHO CSB Database",
+    title: "The DCDB and IHO CSB Database",
     description:
       "The Datacenter for Digital Bathymetry is part of NOAA's National Centers for Environmental Information (NCEI) and is the official archive for bathymetric data in the US. The International Hydrographic Organization's (IHO) Crowdsourced Bathymetry (CSB) Database is a global repository for bathymetric data contributed by mariners and the public, made available for free to the public, and hosted at the DCDB.",
     link: "https://www.ngdc.noaa.gov/iho/",
