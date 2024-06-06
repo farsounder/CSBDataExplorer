@@ -37,7 +37,7 @@ export async function generateMetadata({
 
 function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
   return (
-    <div className="absolute bottom-2 left-2 p-2 m-2 bg-white bg-opacity-80 rounded-lg flex items-center">
+    <div className="p-2 bg-white bg-opacity-80 rounded-lg flex items-center">
       <div className="p-2">
         <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
       </div>
@@ -94,9 +94,9 @@ export default async function Page({
         </ToggleChartButton>
       )}
       <MapViewer platformId={platform_id} />
-      {platform && <VesselInfoDisplay platform={platform} />}
-      {platform && (
-        <div className="absolute bottom-28 left-4">
+      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
+
+        {platform && (
           <Suspense fallback={<div>Loading...</div>}>
             <ToggleStatsCard>
               <StatsCard
@@ -110,8 +110,9 @@ export default async function Page({
               </StatsCard>
             </ToggleStatsCard>
           </Suspense>
-        </div>
-      )}
+        )}
+        {platform && <VesselInfoDisplay platform={platform} />}
+      </div>
     </div>
   );
 }

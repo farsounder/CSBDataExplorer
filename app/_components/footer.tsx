@@ -17,7 +17,7 @@ const SponsorDetails = [
     icon: <FSLogo />,
     title: "FarSounder, Inc.",
     description:
-      "FarSounder designs and manufactures 3D Forward Looking Sonar systems for commercial, recreational, and government vessels to improve navigational safety and situational awareness in real-time. FarSounder is proud to be a Trusted Node for the DCDB, allowing customers to contribute and share their bathymetric data.",
+      "FarSounder designs and manufactures 3D Forward Looking Sonar systems for commercial, recreational, and government vessels to improve navigational safety and situational awareness in real-time. FarSounder is proud to be a Trusted Node for the DCDB, allowing customers to contribute and share their bathymetric data. If you're a current customer, you can start to contribute your data by simply installing the latest software update and 'opting in' to share your data!",
     link: "https://www.farsounder.com/",
     socialLinks: [
       {

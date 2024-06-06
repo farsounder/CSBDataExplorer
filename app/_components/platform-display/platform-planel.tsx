@@ -56,7 +56,7 @@ export default function PlatformDisplayPanel({
 
 
   return (
-    <div className="px-8 flex gap-2 items-center justify-center">
+    <div className="px-8 gap-2 items-center justify-center hidden sm:flex">
       <div className="flex justify-center items-center">
         <SelectShipModal
           availablePlatforms={availablePlatforms}

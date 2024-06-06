@@ -19,12 +19,20 @@ export default function ToggleStatsCard({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="z-50 border-0 bg-white/80 flex flex-col py-6">
-          <div>
-            <TableCellsIcon className="w-6 h-6 text-gray-500" />
+        <div className="p-2 bg-white bg-opacity-80 rounded-lg flex items-center hover:cursor-pointer">
+          <div className="p-2">
+            <TableCellsIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
           </div>
-          <div className="text-xs text-gray-500">See/Share Stats</div>
-        </Button>
+          <div>
+            <div className="text-sm font-bold text-blue-800">
+              See/Share Platform Stats
+            </div>
+            <div className="text-xs">
+              Click to view a summary of the data collected by this vessel over
+              the selected time window.
+            </div>
+          </div>
+        </div>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

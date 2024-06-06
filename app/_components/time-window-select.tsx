@@ -26,7 +26,7 @@ export function TimeWindowSelect() {
   }, [searchParams]);
 
   return (
-    <div className="gap-2 justify-center hidden sm:flex text-gray-500">
+    <div className="gap-2 justify-center flex text-gray-500">
       <CalendarDaysIcon className="w-10 h-10 text-gray-500" />
       <Select
         value={timeWindowDays?.toString()}
