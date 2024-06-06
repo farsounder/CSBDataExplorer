@@ -4,10 +4,8 @@
 The OG bathy viewer is available here and managed by NOAA: https://www.ncei.noaa.gov/maps/bathymetry/
 
 This project is a simple web app intended for individuals contributing to the
-CSB database to be able to visualize their own data on the map. That is
-currently possible in the NOAA viewer also of course, but this project will make
-it easier and allow the user to save their platform to their account so they can
-always view it.
+CSB database to be able to visualize their own data on the map, and see some
+simple stats.
 
 ## Getting Started
 
