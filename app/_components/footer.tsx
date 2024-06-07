@@ -103,7 +103,7 @@ const SponsorDetails = [
     ],
   },
   {
-    name: "The DCDB and IHO CSB Database",
+    name: "DCDB/IHO",
     icon: (
       <Image src="/iho-csb-logo.png" width={128} height={64} alt="IHO logo" />
     ),
@@ -121,7 +121,6 @@ const SponsorDetails = [
         name: "X",
         link: "https://twitter.com/NOAANCEI",
         icon: <XSocialIcon className="w-4 h-4" />,
-
       },
       {
         name: "Instagram",
@@ -135,11 +134,25 @@ const SponsorDetails = [
 export default function Footer() {
   return (
     <footer className="flex flex-col w-full border-t-1 border-t-gray-200 pb-1">
-      <div className="w-full text-center p-2 pb-0 md:hidden text-xs">
+      <div className="w-full text-center p-2 md:hidden text-xs text-gray-800">
         Made possible by the following organizations:
       </div>
-      <div className="md:hidden text-center text-xs">
-        <p>FarSounder, Seakeepers, Seabed2030, NOAA/DCDB, and others</p>
+      <div className="md:hidden text-center text-xs flex justify-center">
+        {SponsorDetails.map((sponsor) => (
+          <div
+            key={sponsor.name}
+            className="hover:cursor-pointer text-xs text-gray-800"
+          >
+            <IconTriggeredModal
+              title={sponsor.title}
+              icon={sponsor.icon}
+              trigger={<div className="text-xs">{sponsor.name}</div>}
+              description={sponsor.description}
+              link={sponsor.link}
+              socialLinks={sponsor.socialLinks}
+            />
+          </div>
+        ))}
       </div>
       <div className="border-b hidden md:flex justify-between w-full">
         {SponsorDetails.map((sponsor) => (

@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/dialog";
 
 export default function IconTriggeredModal({
+  trigger,
   icon,
   title,
   description,
   link,
   socialLinks,
 }: {
+  trigger?: React.ReactNode;
   icon: React.ReactNode;
   title: string;
   description: string;
@@ -28,7 +30,7 @@ export default function IconTriggeredModal({
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" className="z-50 border-0 bg-white/60">
-          {icon}
+          {trigger || icon}
         </Button>
       </DialogTrigger>
       <DialogContent>
