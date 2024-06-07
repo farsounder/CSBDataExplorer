@@ -54,7 +54,7 @@ export default function IconTriggeredModal({
         </div>
         <DialogFooter>
           <div className="w-full p-2 flex flex-col justify-center items-center gap-4">
-            {icon}
+            <div className="hidden md:block">{icon}</div>
             {socialLinks && (
               <div className="flex justify-center items-center space-x-4">
                 {socialLinks.map((socialLink) => (

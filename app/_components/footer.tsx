@@ -137,7 +137,7 @@ export default function Footer() {
       <div className="w-full text-center p-2 md:hidden text-xs text-gray-800">
         Made possible by the following organizations:
       </div>
-      <div className="md:hidden text-center text-xs flex justify-center">
+      <div className="md:hidden text-xs flex justify-center">
         {SponsorDetails.map((sponsor) => (
           <div
             key={sponsor.name}
