@@ -16,18 +16,24 @@ export default function Error({
 
   return (
     <div className="h-full bg-gray-100 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md text-center">
+      <div className="bg-white p-8 rounded-lg shadow-md text-center w-full sm:w-[500px]">
         <ExclamationTriangleIcon className="w-16 h-16 mx-auto text-red-500" />
         <h2 className="mt-4 text-2xl font-semibold text-gray-700">
           Something went wrong!
         </h2>
         <p>
-          {error.message ? (
+          {error.digest && (
+            <span className="text-gray-700 text-sm">
+              Digest: {error.digest}
+            </span>
+          )}
+
+        </p>
+        <p>
+          {error.message && (
             <span className="text-gray-700 text-sm">
               Error: {error.message}
             </span>
-          ) : (
-            "An error occurred while loading this page."
           )}
         </p>
         <p className="mt-2 text-gray-500">
