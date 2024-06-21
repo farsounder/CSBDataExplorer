@@ -80,7 +80,7 @@ const SponsorDetails = [
   {
     name: "Seabed2030",
     icon: <Seabed2030Logo width="80px" />,
-    title: "Seabed 2030",
+    title: "The Nippon Foundation-GEBCO Seabed 2030 Project",
     description:
       "Seabed 2030 is a collaborative project between The Nippon Foundation and GEBCO to inspire the complete mapping of the world’s ocean by 2030, and to compile all bathymetric data into the freely available GEBCO Ocean Map.",
     link: "https://seabed2030.org/",
