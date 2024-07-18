@@ -11,7 +11,6 @@ import InfoIcon from "../../../components/icons/infoicon";
 import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { Button } from "../../../components/ui/button";
 
-
 /* Constants, magic strings, types, etc */
 const NOAA_CSB_LAYER_NAME = "IHO CSB Data";
 const NOAA_S57_LAYER_NAME = "US S57 ENCs";
@@ -36,8 +35,19 @@ const mapLayerIdToDefaultVisibility = new Map<string, boolean>([
   [NOAA_CSB_LAYER_NAME, false],
 ]);
 
+const mapLayerIdToAttribution = new Map<string, string>([
+  [OSM_BASE_LAYER_NAME, "© OpenStreetMap contributors"],
+  [NOAA_S57_LAYER_NAME, "NOAA ENC S57 Data"],
+  [NOAA_CSB_LAYER_NAME, "NOAA/DCDB CSB Database"],
+]);
+
 const CSB_INFO_TEXT =
   "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel you selected.";
+
+const listFormatter = new Intl.ListFormat("en", {
+  style: "short",
+  type: "conjunction",
+});
 
 // Viewport settings
 const INITIAL_VIEW_STATE = {
@@ -63,7 +73,6 @@ const getLayerFilterString = (noaaId: string): string => {
 };
 
 const getCSBLayer = (noaaId: string): TileLayer | null => {
-
   const baseUrl =
     "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
@@ -100,7 +109,7 @@ const getCSBLayer = (noaaId: string): TileLayer | null => {
   return layer;
 };
 
-const getDefaultLayers = (): Layer[] => {
+const getDefaultLayers = (): TileLayer[] => {
   return [
     new TileLayer({
       id: OSM_BASE_LAYER_NAME,
@@ -109,7 +118,6 @@ const getDefaultLayers = (): Layer[] => {
       maxZoom: 19,
       tileSize: 256,
       visible: mapLayerIdToDefaultVisibility.get(OSM_BASE_LAYER_NAME) || false,
-      attribution: "© OpenStreetMap contributors",
       renderSubLayers: (props) => {
         const {
           boundingBox: [[west, south], [east, north]],
@@ -124,7 +132,6 @@ const getDefaultLayers = (): Layer[] => {
     new TileLayer({
       id: NOAA_S57_LAYER_NAME,
       visible: mapLayerIdToDefaultVisibility.get(NOAA_S57_LAYER_NAME) || false,
-      attibuion: "NOAA ENC S57 Data",
       getTileData: (tile) => {
         const bbox = tile.bbox as GeoBoundingBox;
         const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
@@ -161,7 +168,6 @@ const getDefaultLayers = (): Layer[] => {
       getLineColor: [10, 10, 10],
       pickable: false,
       opacity: 0.5,
-      attribution: "NOAA/DCDB CSB Database",
     }),
   ];
 };
@@ -204,14 +210,10 @@ function LayerLegend({
   );
 }
 
-export default function MapViewer({
-  platformId,
-}: {
-  platformId?: string;
-}) {
+export default function MapViewer({ platformId }: { platformId?: string }) {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
 
-  const [layers, setLayers] = useState<Layer[]>(getDefaultLayers());
+  const [layers, setLayers] = useState<TileLayer[]>(getDefaultLayers());
   const [legendVisible, setLegendVisible] = useState(false);
   const legendRef = useRef<HTMLDivElement>(null);
 
@@ -285,6 +287,19 @@ export default function MapViewer({
         className="absolute invisible md:visible top-4 right-4 "
       >
         <LayerLegend layers={layers} handler={handleToggleLayerVisibility} />
+      </div>
+      {/* Attribution for each third party layer */}
+      <div className="absolute bottom-2 right-2 text-xs">
+        {layers && layers.length > 0 &&
+          listFormatter.format(
+            layers
+              .map((layer) => {
+                if (layer.props.visible) {
+                  return mapLayerIdToAttribution.get(layer.id);
+                }
+              })
+              .filter((attr) => attr !== undefined) as string[]
+          )}
       </div>
     </div>
   );
