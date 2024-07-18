@@ -109,7 +109,7 @@ const SponsorDetails = [
     ),
     title: "The DCDB and IHO CSB Database",
     description:
-      "The Datacenter for Digital Bathymetry is part of NOAA's National Centers for Environmental Information (NCEI) and is the official archive for bathymetric data in the US. The International Hydrographic Organization's (IHO) Crowdsourced Bathymetry (CSB) Database is a global repository for bathymetric data contributed by mariners and the public, made available for free to the public, and hosted at the DCDB.",
+      "The Data Center for Digital Bathymetry (DCDB) is co-located at NOAA's National Centers for Environmental Information (NCEI) and was established to steward the global collection of bathymetric data. The DCDB hosted International Hydrographic Organization's (IHO) Crowdsourced Bathymetry (CSB) Database makes available depth measurements collected and contributed by vessels, using standard navigation equipment, while engaging in routine maritime operations.",
     link: "https://www.ngdc.noaa.gov/iho/",
     socialLinks: [
       {
