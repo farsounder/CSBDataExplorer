@@ -9,6 +9,9 @@ import StatsCard from "@/app/_components/stats/stats-card";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
 import SocialButtons from "@/app/_components/stats/social-buttons-with-create";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
+import { DATA_CACHE_SECONDS } from "@/lib/constants";
+
+export const revalidate = DATA_CACHE_SECONDS;
 
 export async function generateMetadata({
   params,

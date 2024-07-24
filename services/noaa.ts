@@ -1,4 +1,5 @@
 import { CSBData, CSBPlatform, CSBPlatformData } from "@/lib/types";
+import { DATA_CACHE_SECONDS } from "@/lib/constants";
 
 const NOAA_BASE =
   "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
@@ -11,6 +12,7 @@ async function getAllPlatforms(): Promise<CSBPlatform[]> {
       "Content-Type": "application/json",
       "x-application-name": "FarSounder CSB Viewer App",
     },
+    next: { revalidate: DATA_CACHE_SECONDS },
   })
     .then((res) => {
       if (!res.ok) {
@@ -40,7 +42,6 @@ export async function getPlatformInfoFromNoaa(): Promise<CSBPlatform[]> {
     return [];
   }
 }
-
 
 // TODO (Heath): dry out these
 // just wrapped this up because it's a bit of a mess
@@ -77,7 +78,6 @@ const getPlatformStatsUrl = (
   )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)`;
 };
 
-
 export async function getProviderData({
   provider,
   time_window_days,
@@ -91,6 +91,7 @@ export async function getProviderData({
       "Content-Type": "application/json",
       "x-application-name": "FarSounder CSB Viewer App",
     },
+    next: { revalidate: DATA_CACHE_SECONDS },
   })
     .then((res) => {
       if (!res.ok) {
@@ -120,15 +121,13 @@ export async function getPlatformData({
   noaa_id: string;
   time_window_days: number;
 }): Promise<CSBPlatformData[]> {
-  const url = getPlatformStatsUrl(
-    noaa_id.toUpperCase(),
-    time_window_days
-  );
+  const url = getPlatformStatsUrl(noaa_id.toUpperCase(), time_window_days);
   return fetch(url, {
     headers: {
       "Content-Type": "application/json",
       "x-application-name": "FarSounder CSB Viewer App",
     },
+    next: { revalidate: DATA_CACHE_SECONDS },
   })
     .then((res) => {
       if (!res.ok) {
