@@ -1,4 +1,4 @@
-import { getPlatformData } from "../../../../../services/noaa";
+import { getPlatformCountPerDayData } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
 
@@ -21,7 +21,7 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const time_window_days = Number(searchParams.get("time_window_days")) || 30;
 
-  const data = await getPlatformData({
+  const data = await getPlatformCountPerDayData({
     noaa_id: params.noaa_id,
     time_window_days: time_window_days,
   });

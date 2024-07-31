@@ -3,7 +3,7 @@ import {
   CalendarIcon,
   FaceFrownIcon,
 } from "@heroicons/react/24/outline";
-import { getPlatformData } from "@/services/noaa";
+import { getPlatformCountPerDayData } from "@/services/noaa";
 import { formatNumber, bytesToDepthPoints } from "@/lib/utils";
 
 
@@ -48,7 +48,7 @@ export default async function StatsCard({
   timeWindowDays: number;
   children: React.ReactNode;
 }) {
-  const data = await getPlatformData({
+  const data = await getPlatformCountPerDayData({
     noaa_id: platformId,
     time_window_days: timeWindowDays,
   });

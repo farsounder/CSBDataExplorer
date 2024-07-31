@@ -1,5 +1,5 @@
 import db from "../../../../../lib/db";
-import { getPlatformData } from "../../../../../services/noaa";
+import { getPlatformCountPerDayData } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
 
@@ -34,7 +34,7 @@ export async function GET(
 
   let data;
   try {
-    data = await getPlatformData({
+    data = await getPlatformCountPerDayData({
       noaa_id: row.platformId,
       time_window_days: time_window_days,
     });
