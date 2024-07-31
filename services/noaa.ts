@@ -78,7 +78,7 @@ const getPlatformStatsUrl = (
   )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)`;
 };
 
-export async function getProviderData({
+export async function getProviderCountPerDayData({
   provider,
   time_window_days,
 }: {
@@ -114,7 +114,7 @@ export async function getProviderData({
     );
 }
 
-export async function getPlatformData({
+export async function getPlatformCountPerDayData({
   noaa_id,
   time_window_days,
 }: {

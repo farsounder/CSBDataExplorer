@@ -1,4 +1,7 @@
-import { getPlatformData, getProviderData } from "@/services/noaa";
+import {
+  getPlatformCountPerDayData,
+  getProviderCountPerDayData,
+} from "@/services/noaa";
 import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
@@ -34,12 +37,12 @@ export default async function PlotContainer({
   time_window_days: number;
 }) {
   // if we have a valid platform, we can get the data and render the plot
-  const providerData = await getProviderData({
+  const providerData = await getProviderCountPerDayData({
     provider: provider,
     time_window_days: time_window_days,
   });
 
-  const platformData = await getPlatformData({
+  const platformData = await getPlatformCountPerDayData({
     noaa_id: platformId,
     time_window_days: time_window_days,
   });
