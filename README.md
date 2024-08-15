@@ -1,6 +1,7 @@
 # CSB Data Explorer
 ## Visualize public CSB data on a map
-![image](https://github.com/user-attachments/assets/2fe124ff-6a9b-40ee-9cb9-6e3b5102782a)
+![image](https://github.com/user-attachments/assets/1cfea6b9-5cef-4204-9467-79838d7a273e)
+
 
 The OG bathy viewer is available here and managed by NOAA: https://www.ncei.noaa.gov/maps/bathymetry/
 
