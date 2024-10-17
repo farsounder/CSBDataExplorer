@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@auth/core": "^0.15.2",
+    "@auth/core": "^0.37.0",
     "@heroicons/react": "^2.0.18",
     "@prisma/client": "^5.14.0",
     "@radix-ui/react-dialog": "^1.0.5",
