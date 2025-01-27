@@ -36,16 +36,16 @@ export default async function PlotContainer({
   provider: string;
   time_window_days: number;
 }) {
-  // if we have a valid platform, we can get the data and render the plot
-  const providerData = await getProviderCountPerDayData({
-    provider: provider,
-    time_window_days: time_window_days,
-  });
-
-  const platformData = await getPlatformCountPerDayData({
-    noaa_id: platformId,
-    time_window_days: time_window_days,
-  });
+  const [providerData, platformData] = await Promise.all([
+    getProviderCountPerDayData({
+      provider: provider,
+      time_window_days: time_window_days,
+    }),
+    getPlatformCountPerDayData({
+      noaa_id: platformId,
+      time_window_days: time_window_days,
+    }),
+  ]);
 
   const showPlot = providerData && providerData.length > 0;
 

@@ -104,11 +104,11 @@ export async function getProviderCountPerDayData({
     .then((data) =>
       data.features?.map((item: any) => {
         return {
-          provider: item.attributes.EXPR1,
-          month: item.attributes.EXPR2,
-          day: item.attributes.EXPR3,
-          year: item.attributes.EXPR4,
-          dataSize: item.attributes.TOTAL_DATA_SIZE,
+          provider: item.attributes.Expr1,
+          month: item.attributes.Expr2,
+          day: item.attributes.Expr3,
+          year: item.attributes.Expr4,
+          dataSize: item.attributes.total_data_size,
         };
       })
     );
@@ -140,12 +140,12 @@ export async function getPlatformCountPerDayData({
     .then((data) =>
       data.features?.map((item: any) => {
         return {
-          provider: item.attributes.EXPR1,
+          provider: item.attributes.Expr1,
           noaa_id: noaa_id,
-          month: item.attributes.EXPR2,
-          day: item.attributes.EXPR3,
-          year: item.attributes.EXPR4,
-          dataSize: item.attributes.TOTAL_DATA_SIZE,
+          month: item.attributes.Expr2,
+          day: item.attributes.Expr3,
+          year: item.attributes.Expr4,
+          dataSize: item.attributes.total_data_size,
         };
       })
     );
