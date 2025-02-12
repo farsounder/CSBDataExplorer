@@ -40,10 +40,16 @@ export default async function PlotContainer({
     getProviderCountPerDayData({
       provider: provider,
       time_window_days: time_window_days,
+    }).catch((e) => {
+      console.error(e);
+      return [];
     }),
     getPlatformCountPerDayData({
       noaa_id: platformId,
       time_window_days: time_window_days,
+    }).catch((e) => {
+      console.error(e);
+      return [];
     }),
   ]);
 
