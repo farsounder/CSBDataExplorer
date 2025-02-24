@@ -32,8 +32,7 @@ export default function SocialButtons({
           });
           const id = await createUniqueIdActionWithPlatformId();
           if (id) {
-            const baseUrl =
-              process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
             const shareLink = `${baseUrl}/share/${id}?timeWindowDays=${timeWindowDays}`;
             const linkedInLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
               shareLink
@@ -58,8 +57,7 @@ export default function SocialButtons({
           });
           const id = await createUniqueIdActionWithPlatformId();
           if (id) {
-            const baseUrl =
-              process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
             const shareLink = `${baseUrl}/share/${id}?timeWindowDays=${timeWindowDays}`;
             const facebookLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
               shareLink

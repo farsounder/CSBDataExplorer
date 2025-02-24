@@ -35,13 +35,9 @@ export default function IconTriggeredModal({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-blue-800 text-xl font-bold">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-blue-800 text-xl font-bold">{title}</DialogTitle>
         </DialogHeader>
-        <DialogDescription className="text-gray-500">
-          {description}
-        </DialogDescription>
+        <DialogDescription className="text-gray-500">{description}</DialogDescription>
         <div className=" text-gray-500">
           Learn more about{" "}
           <a

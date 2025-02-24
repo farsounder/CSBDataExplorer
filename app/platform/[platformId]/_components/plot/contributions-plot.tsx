@@ -15,18 +15,18 @@ export default function ContributionsPlot({
       className="w-full h-full"
       data={[
         {
-          x: providerContributions.map((d) => new Date(d.year, d.month-1, d.day)),
+          x: providerContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
           y: providerContributions.map((d) => d.dataSize),
           type: "bar",
           name: `All ${provider}`,
-          hovertemplate: "Date: %{x}<br>Data: %{y}"
+          hovertemplate: "Date: %{x}<br>Data: %{y}",
         },
         {
-          x: userContributions.map((d) => new Date(d.year, d.month-1, d.day)),
+          x: userContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
           y: userContributions.map((d) => d.dataSize),
           type: "bar",
           name: "Your Contributions",
-          hovertemplate: "Date: %{x}<br>Data: %{y}"
+          hovertemplate: "Date: %{x}<br>Data: %{y}",
         },
       ]}
       layout={{

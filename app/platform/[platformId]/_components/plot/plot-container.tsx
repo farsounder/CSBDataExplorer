@@ -1,7 +1,4 @@
-import {
-  getPlatformCountPerDayData,
-  getProviderCountPerDayData,
-} from "@/services/noaa";
+import { getPlatformCountPerDayData, getProviderCountPerDayData } from "@/services/noaa";
 import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
@@ -18,10 +15,9 @@ const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
       <ExclamationTriangleIcon className="w-16 h-16 text-gray-500" />
       <h3 className="text-lg text-gray-600">No data available</h3>
       <p className="text-sm text-gray-500">
-        No data found for the last {time_window_days} days, try a longer time
-        window. If you believe there should be data in the selected time window,
-        reload to try again and if the problem persists, please contact us to
-        report the issue (sw@farsounder.com).
+        No data found for the last {time_window_days} days, try a longer time window. If you believe
+        there should be data in the selected time window, reload to try again and if the problem
+        persists, please contact us to report the issue (sw@farsounder.com).
       </p>
     </div>
   );
@@ -58,10 +54,7 @@ export default async function PlotContainer({
   return (
     <>
       {showPlot ? (
-        <ContributionsPlot
-          providerContributions={providerData}
-          userContributions={platformData}
-        />
+        <ContributionsPlot providerContributions={providerData} userContributions={platformData} />
       ) : (
         <ErrorMessage timeWindowDays={timeWindowDays} />
       )}

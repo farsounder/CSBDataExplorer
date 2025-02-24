@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const NoaaLogo = (props: any) => (
   <svg {...props} viewBox="0 0 340.02 73.34" xmlns="http://www.w3.org/2000/svg">
@@ -40,15 +40,7 @@ const NoaaLogo = (props: any) => (
         d="M40.93,17.6h1.16a.42.42,0,0,1,.42.42v2h-2V18A.42.42,0,0,1,40.93,17.6Z"
         data-name="A hole 1"
       />
-      <rect
-        fill="#fff"
-        x="28.51"
-        y="14.35"
-        width="6.11"
-        height="9.61"
-        rx="1.81"
-        ry="1.81"
-      />
+      <rect fill="#fff" x="28.51" y="14.35" width="6.11" height="9.61" rx="1.81" ry="1.81" />
       <rect
         fill="#263f78"
         x="30.56"
@@ -101,11 +93,7 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="M166.08,24.75h-2.44a9.25,9.25,0,0,1-.39-2.29A3.8,3.8,0,0,1,159.41,25a3.75,3.75,0,0,1-2.72-1,3.33,3.33,0,0,1-1-2.5q0-3.91,6.86-3.91h.73v-.85q0-1.76-2.4-1.76t-2.65,1.76L156,16.42a3.3,3.3,0,0,1,1.46-2.33,6.33,6.33,0,0,1,3.71-.92,8.62,8.62,0,0,1,2.15.22,3.28,3.28,0,0,1,1.4.74,2.83,2.83,0,0,1,.79,1.13,6.83,6.83,0,0,1,.22,2.07v5.12A8.32,8.32,0,0,0,166.08,24.75ZM163.25,19q-5,0-5,2.37a1.65,1.65,0,0,0,.5,1.21,2.05,2.05,0,0,0,1.51.5,2.67,2.67,0,0,0,2.21-.93,3.27,3.27,0,0,0,.75-2.11Z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="M170.44,24.75h-2.56V9.42h2.56Z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="M170.44,24.75h-2.56V9.42h2.56Z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
@@ -216,16 +204,8 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="M221.82,44.75h-2.44a9.27,9.27,0,0,1-.39-2.29A3.8,3.8,0,0,1,215.15,45a3.75,3.75,0,0,1-2.72-1,3.33,3.33,0,0,1-1-2.5q0-3.91,6.86-3.91H219v-.85q0-1.76-2.4-1.76t-2.65,1.76l-2.18-.33a3.3,3.3,0,0,1,1.46-2.33,6.33,6.33,0,0,1,3.71-.92,8.62,8.62,0,0,1,2.14.22,3.29,3.29,0,0,1,1.4.74,2.84,2.84,0,0,1,.79,1.13,6.83,6.83,0,0,1,.22,2.07v5.12A8.32,8.32,0,0,0,221.82,44.75ZM219,39q-5,0-5,2.37a1.65,1.65,0,0,0,.5,1.21,2.05,2.05,0,0,0,1.51.5,2.67,2.67,0,0,0,2.21-.93A3.26,3.26,0,0,0,219,40Z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="M226.15,44.75h-2.56V29.42h2.56Z"
-      />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="M238.9,44.75h-2.76V29.42h2.76Z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="M226.15,44.75h-2.56V29.42h2.56Z" />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="M238.9,44.75h-2.76V29.42h2.76Z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
@@ -291,11 +271,7 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="m109.54 62.25h-1.29v-5.63h-1.77v-1h4.83v1h-1.77z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="M113.25,62.25H112V55.58h1.2Z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="M113.25,62.25H112V55.58h1.2Z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
@@ -341,11 +317,7 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="M169.71,62.25h-1.17L166,58l-.19-.32-.18-.31v4.88h-1V55.58H166l2.33,3.93.42.72V55.58h.95Z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="m172.32 62.25h-1.2v-6.67h1.2z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="m172.32 62.25h-1.2v-6.67h1.2z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
@@ -411,11 +383,7 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="M256.41,62.25h-1.27l-1-2.74h-1.69v2.74h-1.2V55.58h2.89a2.49,2.49,0,0,1,1.77.54,1.87,1.87,0,0,1,.57,1.41,1.76,1.76,0,0,1-1.2,1.77Zm-4-3.7h1.49a1.45,1.45,0,0,0,1-.27.94.94,0,0,0,.32-.75.9.9,0,0,0-.31-.71,1.3,1.3,0,0,0-.87-.27h-1.59Z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="m258.78 62.25h-1.2v-6.67h1.2z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="m258.78 62.25h-1.2v-6.67h1.2z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
@@ -436,21 +404,13 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="M287.37,62.25h-1.23V56.42l-1.85,5.83h-.63l-1.86-5.83v5.83h-1V55.58h1.88l1.4,4.29,1.37-4.29h1.89Z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="m290 62.25h-1.2v-6.67h1.2z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="m290 62.25h-1.2v-6.67h1.2z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
         d="M296.43,62.25h-1.17L292.73,58l-.19-.32-.18-.31v4.88h-1V55.58h1.33l2.33,3.93.42.72V55.58h.95Z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="m299 62.25h-1.2v-6.67h1.2z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="m299 62.25h-1.2v-6.67h1.2z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"
@@ -476,11 +436,7 @@ const NoaaLogo = (props: any) => (
         transform="translate(-2.07 -1.59)"
         d="m325.5 62.25h-1.29v-5.63h-1.77v-1h4.83v1h-1.77z"
       />
-      <path
-        fill="#fff"
-        transform="translate(-2.07 -1.59)"
-        d="M329.21,62.25H328V55.58h1.2Z"
-      />
+      <path fill="#fff" transform="translate(-2.07 -1.59)" d="M329.21,62.25H328V55.58h1.2Z" />
       <path
         fill="#fff"
         transform="translate(-2.07 -1.59)"

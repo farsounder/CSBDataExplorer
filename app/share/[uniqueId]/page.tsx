@@ -11,8 +11,7 @@ export async function generateMetadata({
   params: { uniqueId: string };
   searchParams?: { timeWindowDays: string };
 }) {
-  const timeWindowDays =
-    Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   return {
     title: `My CSB Data Summary | ${timeWindowDays} days`,
     description: `CSB data collected in the DCDB Crowd-sourced Bathymetry  Database.`,
@@ -38,8 +37,7 @@ export default async function Page({
   params: { uniqueId: string };
   searchParams?: { timeWindowDays: string };
 }) {
-  const timeWindowDays =
-    Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
 
   const { uniqueId } = params;
 
@@ -57,9 +55,7 @@ export default async function Page({
   if (!validPlatforms || validPlatforms.length === 0) {
     throw new Error("No valid platforms returned from NOAA endpoint.");
   }
-  const validPlatformIds = validPlatforms.map((platform) =>
-    platform.noaa_id.toUpperCase()
-  );
+  const validPlatformIds = validPlatforms.map((platform) => platform.noaa_id.toUpperCase());
   if (!validPlatformIds.includes(platformId.toUpperCase())) {
     throw new Error("Invalid platform ID");
   }

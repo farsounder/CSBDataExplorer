@@ -11,11 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { TableCellsIcon } from "@heroicons/react/24/outline";
 
-export default function ToggleStatsCard({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ToggleStatsCard({ children }: { children: React.ReactNode }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -24,12 +20,10 @@ export default function ToggleStatsCard({
             <TableCellsIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
           </div>
           <div>
-            <div className="text-sm font-bold text-blue-800">
-              See/Share Platform Stats
-            </div>
+            <div className="text-sm font-bold text-blue-800">See/Share Platform Stats</div>
             <div className="text-xs">
-              Click to view a summary of the data collected by this vessel over
-              the selected time window.
+              Click to view a summary of the data collected by this vessel over the selected time
+              window.
             </div>
           </div>
         </div>
@@ -41,8 +35,7 @@ export default function ToggleStatsCard({
           </DialogTitle>
         </DialogHeader>
         <DialogDescription className="text-gray-500">
-          A simple summary of the data collected by this vessel over the
-          selected time window.
+          A simple summary of the data collected by this vessel over the selected time window.
         </DialogDescription>
         {children}
       </DialogContent>

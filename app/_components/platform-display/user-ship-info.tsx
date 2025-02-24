@@ -1,10 +1,6 @@
 "use client";
 import { Tooltip } from "@radix-ui/react-tooltip";
-import {
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../../components/ui/tooltip";
+import { TooltipContent, TooltipProvider, TooltipTrigger } from "../../../components/ui/tooltip";
 
 import { UserData } from "@/lib/types";
 import { ChartPieIcon } from "@heroicons/react/24/outline";
@@ -23,15 +19,10 @@ function ShareCard({
     return null;
   }
   return (
-    <Link
-      href={`/api/og/platform/${noaa_id}?time_window_days=${time_window_days}`}
-      target="_blank"
-    >
+    <Link href={`/api/og/platform/${noaa_id}?time_window_days=${time_window_days}`} target="_blank">
       <div className="flex flex-col items-center">
         <ChartPieIcon className="w-4 h-4 sm:w-8 sm:h-8 text-blue-800" />
-        <div className="text-xs sm:text-sm text-gray-400">
-          {time_window_days} Day Stats Summary
-        </div>
+        <div className="text-xs sm:text-sm text-gray-400">{time_window_days} Day Stats Summary</div>
       </div>
     </Link>
   );
@@ -45,16 +36,10 @@ export default function UserShipInfo({ userData }: { userData: UserData }) {
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger>
-            {userData && (
-              <ShareCard
-                userData={userData}
-                time_window_days={time_window_days}
-              />
-            )}
+            {userData && <ShareCard userData={userData} time_window_days={time_window_days} />}
           </TooltipTrigger>
           <TooltipContent>
-            A sharable stats summary of the data collected by this platform over
-            the last 30 days.
+            A sharable stats summary of the data collected by this platform over the last 30 days.
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

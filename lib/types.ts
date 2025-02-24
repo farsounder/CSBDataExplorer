@@ -1,6 +1,6 @@
 export type UserData = {
-  csbPlatform: CSBPlatform
-  platform_nickname: string
+  csbPlatform: CSBPlatform;
+  platform_nickname: string;
 };
 
 export type CSBPlatform = {
@@ -14,7 +14,7 @@ export type CSBData = {
   provider: string;
   year: number;
   day: number;
-  month: number
+  month: number;
 };
 
 export type CSBPlatformData = {

@@ -1,8 +1,7 @@
 import { CSBData, CSBPlatform, CSBPlatformData } from "@/lib/types";
 import { DATA_CACHE_SECONDS } from "@/lib/constants";
 
-const NOAA_BASE =
-  "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
+const NOAA_BASE = "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
 const APP_NAME = "FarSounder CSB Viewer App";
 
 type NoaaRequestConfig = {
@@ -113,10 +112,7 @@ export async function getPlatformCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBPlatformData[]> {
   try {
-    const url = generateStatsUrl(
-      { type: "platform", value: noaaId.toUpperCase() },
-      timeWindowDays
-    );
+    const url = generateStatsUrl({ type: "platform", value: noaaId.toUpperCase() }, timeWindowDays);
     const data = await fetchNoaaData<any>({ url });
 
     return (

@@ -17,10 +17,9 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const timeWindowDays = Number(searchParams.get("timeWindowDays")) || 30;
   if (!timeWindowValid(0, 365, timeWindowDays)) {
-    return new Response(
-      "Time window out of range, should be between 0 and 365 days",
-      { status: 404 }
-    );
+    return new Response("Time window out of range, should be between 0 and 365 days", {
+      status: 404,
+    });
   }
 
   // strip out the .png if it was included

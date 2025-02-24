@@ -170,12 +170,7 @@ const SeakeepersLogo = (props: any) => {
             fill="0000FF"
           />
         </g>
-        <rect
-          width="799.977"
-          height="500"
-          transform="translate(0 -0.002)"
-          fill="none"
-        />
+        <rect width="799.977" height="500" transform="translate(0 -0.002)" fill="none" />
       </g>
     </svg>
   );

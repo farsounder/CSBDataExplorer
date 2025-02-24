@@ -20,8 +20,7 @@ export async function generateMetadata({
   params: { platformId: string };
   searchParams?: { timeWindowDays: string };
 }) {
-  const timeWindowDays =
-    Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   return {
     title: `CSB Data for ID: ${params.platformId} | ${timeWindowDays} Days`,
     description: `CSB data collected by platform ${params.platformId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
@@ -49,9 +48,7 @@ function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
         <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
       </div>
       <div>
-        <div className="text-sm font-bold text-blue-800">
-          Displaying data for:
-        </div>
+        <div className="text-sm font-bold text-blue-800">Displaying data for:</div>
         <div className="text-xs">Unique ID: {platform.noaa_id}</div>
         <div className="text-xs">Vessel: {platform.platform}</div>
         <div className="text-xs">Trusted Node: {platform.provider}</div>
@@ -67,8 +64,7 @@ export default async function Page({
   params: { platformId: string };
   searchParams?: { timeWindowDays: string };
 }) {
-  const timeWindowDays =
-    Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
 
   const { platformId } = params;
   const validPlatforms = await getPlatformInfoFromNoaa();
@@ -77,17 +73,13 @@ export default async function Page({
     throw new Error("No valid platforms returned from NOAA endpoint.");
   }
 
-  const validPlatformIds = validPlatforms.map((platform) =>
-    platform.noaa_id.toUpperCase()
-  );
+  const validPlatformIds = validPlatforms.map((platform) => platform.noaa_id.toUpperCase());
 
   if (!validPlatformIds.includes(platformId.toUpperCase())) {
     throw new Error("Invalid platform ID");
   }
 
-  const platform = validPlatforms.find(
-    (platform) => platform.noaa_id === platformId
-  );
+  const platform = validPlatforms.find((platform) => platform.noaa_id === platformId);
 
   return (
     <div className="flex flex-col p-0 m-0 h-full relative">
@@ -105,14 +97,8 @@ export default async function Page({
         {platform && (
           <Suspense fallback={<div>Loading...</div>}>
             <ToggleStatsCard>
-              <StatsCard
-                platformId={platformId}
-                timeWindowDays={timeWindowDays}
-              >
-                <SocialButtons
-                  platformId={platformId}
-                  timeWindowDays={timeWindowDays}
-                />
+              <StatsCard platformId={platformId} timeWindowDays={timeWindowDays}>
+                <SocialButtons platformId={platformId} timeWindowDays={timeWindowDays} />
               </StatsCard>
             </ToggleStatsCard>
           </Suspense>

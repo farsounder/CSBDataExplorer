@@ -23,10 +23,9 @@ export async function GET(
   const timeWindowDays = Number(searchParams.get("timeWindowDays")) || 30;
 
   if (!timeWindowValid(0, 365, timeWindowDays)) {
-    return new Response(
-      "Time window out of range, should be between 0 and 365 days",
-      { status: 404 }
-    );
+    return new Response("Time window out of range, should be between 0 and 365 days", {
+      status: 404,
+    });
   }
 
   // get platform id for the random_id from prisma
@@ -46,12 +45,9 @@ export async function GET(
     });
   } catch (e: any) {
     console.log(`${e.message}`);
-    return new Response(
-      "Failed to fetch data from NOAA endpoint, please try again later.",
-      {
-        status: 500,
-      }
-    );
+    return new Response("Failed to fetch data from NOAA endpoint, please try again later.", {
+      status: 500,
+    });
   }
 
   const noData = !data || data.length === 0;
