@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import MapViewer from "@/app/_components/map/mapviewer";
-import PlotContainer from "@/app/platform/[platform_id]/_components/plot/plot-container";
-import ToggleChartButton from "@/app/platform/[platform_id]/_components/plot/toggle-chart-button";
+import PlotContainer from "@/app/platform/[platformId]/_components/plot/plot-container";
+import ToggleChartButton from "@/app/platform/[platformId]/_components/plot/toggle-chart-button";
 import { CSBPlatform } from "@/lib/types";
 import { getPlatformInfoFromNoaa } from "@/services/noaa";
 import { ShipIcon } from "lucide-react";
@@ -17,26 +17,27 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: { platform_id: string };
-  searchParams?: { time_window_days: string };
+  params: { platformId: string };
+  searchParams?: { timeWindowDays: string };
 }) {
-  const time_window_days = Number(searchParams?.time_window_days) || 30;
+  const timeWindowDays =
+    Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   return {
-    title: `CSB Data for ID: ${params.platform_id} | ${time_window_days} Days`,
-    description: `CSB data collected by platform ${params.platform_id} in the DCDB Crowd-sourced Bathymetry Database over the last ${time_window_days} days.`,
+    title: `CSB Data for ID: ${params.platformId} | ${timeWindowDays} Days`,
+    description: `CSB data collected by platform ${params.platformId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
     openGraph: {
-      title: `CSB Data for ID: ${params.platform_id} | ${time_window_days} Days`,
+      title: `CSB Data for ID: ${params.platformId} | ${timeWindowDays} Days`,
       images: [
         {
-          url: `/api/og/platform/${params.platform_id}.png?time_window_days=${time_window_days}`,
+          url: `/api/og/platform/${params.platformId}.png?timeWindowDays=${timeWindowDays}`,
         },
       ],
-      url: `/platform/${params.platform_id}?time_window_days=${time_window_days}`,
+      url: `/platform/${params.platformId}?timeWindowDays=${timeWindowDays}`,
     },
     twitter: {
       card: "summary_large_image",
-      site: `/platform/${params.platform_id}?time_window_days=${time_window_days}`,
-      images: `/api/og/platform/${params.platform_id}.png?time_window_days=${time_window_days}`,
+      site: `/platform/${params.platformId}?timeWindowDays=${timeWindowDays}`,
+      images: `/api/og/platform/${params.platformId}.png?timeWindowDays=${timeWindowDays}`,
     },
   };
 }
@@ -63,13 +64,13 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { platform_id: string };
-  searchParams?: { time_window_days: string };
+  params: { platformId: string };
+  searchParams?: { timeWindowDays: string };
 }) {
-  const time_window_days =
-    Number(searchParams?.time_window_days) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays =
+    Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
 
-  const { platform_id } = params;
+  const { platformId } = params;
   const validPlatforms = await getPlatformInfoFromNoaa();
 
   if (!validPlatforms || validPlatforms.length === 0) {
@@ -80,12 +81,12 @@ export default async function Page({
     platform.noaa_id.toUpperCase()
   );
 
-  if (!validPlatformIds.includes(platform_id.toUpperCase())) {
+  if (!validPlatformIds.includes(platformId.toUpperCase())) {
     throw new Error("Invalid platform ID");
   }
 
   const platform = validPlatforms.find(
-    (platform) => platform.noaa_id === platform_id
+    (platform) => platform.noaa_id === platformId
   );
 
   return (
@@ -93,24 +94,24 @@ export default async function Page({
       {platform?.provider && (
         <ToggleChartButton>
           <PlotContainer
-            platformId={platform_id}
+            platformId={platformId}
             provider={platform.provider}
-            time_window_days={time_window_days}
+            timeWindowDays={timeWindowDays}
           />
         </ToggleChartButton>
       )}
-      <MapViewer platformId={platform_id} />
+      <MapViewer platformId={platformId} />
       <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
         {platform && (
           <Suspense fallback={<div>Loading...</div>}>
             <ToggleStatsCard>
               <StatsCard
-                platformId={platform_id}
-                timeWindowDays={time_window_days}
+                platformId={platformId}
+                timeWindowDays={timeWindowDays}
               >
                 <SocialButtons
-                  platformId={platform_id}
-                  timeWindowDays={time_window_days}
+                  platformId={platformId}
+                  timeWindowDays={timeWindowDays}
                 />
               </StatsCard>
             </ToggleStatsCard>

@@ -30,23 +30,23 @@ const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
 export default async function PlotContainer({
   platformId,
   provider,
-  time_window_days,
+  timeWindowDays,
 }: {
   platformId: string;
   provider: string;
-  time_window_days: number;
+  timeWindowDays: number;
 }) {
   const [providerData, platformData] = await Promise.all([
     getProviderCountPerDayData({
       provider: provider,
-      time_window_days: time_window_days,
+      timeWindowDays: timeWindowDays,
     }).catch((e) => {
       console.error(e);
       return [];
     }),
     getPlatformCountPerDayData({
-      noaa_id: platformId,
-      time_window_days: time_window_days,
+      noaaId: platformId,
+      timeWindowDays: timeWindowDays,
     }).catch((e) => {
       console.error(e);
       return [];
@@ -63,7 +63,7 @@ export default async function PlotContainer({
           userContributions={platformData}
         />
       ) : (
-        <ErrorMessage time_window_days={time_window_days} />
+        <ErrorMessage timeWindowDays={timeWindowDays} />
       )}
     </>
   );

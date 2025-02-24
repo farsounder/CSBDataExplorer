@@ -44,10 +44,10 @@ const baseStatistics = [
 // Generic function to generate stats URL
 function generateStatsUrl(
   identifier: { type: "provider" | "platform"; value: string },
-  time_window_days: number
+  timeWindowDays: number
 ): string {
   const field = identifier.type === "provider" ? "PROVIDER" : "EXTERNAL_ID";
-  const where = `UPPER(${field}) LIKE '${identifier.value}' AND START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${time_window_days}' DAY`;
+  const where = `UPPER(${field}) LIKE '${identifier.value}' AND START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${timeWindowDays}' DAY`;
 
   return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(
     baseStatistics
@@ -78,15 +78,15 @@ export async function getPlatformInfoFromNoaa(): Promise<CSBPlatform[]> {
 
 export async function getProviderCountPerDayData({
   provider,
-  time_window_days,
+  timeWindowDays,
 }: {
   provider: string;
-  time_window_days: number;
+  timeWindowDays: number;
 }): Promise<CSBData[]> {
   try {
     const url = generateStatsUrl(
       { type: "provider", value: provider.toUpperCase() },
-      time_window_days
+      timeWindowDays
     );
     const data = await fetchNoaaData<any>({ url });
 
@@ -106,23 +106,23 @@ export async function getProviderCountPerDayData({
 }
 
 export async function getPlatformCountPerDayData({
-  noaa_id,
-  time_window_days,
+  noaaId,
+  timeWindowDays,
 }: {
-  noaa_id: string;
-  time_window_days: number;
+  noaaId: string;
+  timeWindowDays: number;
 }): Promise<CSBPlatformData[]> {
   try {
     const url = generateStatsUrl(
-      { type: "platform", value: noaa_id.toUpperCase() },
-      time_window_days
+      { type: "platform", value: noaaId.toUpperCase() },
+      timeWindowDays
     );
     const data = await fetchNoaaData<any>({ url });
 
     return (
       data.features?.map((item: any) => ({
         provider: item.attributes.Expr1,
-        noaa_id,
+        noaaId,
         month: item.attributes.Expr2,
         day: item.attributes.Expr3,
         year: item.attributes.Expr4,

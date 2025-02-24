@@ -49,8 +49,8 @@ export default async function StatsCard({
   children: React.ReactNode;
 }) {
   const data = await getPlatformCountPerDayData({
-    noaa_id: platformId,
-    time_window_days: timeWindowDays,
+    noaaId: platformId,
+    timeWindowDays: timeWindowDays,
   });
 
   if (!data || data.length === 0) {

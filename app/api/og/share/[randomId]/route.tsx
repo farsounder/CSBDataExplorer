@@ -8,35 +8,41 @@ export async function GET(
   {
     params,
   }: {
-    params: { random_id: string };
+    params: { randomId: string };
   }
 ) {
-  if (!params.random_id) {
+  if (!params.randomId) {
     return new Response("no id provided", { status: 404 });
   }
   // strip out the .png if it was included
-  if (params.random_id.includes(".png")) {
-    params.random_id = params.random_id.replace(".png", "");
+  if (params.randomId.includes(".png")) {
+    params.randomId = params.randomId.replace(".png", "");
   }
 
   const { searchParams } = new URL(request.url);
-  const time_window_days = Number(searchParams.get("time_window_days")) || 30;
+  const timeWindowDays = Number(searchParams.get("timeWindowDays")) || 30;
+
+  if (!timeWindowValid(0, 365, timeWindowDays)) {
+    return new Response(
+      "Time window out of range, should be between 0 and 365 days",
+      { status: 404 }
+    );
+  }
 
   // get platform id for the random_id from prisma
   const row = await db.platformIdentifier.findFirst({
-    where: { id: params.random_id },
+    where: { id: params.randomId },
   });
 
   if (!row) {
     return new Response("invalid identifier", { status: 404 });
   }
 
-
   let data;
   try {
     data = await getPlatformCountPerDayData({
-      noaa_id: row.platformId,
-      time_window_days: time_window_days,
+      noaaId: row.platformId,
+      timeWindowDays: timeWindowDays,
     });
   } catch (e: any) {
     console.log(`${e.message}`);
@@ -48,23 +54,16 @@ export async function GET(
     );
   }
 
-  if (!timeWindowValid(0, 365, time_window_days)) {
-    return new Response(
-      "Time window out of range, should be between 0 and 365 days",
-      { status: 404 }
-    );
-  }
-
   const noData = !data || data.length === 0;
   const provider = noData ? "No Data" : data[0].provider;
-  const total_data_size = data.reduce((acc, d) => d.dataSize + acc, 0);
+  const totalDataSize = data.reduce((acc, d) => d.dataSize + acc, 0);
 
   try {
     return shareImageResponse({
-      data_length: data.length,
+      dataLength: data.length,
       provider,
-      total_data_size,
-      time_window_days,
+      totalDataSize,
+      timeWindowDays,
     });
   } catch (e: any) {
     console.log(`${e.message}`);

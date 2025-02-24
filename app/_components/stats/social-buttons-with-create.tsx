@@ -34,7 +34,7 @@ export default function SocialButtons({
           if (id) {
             const baseUrl =
               process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-            const shareLink = `${baseUrl}/share/${id}?time_window_days=${timeWindowDays}`;
+            const shareLink = `${baseUrl}/share/${id}?timeWindowDays=${timeWindowDays}`;
             const linkedInLink = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
               shareLink
             )}`;
@@ -60,7 +60,7 @@ export default function SocialButtons({
           if (id) {
             const baseUrl =
               process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-            const shareLink = `${baseUrl}/share/${id}?time_window_days=${timeWindowDays}`;
+            const shareLink = `${baseUrl}/share/${id}?timeWindowDays=${timeWindowDays}`;
             const facebookLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
               shareLink
             )}`;
@@ -84,7 +84,7 @@ export default function SocialButtons({
           });
           const id = await createUniqueIdActionWithPlatformId();
           if (id) {
-            router.push(`/share/${id}?time_window_days=${timeWindowDays}`);
+            router.push(`/share/${id}?timeWindowDays=${timeWindowDays}`);
           } else {
             toast({
               title: "Error",

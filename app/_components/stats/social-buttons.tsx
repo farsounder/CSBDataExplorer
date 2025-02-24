@@ -12,7 +12,7 @@ export default function SocialButtons({
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const linkedIn = "https://www.linkedin.com/sharing/share-offsite/?url=";
-  const shareUrl = `/share/${uniqueId}?time_window_days=${timeWindowDays}`;
+  const shareUrl = `/share/${uniqueId}?timeWindowDays=${timeWindowDays}`;
   const fullShareUrl = `${baseUrl}${shareUrl}`;
   const linkedInLink = `${linkedIn}${encodeURIComponent(fullShareUrl)}`;
   const facebookLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(

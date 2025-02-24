@@ -22,7 +22,7 @@ export function TimeWindowSelect() {
   const pathname = usePathname();
 
   useEffect(() => {
-    setTimeWindowDays(parseInt(searchParams.get("time_window_days") ?? "30"));
+    setTimeWindowDays(parseInt(searchParams.get("timeWindowDays") ?? "30"));
   }, [searchParams]);
 
   return (
@@ -33,7 +33,7 @@ export function TimeWindowSelect() {
         onValueChange={(value) => {
           setTimeWindowDays(parseInt(value));
           const params = new URLSearchParams(searchParams.toString());
-          params.set("time_window_days", value);
+          params.set("timeWindowDays", value);
           router.push(pathname + "?" + params.toString());
         }}
       >

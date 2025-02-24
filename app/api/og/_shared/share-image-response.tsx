@@ -7,14 +7,14 @@ import FSLogo from "../../../../components/icons/fslogo";
 import { bytesToDepthPoints } from "../../../../lib/utils";
 
 export const shareImageResponse = ({
-  data_length,
-  time_window_days,
-  total_data_size,
+  dataLength,
+  timeWindowDays,
+  totalDataSize,
   provider,
 }: {
-  data_length: number;
-  time_window_days: number;
-  total_data_size: number;
+  dataLength: number;
+  timeWindowDays: number;
+  totalDataSize: number;
   provider: string;
 }) => (
   new ImageResponse(
@@ -82,7 +82,7 @@ export const shareImageResponse = ({
                   lineHeight: 1,
                 }}
               >
-                {`Data contributed via ${provider} for the last ${time_window_days} days on my platform`}
+                {`Data contributed via ${provider} for the last ${timeWindowDays} days on my platform`}
               </div>
             </div>
             <div
@@ -93,15 +93,15 @@ export const shareImageResponse = ({
               }}
             >
               <CoolNumber
-                number={data_length}
-                subtitle={`of ${time_window_days} days with data`}
+                number={dataLength}
+                subtitle={`of ${timeWindowDays} days with data`}
               />
               <CoolNumber
-                number={total_data_size}
+                number={totalDataSize}
                 subtitle="approximate bytes of data"
               />
               <CoolNumber
-                number={bytesToDepthPoints(total_data_size)}
+                number={bytesToDepthPoints(totalDataSize)}
                 subtitle="approximate depth measurements"
               />
             </div>
