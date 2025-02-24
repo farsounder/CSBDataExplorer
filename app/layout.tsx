@@ -53,10 +53,8 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({
-  params,
   children,
 }: {
-  params: { platform_id: string };
   children: React.ReactNode;
 }) {
   return (
