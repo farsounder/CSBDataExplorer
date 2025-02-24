@@ -9,13 +9,13 @@ const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
   ssr: false,
 });
 
-const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
+const ErrorMessage = ({ timeWindowDays }: { timeWindowDays: number }) => {
   return (
     <div className="flex flex-col justify-center items-center h-full px-8 text-center">
       <ExclamationTriangleIcon className="w-16 h-16 text-gray-500" />
       <h3 className="text-lg text-gray-600">No data available</h3>
       <p className="text-sm text-gray-500">
-        No data found for the last {time_window_days} days, try a longer time window. If you believe
+        No data found for the last {timeWindowDays} days, try a longer time window. If you believe
         there should be data in the selected time window, reload to try again and if the problem
         persists, please contact us to report the issue (sw@farsounder.com).
       </p>

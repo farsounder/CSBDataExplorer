@@ -1,7 +1,7 @@
 export const timeWindowValid = (
   minDays: number,
   maxDays: number,
-  time_window_days: number
+  timeWindowDays: number
 ): boolean => {
-  return time_window_days >= minDays && time_window_days <= maxDays;
+  return timeWindowDays >= minDays && timeWindowDays <= maxDays;
 };
