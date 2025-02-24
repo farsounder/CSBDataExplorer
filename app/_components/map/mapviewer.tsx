@@ -19,14 +19,8 @@ const USER_CSB_LAYER_NAME = "Your CSB Data";
 
 const mapLayerIdToInfo = new Map<string, string>([
   [OSM_BASE_LAYER_NAME, "A simple baselayer from OpenStreetMap."],
-  [
-    NOAA_S57_LAYER_NAME,
-    "NOAA S57 ENC data as raster tiles, for US waters only.",
-  ],
-  [
-    NOAA_CSB_LAYER_NAME,
-    "Tracks from the DCDB Crowdsourced Bathymetry database.",
-  ],
+  [NOAA_S57_LAYER_NAME, "NOAA S57 ENC data as raster tiles, for US waters only."],
+  [NOAA_CSB_LAYER_NAME, "Tracks from the DCDB Crowdsourced Bathymetry database."],
 ]);
 
 const mapLayerIdToDefaultVisibility = new Map<string, boolean>([
@@ -80,14 +74,8 @@ const getCSBLayer = (noaaId: string): TileLayer | null => {
     id: noaaId,
     getTileData: (tile) => {
       const bbox = tile.bbox as GeoBoundingBox;
-      const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
-        bbox.west,
-        bbox.south,
-      ]);
-      const [east, north] = proj4("EPSG:4326", "EPSG:3857", [
-        bbox.east,
-        bbox.north,
-      ]);
+      const [west, south] = proj4("EPSG:4326", "EPSG:3857", [bbox.west, bbox.south]);
+      const [east, north] = proj4("EPSG:4326", "EPSG:3857", [bbox.east, bbox.north]);
       const bboxString = `bbox=${west},${south},${east},${north}`;
       const sizeString = "size=256,256";
       // this filters the data to only show the users data
@@ -134,14 +122,8 @@ const getDefaultLayers = (): TileLayer[] => {
       visible: mapLayerIdToDefaultVisibility.get(NOAA_S57_LAYER_NAME) || false,
       getTileData: (tile) => {
         const bbox = tile.bbox as GeoBoundingBox;
-        const [west, south] = proj4("EPSG:4326", "EPSG:3857", [
-          bbox.west,
-          bbox.south,
-        ]);
-        const [east, north] = proj4("EPSG:4326", "EPSG:3857", [
-          bbox.east,
-          bbox.north,
-        ]);
+        const [west, south] = proj4("EPSG:4326", "EPSG:3857", [bbox.west, bbox.south]);
+        const [east, north] = proj4("EPSG:4326", "EPSG:3857", [bbox.east, bbox.north]);
         const url =
           "https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer?service=WMS&request=GetMap&layers=&styles=&format=image%2Fjpeg&transparent=false&version=1.1.1&&width=256&height=256&srs=EPSG%3A3857";
         const layers = `layer=${"0,1,2,3,4,5,6,7"}`;
@@ -172,13 +154,7 @@ const getDefaultLayers = (): TileLayer[] => {
   ];
 };
 
-function LayerLegend({
-  layers,
-  handler,
-}: {
-  layers: Layer[];
-  handler: TypeToggleLayerHandler;
-}) {
+function LayerLegend({ layers, handler }: { layers: Layer[]; handler: TypeToggleLayerHandler }) {
   return (
     <div className="p-2 bg-white opacity-90 border rounded-lg">
       <p className="border-b px-1 font-bold">Available Layers</p>
@@ -282,15 +258,13 @@ export default function MapViewer({ platformId }: { platformId?: string }) {
           <GlobeAmericasIcon className="h-6 w-6 text-gray-600" />
         )}
       </Button>
-      <div
-        ref={legendRef}
-        className="absolute invisible md:visible top-4 right-4 "
-      >
+      <div ref={legendRef} className="absolute invisible md:visible top-4 right-4 ">
         <LayerLegend layers={layers} handler={handleToggleLayerVisibility} />
       </div>
       {/* Attribution for each third party layer */}
       <div className="absolute bottom-2 right-2 text-xs">
-        {layers && layers.length > 0 &&
+        {layers &&
+          layers.length > 0 &&
           listFormatter.format(
             layers
               .map((layer) => {

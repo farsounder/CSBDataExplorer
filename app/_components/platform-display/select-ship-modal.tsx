@@ -8,8 +8,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -17,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -41,10 +39,7 @@ export function SelectShipModal({
   const uniquePlatforms = useMemo(
     () =>
       availablePlatforms
-        .filter(
-          (ap, index, self) =>
-            index === self.findIndex((t) => t.platform === ap.platform)
-        )
+        .filter((ap, index, self) => index === self.findIndex((t) => t.platform === ap.platform))
         .map((ap) => ap.platform)
         .sort(),
     [availablePlatforms]
@@ -54,18 +49,14 @@ export function SelectShipModal({
   const uniqueNoaaIds = useMemo(
     () =>
       availablePlatforms
-        .filter(
-          (ap, index, self) =>
-            index === self.findIndex((t) => t.noaa_id === ap.noaa_id)
-        )
+        .filter((ap, index, self) => index === self.findIndex((t) => t.noaa_id === ap.noaa_id))
         .map((ap) => ap.noaa_id)
         .sort(),
     [availablePlatforms]
   );
 
   const isButtonDisabled =
-    !selectedUserData?.csbPlatform?.platform ||
-    !selectedUserData?.csbPlatform?.noaa_id;
+    !selectedUserData?.csbPlatform?.platform || !selectedUserData?.csbPlatform?.noaa_id;
 
   return (
     <Dialog>
@@ -82,15 +73,15 @@ export function SelectShipModal({
           <DialogDescription>
             <div className="pb-4">
               <div className="py-4">
-                Select a platform (vessel) in the DCDB database to track its
-                stats and see current tracks from submitted data.
+                Select a platform (vessel) in the DCDB database to track its stats and see current
+                tracks from submitted data.
               </div>
               <div className="p-2 bg-blue-100 text-blue-700 border-l-4 border-blue-500 rounded-md text-sm flex gap-4 ">
                 <ExclamationCircleIcon className="w-16 h-16 inline-block" />
                 <p>
                   <span className="font-semibold">Note: </span>
-                  If you do not see your vessel here, contact your provider.
-                  They can help you find the NOAA Platform ID for your vessel.
+                  If you do not see your vessel here, contact your provider. They can help you find
+                  the NOAA Platform ID for your vessel.
                 </p>
               </div>
             </div>
@@ -102,9 +93,7 @@ export function SelectShipModal({
                 value={selectedUserData?.csbPlatform?.platform}
                 onValueChange={(name: string) => {
                   // get the noaa_id from the selected platform name
-                  const platform = availablePlatforms.find(
-                    (ap) => ap.platform === name
-                  );
+                  const platform = availablePlatforms.find((ap) => ap.platform === name);
                   saveUserData({
                     ...selectedUserData,
                     csbPlatform: {
@@ -118,9 +107,7 @@ export function SelectShipModal({
               >
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={
-                      "Platform Name: required if no unique id selected below"
-                    }
+                    placeholder={"Platform Name: required if no unique id selected below"}
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -138,9 +125,7 @@ export function SelectShipModal({
                 value={selectedUserData?.csbPlatform?.noaa_id}
                 onValueChange={(id) => {
                   // get the platform name from the selected id
-                  const platform = availablePlatforms.find(
-                    (ap) => ap.noaa_id === id
-                  );
+                  const platform = availablePlatforms.find((ap) => ap.noaa_id === id);
                   saveUserData({
                     ...selectedUserData,
                     csbPlatform: {
@@ -178,9 +163,7 @@ export function SelectShipModal({
                     title: "Success!",
                     description: "Your platform has been updated",
                   });
-                  router.push(
-                    `/platform/${selectedUserData.csbPlatform.noaa_id}`
-                  );
+                  router.push(`/platform/${selectedUserData.csbPlatform.noaa_id}`);
                 }}
               >
                 Save

@@ -1,13 +1,7 @@
 //<!-- SVG By Sam Herbert (@sherb), for everyone. More http://goo.gl/7AJzbL -->
 export default function ThreeDotsIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg
-      width="120"
-      height="30"
-      viewBox="0 0 120 30"
-      xmlns="http://www.w3.org/2000/svg"
-      {...props}
-    >
+    <svg width="120" height="30" viewBox="0 0 120 30" xmlns="http://www.w3.org/2000/svg" {...props}>
       <circle cx="15" cy="15" r="15">
         <animate
           attributeName="r"

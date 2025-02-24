@@ -1,11 +1,6 @@
-import {
-  BuildingOfficeIcon,
-  CalendarIcon,
-  FaceFrownIcon,
-} from "@heroicons/react/24/outline";
+import { BuildingOfficeIcon, CalendarIcon, FaceFrownIcon } from "@heroicons/react/24/outline";
 import { getPlatformCountPerDayData } from "@/services/noaa";
 import { formatNumber, bytesToDepthPoints } from "@/lib/utils";
-
 
 function NoDataCard({
   platformId,
@@ -31,9 +26,7 @@ function NoDataCard({
 function CoolNumber({ stat, label }: { stat: number; label: string }) {
   return (
     <div className="flex flex-col items-center border border-gray-200 rounded-lg p-4 shadow-lg">
-      <div className="text-4xl font-bold text-blue-800">
-        {formatNumber(stat)}
-      </div>
+      <div className="text-4xl font-bold text-blue-800">{formatNumber(stat)}</div>
       <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
@@ -49,14 +42,12 @@ export default async function StatsCard({
   children: React.ReactNode;
 }) {
   const data = await getPlatformCountPerDayData({
-    noaa_id: platformId,
-    time_window_days: timeWindowDays,
+    noaaId: platformId,
+    timeWindowDays: timeWindowDays,
   });
 
   if (!data || data.length === 0) {
-    return (
-      <NoDataCard platformId={platformId} timeWindowDays={timeWindowDays} />
-    );
+    return <NoDataCard platformId={platformId} timeWindowDays={timeWindowDays} />;
   }
 
   const totalDataSize = data.reduce((acc, { dataSize }) => acc + dataSize, 0);
@@ -74,10 +65,7 @@ export default async function StatsCard({
         </div>
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 text-center">
-        <CoolNumber
-          stat={data.length}
-          label={`of ${timeWindowDays} days with data`}
-        />
+        <CoolNumber stat={data.length} label={`of ${timeWindowDays} days with data`} />
         <CoolNumber stat={totalDataSize} label="approximate bytes of data" />
         <CoolNumber
           stat={bytesToDepthPoints(totalDataSize)}
@@ -86,13 +74,11 @@ export default async function StatsCard({
       </div>
       <div>
         <div className="text-gray-500 text-xs text-center">
-          <span className="font-bold">Note:</span> These are approximate values
-          based on the data we have collected.
+          <span className="font-bold">Note:</span> These are approximate values based on the data we
+          have collected.
         </div>
       </div>
-      <div className="pt-4 flex flex-col gap-1">
-        {children}
-      </div>
+      <div className="pt-4 flex flex-col gap-1">{children}</div>
     </div>
   );
 }

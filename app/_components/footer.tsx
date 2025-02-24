@@ -3,12 +3,7 @@ import FSLogo from "@/components/icons/fslogo";
 import Seabed2030Logo from "@/components/icons/seabed";
 import SeakeepersLogo from "@/components/icons/seakeepers";
 import IconTriggeredModal from "./footer-blurbs/icon-triggered-modal";
-import {
-  FacebookIcon,
-  InstagramIcon,
-  LinkedinIcon,
-  YoutubeIcon,
-} from "lucide-react";
+import { FacebookIcon, InstagramIcon, LinkedinIcon, YoutubeIcon } from "lucide-react";
 import XSocialIcon from "@/components/icons/xicon";
 
 const SponsorDetails = [
@@ -104,9 +99,7 @@ const SponsorDetails = [
   },
   {
     name: "DCDB/IHO",
-    icon: (
-      <Image src="/iho-csb-logo.png" width={128} height={64} alt="IHO logo" />
-    ),
+    icon: <Image src="/iho-csb-logo.png" width={128} height={64} alt="IHO logo" />,
     title: "The DCDB and IHO CSB Database",
     description:
       "The Data Center for Digital Bathymetry (DCDB) is co-located at NOAA's National Centers for Environmental Information (NCEI) and was established to steward the global collection of bathymetric data. The DCDB hosted International Hydrographic Organization's (IHO) Crowdsourced Bathymetry (CSB) Database makes available depth measurements collected and contributed by vessels, using standard navigation equipment, while engaging in routine maritime operations.",
@@ -139,10 +132,7 @@ export default function Footer() {
       </div>
       <div className="md:hidden text-xs flex justify-center">
         {SponsorDetails.map((sponsor) => (
-          <div
-            key={sponsor.name}
-            className="hover:cursor-pointer text-xs text-gray-800"
-          >
+          <div key={sponsor.name} className="hover:cursor-pointer text-xs text-gray-800">
             <IconTriggeredModal
               title={sponsor.title}
               icon={sponsor.icon}

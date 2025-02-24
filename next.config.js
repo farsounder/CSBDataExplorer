@@ -4,17 +4,18 @@ const nextConfig = {
     config.module = {
       ...config.module,
       exprContextCritical: false,
-    }
-    return config
+    };
+    return config;
   },
   async redirects() {
     return [
-    {
-      source: '/platform',
-      destination: '/',
-      permanent: true,
-    }]
-  }
+      {
+        source: "/platform",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
 };
 
-module.exports = nextConfig
+module.exports = nextConfig;

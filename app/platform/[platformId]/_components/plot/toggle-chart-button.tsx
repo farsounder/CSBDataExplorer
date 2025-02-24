@@ -4,11 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChartBarSquareIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 
-export default function ToggleChartButton({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ToggleChartButton({ children }: { children: React.ReactNode }) {
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
@@ -27,11 +23,7 @@ export default function ToggleChartButton({
         variant="outline"
         className="absolute sm:top-4 sm:left-4 z-50 border-0 bg-white/60"
         onClick={() => setIsVisible(!isVisible)}
-        style={
-          !isVisible && window.innerWidth <= 640
-            ? { top: "1rem", left: "1rem" }
-            : {}
-        }
+        style={!isVisible && window.innerWidth <= 640 ? { top: "1rem", left: "1rem" } : {}}
       >
         {isVisible ? (
           <XMarkIcon className="w-8 h-8 text-gray-500" />

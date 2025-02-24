@@ -18,23 +18,12 @@ export default function Error({
     <div className="h-full bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-md text-center w-full sm:w-[500px]">
         <ExclamationTriangleIcon className="w-16 h-16 mx-auto text-red-500" />
-        <h2 className="mt-4 text-2xl font-semibold text-gray-700">
-          Something went wrong!
-        </h2>
+        <h2 className="mt-4 text-2xl font-semibold text-gray-700">Something went wrong!</h2>
         <p>
-          {error.digest && (
-            <span className="text-gray-700 text-sm">
-              Digest: {error.digest}
-            </span>
-          )}
-
+          {error.digest && <span className="text-gray-700 text-sm">Digest: {error.digest}</span>}
         </p>
         <p>
-          {error.message && (
-            <span className="text-gray-700 text-sm">
-              Error: {error.message}
-            </span>
-          )}
+          {error.message && <span className="text-gray-700 text-sm">Error: {error.message}</span>}
         </p>
         <p className="mt-2 text-gray-500">
           We&lsquo;re sorry for the inconvenience. Please try again.

@@ -1,11 +1,7 @@
 "use server";
 import db from "@/lib/db";
 
-export async function createUniqueIdAction({
-  platformId,
-}: {
-  platformId: string;
-}) {
+export async function createUniqueIdAction({ platformId }: { platformId: string }) {
   try {
     const { id } = await db.platformIdentifier.create({
       data: {

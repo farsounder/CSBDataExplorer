@@ -1,7 +1,4 @@
-import {
-  getPlatformCountPerDayData,
-  getProviderCountPerDayData,
-} from "@/services/noaa";
+import { getPlatformCountPerDayData, getProviderCountPerDayData } from "@/services/noaa";
 import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
@@ -12,16 +9,15 @@ const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
   ssr: false,
 });
 
-const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
+const ErrorMessage = ({ timeWindowDays }: { timeWindowDays: number }) => {
   return (
     <div className="flex flex-col justify-center items-center h-full px-8 text-center">
       <ExclamationTriangleIcon className="w-16 h-16 text-gray-500" />
       <h3 className="text-lg text-gray-600">No data available</h3>
       <p className="text-sm text-gray-500">
-        No data found for the last {time_window_days} days, try a longer time
-        window. If you believe there should be data in the selected time window,
-        reload to try again and if the problem persists, please contact us to
-        report the issue (sw@farsounder.com).
+        No data found for the last {timeWindowDays} days, try a longer time window. If you believe
+        there should be data in the selected time window, reload to try again and if the problem
+        persists, please contact us to report the issue (sw@farsounder.com).
       </p>
     </div>
   );
@@ -30,23 +26,23 @@ const ErrorMessage = ({ time_window_days }: { time_window_days: number }) => {
 export default async function PlotContainer({
   platformId,
   provider,
-  time_window_days,
+  timeWindowDays,
 }: {
   platformId: string;
   provider: string;
-  time_window_days: number;
+  timeWindowDays: number;
 }) {
   const [providerData, platformData] = await Promise.all([
     getProviderCountPerDayData({
       provider: provider,
-      time_window_days: time_window_days,
+      timeWindowDays: timeWindowDays,
     }).catch((e) => {
       console.error(e);
       return [];
     }),
     getPlatformCountPerDayData({
-      noaa_id: platformId,
-      time_window_days: time_window_days,
+      noaaId: platformId,
+      timeWindowDays: timeWindowDays,
     }).catch((e) => {
       console.error(e);
       return [];
@@ -58,12 +54,9 @@ export default async function PlotContainer({
   return (
     <>
       {showPlot ? (
-        <ContributionsPlot
-          providerContributions={providerData}
-          userContributions={platformData}
-        />
+        <ContributionsPlot providerContributions={providerData} userContributions={platformData} />
       ) : (
-        <ErrorMessage time_window_days={time_window_days} />
+        <ErrorMessage timeWindowDays={timeWindowDays} />
       )}
     </>
   );

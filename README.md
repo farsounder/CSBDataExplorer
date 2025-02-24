@@ -1,7 +1,8 @@
 # CSB Data Explorer
-## Visualize public CSB data on a map
-![image](https://github.com/user-attachments/assets/1cfea6b9-5cef-4204-9467-79838d7a273e)
 
+## Visualize public CSB data on a map
+
+![image](https://github.com/user-attachments/assets/1cfea6b9-5cef-4204-9467-79838d7a273e)
 
 The OG bathy viewer is available here and managed by NOAA: https://www.ncei.noaa.gov/maps/bathymetry/
 
@@ -18,6 +19,7 @@ there's a bit of obscurity between the two if a user shares their stats and
 doesn't want to share their associated NOAA external platform id.
 
 You can spin up a postgres database with docker-compose to run locally:
+
 ```
 docker-compose up
 ```
@@ -26,12 +28,15 @@ Then run `npx prisma db push` to create the tables in the database, and `npx pri
 or if the schema changes.
 
 Install dependencies:
+
 ```bash
 npm install
 ```
+
 and then run the dev server:
 
 ```bash
 npm run dev
 ```
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

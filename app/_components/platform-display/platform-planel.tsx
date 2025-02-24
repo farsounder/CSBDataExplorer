@@ -54,7 +54,6 @@ export default function PlatformDisplayPanel({
     setUserData(userData);
   };
 
-
   return (
     <div className="px-8 gap-2 items-center justify-center hidden sm:flex">
       <div className="flex justify-center items-center">

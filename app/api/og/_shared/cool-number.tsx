@@ -1,12 +1,6 @@
 import { formatNumber } from "../../../../lib/utils";
 
-export const CoolNumber = ({
-  number,
-  subtitle,
-}: {
-  number: number;
-  subtitle: string;
-}) => {
+export const CoolNumber = ({ number, subtitle }: { number: number; subtitle: string }) => {
   return (
     <div
       style={{
