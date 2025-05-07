@@ -7,7 +7,7 @@ const nextConfig = {
     };
     return config;
   },
-  async redirects() {
+  /*async redirects() {
     return [
       {
         source: "/platform",
@@ -15,7 +15,7 @@ const nextConfig = {
         permanent: true,
       },
     ];
-  },
+  },*/
 };
 
 module.exports = nextConfig;

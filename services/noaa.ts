@@ -1,4 +1,4 @@
-import { CSBData, CSBPlatform, CSBPlatformData } from "@/lib/types";
+import { CSBData, CSBPlatform, CSBPlatformData, CSBProvider } from "@/lib/types";
 import { DATA_CACHE_SECONDS } from "@/lib/constants";
 
 const NOAA_BASE = "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
@@ -7,6 +7,26 @@ const APP_NAME = "FarSounder CSB Viewer App";
 type NoaaRequestConfig = {
   url: string;
   revalidate?: number;
+};
+
+// Types for the NOAA API responses, could use zod to validate the responses
+// for now, just dig into it when it breaks
+type NoaaApiPlatformResponse = {
+  features: {
+    attributes: {
+      EXTERNAL_ID: string;
+      PROVIDER: string;
+      PLATFORM: string;
+    };
+  }[];
+};
+
+type NoaaApiProviderResponse = {
+  features: {
+    attributes: {
+      PROVIDER: string;
+    };
+  }[];
 };
 
 // Common fetch function with error handling
@@ -55,7 +75,7 @@ function generateStatsUrl(
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
   const url = `${NOAA_BASE}&where=1%3D1&outFields=EXTERNAL_ID,PROVIDER,PLATFORM&returnGeometry=false&orderByFields=EXTERNAL_ID&returnDistinctValues=true`;
-  return fetchNoaaData<any>({ url }).then((data) =>
+  return fetchNoaaData<NoaaApiPlatformResponse>({ url }).then((data) =>
     data.features.map((item: any) => {
       return {
         platform: item.attributes.PLATFORM,
@@ -66,9 +86,25 @@ async function getAllPlatforms(): Promise<CSBPlatform[]> {
   );
 }
 
+async function getAllProviders(): Promise<CSBProvider[]> {
+  const url = `${NOAA_BASE}&where=1%3D1&outFields=PROVIDER&returnGeometry=false&orderByFields=PROVIDER&returnDistinctValues=true`;
+  return fetchNoaaData<NoaaApiProviderResponse>({ url }).then((data) =>
+    data.features.map((item: any) => ({ provider: item.attributes.PROVIDER }))
+  );
+}
+
 export async function getPlatformInfoFromNoaa(): Promise<CSBPlatform[]> {
   try {
     return await getAllPlatforms();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getProviderInfoFromNoaa(): Promise<CSBProvider[]> {
+  try {
+    return await getAllProviders();
   } catch (error) {
     console.error(error);
     return [];
