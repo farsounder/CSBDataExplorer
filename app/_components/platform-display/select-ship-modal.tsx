@@ -15,12 +15,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMemo, memo, useCallback } from "react";
+import { useMemo, useCallback, memo } from "react";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
-
 import { CSBPlatform } from "@/lib/types";
+import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
+import { AutoSizer, List } from "react-virtualized";
+
+// Custom virtualized select content component
+const VirtualizedSelectContent = memo(function VirtualizedSelectContent({
+  items,
+  onSelect,
+  selectedValue,
+  placeholder,
+}: {
+  items: string[];
+  onSelect: (value: string) => void;
+  selectedValue?: string;
+  placeholder: string;
+}) {
+  const rowRenderer = useCallback(
+    ({ index, key, style }: { index: number; key: string; style: React.CSSProperties }) => {
+      const item = items[index];
+      return (
+        <SelectItem
+          key={key}
+          value={item}
+          className={`cursor-pointer ${selectedValue === item ? "bg-accent" : ""}`}
+          style={style}
+        >
+          {item}
+        </SelectItem>
+      );
+    },
+    [items, selectedValue]
+  );
+
+  // Find the index of the selected value to scroll to it
+  const selectedIndex = useMemo(() => {
+    return selectedValue ? items.indexOf(selectedValue) : -1;
+  }, [items, selectedValue]);
+
+  return (
+    <SelectContent>
+      <div className="h-[300px]">
+        <AutoSizer>
+          {({ height, width }: { height: number; width: number }) => (
+            <List
+              width={width}
+              height={height}
+              rowCount={items.length}
+              rowHeight={35}
+              rowRenderer={rowRenderer}
+              scrollToIndex={selectedIndex >= 0 ? selectedIndex : undefined}
+              scrollToAlignment="center"
+            />
+          )}
+        </AutoSizer>
+      </div>
+    </SelectContent>
+  );
+});
 
 const SelectShipModal = memo(function SelectShipModal({
   availablePlatforms,
@@ -59,7 +115,7 @@ const SelectShipModal = memo(function SelectShipModal({
     [selectedUserData]
   );
 
-   // Memoize the handlers
+  // Memoize the handlers
   const handlePlatformChange = useCallback(
     (name: string) => {
       const platform = availablePlatforms.find((ap) => ap.platform === name);
@@ -94,7 +150,7 @@ const SelectShipModal = memo(function SelectShipModal({
 
   const handleSave = useCallback(() => {
     if (!selectedUserData) return;
-    
+
     saveUserData(selectedUserData);
     toast({
       title: "Success!",
@@ -111,7 +167,7 @@ const SelectShipModal = memo(function SelectShipModal({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <span className="sm:text-xl text-gray-800">Select a NOAA Platform</span>
+            <span className="sm:text-xl text-gray-800">Select a NOAA Platform / Vessel</span>
           </DialogTitle>
           <DialogDescription>
             Select a platform (vessel) in the DCDB database to track its stats and see current
@@ -121,41 +177,51 @@ const SelectShipModal = memo(function SelectShipModal({
         <div className="flex flex-col justity-center items-center gap-2 text-gray-600">
           <div className="text-left w-full pl-4">Select one of:</div>
           <div className="border p-4 rounded-lg w-full">
-            <Select
-              value={selectedUserData?.csbPlatform?.platform}
-              onValueChange={handlePlatformChange}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={"Platform Name: required if no unique id selected below"}
+            <div className="mb-4">
+              <div className="text-sm font-medium mb-2">Platform Name:</div>
+              <Select
+                value={selectedUserData?.csbPlatform?.platform || ""}
+                onValueChange={handlePlatformChange}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder="Platform Name: required if no unique id selected below"
+                    defaultValue={selectedUserData?.csbPlatform?.platform || ""}
+                  >
+                    {selectedUserData?.csbPlatform?.platform || ""}
+                  </SelectValue>
+                </SelectTrigger>
+                <VirtualizedSelectContent
+                  items={uniquePlatforms}
+                  onSelect={handlePlatformChange}
+                  selectedValue={selectedUserData?.csbPlatform?.platform}
+                  placeholder="Platform Name: required if no unique id selected below"
                 />
-              </SelectTrigger>
-              <SelectContent>
-                {uniquePlatforms.map((platform) => {
-                  return (
-                    <SelectItem key={platform} value={platform}>
-                      {platform}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+              </Select>
+            </div>
             <div className="text-center py-2 text-sm">-- or --</div>
-            <Select
-              value={selectedUserData?.csbPlatform?.noaa_id}
-              onValueChange={handleNoaaIdChange}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Unique id: required if no Platform Name (Anonymous)" />
-              </SelectTrigger>
-              <SelectContent>
-                {uniqueNoaaIds.map((id) => (
-                  <SelectItem key={id} value={id}>
-                    {id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <div className="text-sm font-medium mb-2">Unique ID:</div>
+              <Select
+                value={selectedUserData?.csbPlatform?.noaa_id || ""}
+                onValueChange={handleNoaaIdChange}
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder="Unique id: required if no Platform Name (Anonymous)"
+                    defaultValue={selectedUserData?.csbPlatform?.noaa_id || ""}
+                  >
+                    {selectedUserData?.csbPlatform?.noaa_id || ""}
+                  </SelectValue>
+                </SelectTrigger>
+                <VirtualizedSelectContent
+                  items={uniqueNoaaIds}
+                  onSelect={handleNoaaIdChange}
+                  selectedValue={selectedUserData?.csbPlatform?.noaa_id}
+                  placeholder="Unique id: required if no Platform Name (Anonymous)"
+                />
+              </Select>
+            </div>
           </div>
           <DialogTrigger asChild>
             <Button
