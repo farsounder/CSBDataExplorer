@@ -185,8 +185,8 @@ export async function getPlatformCountPerDayData({
     const data = await fetchNoaaData<any>({ url });
 
     // Get the provider from the noaaId
-    const providers = await getProviderInfoFromNoaa();
-    const provider = providers.find((p) => p.provider === noaaId);
+    const platforms = await getPlatformInfoFromNoaa();
+    const platform = platforms.find((p) => p.noaa_id === noaaId);
 
     return (
       data.features?.map((item: any) => ({
@@ -195,7 +195,7 @@ export async function getPlatformCountPerDayData({
         day: item.attributes.Expr2,
         year: item.attributes.Expr3,
         dataSize: item.attributes.total_data_size,
-        provider: provider?.provider,
+        provider: platform?.provider,
       })) ?? []
     );
   } catch (error) {
