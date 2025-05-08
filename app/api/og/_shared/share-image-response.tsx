@@ -7,11 +7,15 @@ import FSLogo from "../../../../components/icons/fslogo";
 import { bytesToDepthPoints } from "../../../../lib/utils";
 
 export const shareImageResponse = ({
+  title,
+  description,
   dataLength,
   timeWindowDays,
   totalDataSize,
   provider,
 }: {
+  title: string;
+  description: string;
   dataLength: number;
   timeWindowDays: number;
   totalDataSize: number;
@@ -74,7 +78,7 @@ export const shareImageResponse = ({
                 lineHeight: 1.0,
               }}
             >
-              My Contributions
+              {title}
             </div>
             <div
               style={{
@@ -82,7 +86,7 @@ export const shareImageResponse = ({
                 lineHeight: 1,
               }}
             >
-              {`Data contributed via ${provider} for the last ${timeWindowDays} days on my platform`}
+              {description}
             </div>
           </div>
           <div

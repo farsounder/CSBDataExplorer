@@ -23,6 +23,36 @@ const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
   );
 };
 
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { providerId: string };
+  searchParams?: { timeWindowDays: string };
+}) {
+  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  return {
+    title: `CSB Data for ID: ${params.providerId} | ${timeWindowDays} Days`,
+    description: `CSB data collected by provider ${params.providerId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
+    openGraph: {
+      title: `CSB Data for ID: ${params.providerId} | ${timeWindowDays} Days`,
+      images: [
+        {
+          url: `/api/og/provider/${params.providerId}.png?timeWindowDays=${timeWindowDays}`,
+        },
+      ],
+      url: `/provider/${params.providerId}?timeWindowDays=${timeWindowDays}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: `/provider/${params.providerId}?timeWindowDays=${timeWindowDays}`,
+      images: `/api/og/provider/${params.providerId}.png?timeWindowDays=${timeWindowDays}`,
+    },
+  };
+}
+
+
 export default async function ProviderPage({
   params,
   searchParams,

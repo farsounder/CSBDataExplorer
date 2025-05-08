@@ -1,4 +1,4 @@
-import { getPlatformCountPerDayData } from "../../../../../services/noaa";
+import { getPlatformCountPerDayData, getProviderCountPerDayData } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
 
@@ -7,10 +7,10 @@ export async function GET(
   {
     params,
   }: {
-    params: { noaaId: string };
+    params: { providerId: string };
   }
 ) {
-  if (!params.noaaId) {
+  if (!params.providerId) {
     return new Response("no id provided", { status: 404 });
   }
 
@@ -23,25 +23,24 @@ export async function GET(
   }
 
   // strip out the .png if it was included
-  if (params.noaaId.includes(".png")) {
-    params.noaaId = params.noaaId.replace(".png", "");
+  if (params.providerId.includes(".png")) {
+    params.providerId = params.providerId.replace(".png", "");
   }
 
-  const data = await getPlatformCountPerDayData({
-    noaaId: params.noaaId,
+  const data = await getProviderCountPerDayData({
+    provider: params.providerId,
     timeWindowDays: timeWindowDays,
   });
 
   const noData = !data || data.length === 0;
-  const provider = noData ? "No Data" : data[0].provider;
   const totalDataSize = data.reduce((acc, d) => d.dataSize + acc, 0);
 
   try {
     return shareImageResponse({
-      title: "Platform Contributions",
-      description: `Data contributed via ${provider} for the last ${timeWindowDays} days on my platform`,
+      title: "Provider Contributions",
+      description: `Total data contributed via ${params.providerId} for the last ${timeWindowDays} days`,
       dataLength: data.length,
-      provider,
+      provider: params.providerId,
       totalDataSize,
       timeWindowDays,
     });
