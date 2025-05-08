@@ -52,6 +52,7 @@ function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
         <div className="text-xs">Unique ID: {platform.noaa_id}</div>
         <div className="text-xs">Vessel: {platform.platform}</div>
         <div className="text-xs">Trusted Node: {platform.provider}</div>
+        <div className="text-xs"> NOTE: Data displayed on the map is all time </div>
       </div>
     </div>
   );
@@ -96,7 +97,12 @@ export default async function Page({
       <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
         {platform && (
           <Suspense fallback={<div>Loading...</div>}>
-            <ToggleStatsCard>
+            <ToggleStatsCard
+              triggerTitle="See/Share Platform Stats"
+              triggerDescription="Click to view a summary of the data collected by this vessel over the selected time window."
+              title="Platform Stats Summary"
+              description="A simple summary of the data collected by this vessel over the selected time window."
+            >
               <StatsCard platformId={platformId} timeWindowDays={timeWindowDays}>
                 <SocialButtons platformId={platformId} timeWindowDays={timeWindowDays} />
               </StatsCard>

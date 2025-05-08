@@ -7,13 +7,7 @@ import { ChartPieIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-function ShareCard({
-  userData,
-  timeWindowDays,
-}: {
-  userData: UserData;
-  timeWindowDays: number;
-}) {
+function ShareCard({ userData, timeWindowDays }: { userData: UserData; timeWindowDays: number }) {
   const noaa_id = userData?.csbPlatform?.noaa_id;
   if (!noaa_id) {
     return null;

@@ -20,3 +20,11 @@ export type CSBData = {
 export type CSBPlatformData = {
   noaa_id: string;
 } & CSBData;
+
+export type CSBProvider = {
+  provider: string;
+};
+
+export type CSBProviderData = {
+  provider: string;
+} & CSBData;

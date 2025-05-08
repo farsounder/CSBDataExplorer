@@ -56,6 +56,8 @@ export async function GET(
 
   try {
     return shareImageResponse({
+      title: "Platform Contributions",
+      description: `Total data contributed via ${provider} for the last ${timeWindowDays} days on my platform`,
       dataLength: data.length,
       provider,
       totalDataSize,

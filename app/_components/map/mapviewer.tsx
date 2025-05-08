@@ -59,19 +59,34 @@ const getTooltip = (info: PickingInfo): TooltipContent => {
   return null;
 };
 
-const getLayerFilterString = (noaaId: string): string => {
-  if (noaaId) {
-    return `UPPER(EXTERNAL_ID) LIKE '${noaaId.toUpperCase()}'`;
+const getLayerFilterString = ({
+  platformId,
+  providerId,
+}: {
+  platformId?: string;
+  providerId?: string;
+}): string => {
+  if (platformId) {
+    return `UPPER(EXTERNAL_ID) LIKE '${platformId.toUpperCase()}'`;
+  }
+  if (providerId) {
+    return `UPPER(PROVIDER) LIKE '${providerId.toUpperCase()}'`;
   }
   return "";
 };
 
-const getCSBLayer = (noaaId: string): TileLayer | null => {
+const getCSBLayer = ({
+  platformId,
+  providerId,
+}: {
+  platformId?: string;
+  providerId?: string;
+}): TileLayer | null => {
   const baseUrl =
     "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
   const layer = new TileLayer({
-    id: noaaId,
+    id: platformId || providerId,
     getTileData: (tile) => {
       const bbox = tile.bbox as GeoBoundingBox;
       const [west, south] = proj4("EPSG:4326", "EPSG:3857", [bbox.west, bbox.south]);
@@ -79,7 +94,10 @@ const getCSBLayer = (noaaId: string): TileLayer | null => {
       const bboxString = `bbox=${west},${south},${east},${north}`;
       const sizeString = "size=256,256";
       // this filters the data to only show the users data
-      const filterStr = getLayerFilterString(noaaId);
+      const filterStr = getLayerFilterString({
+        platformId,
+        providerId,
+      });
       const layerDefs = `layerDefs={"0": "${filterStr}", "1": "${filterStr}"}`;
       return `${baseUrl}&${bboxString}&bboxSR=3857&imageSR=3857&${sizeString}&f=image&${layerDefs}`;
     },
@@ -186,7 +204,13 @@ function LayerLegend({ layers, handler }: { layers: Layer[]; handler: TypeToggle
   );
 }
 
-export default function MapViewer({ platformId }: { platformId?: string }) {
+export default function MapViewer({
+  platformId,
+  providerId,
+}: {
+  platformId?: string;
+  providerId?: string;
+}) {
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
 
   const [layers, setLayers] = useState<TileLayer[]>(getDefaultLayers());
@@ -215,7 +239,7 @@ export default function MapViewer({ platformId }: { platformId?: string }) {
   // add the information to their account
   useEffect(() => {
     if (platformId) {
-      const userCSBLayer = getCSBLayer(platformId);
+      const userCSBLayer = getCSBLayer({ platformId: platformId });
       if (userCSBLayer) {
         setLayers([...getDefaultLayers(), userCSBLayer]);
       }
@@ -223,6 +247,15 @@ export default function MapViewer({ platformId }: { platformId?: string }) {
     }
     setLayers(getDefaultLayers());
   }, [platformId]);
+
+  useEffect(() => {
+    if (providerId) {
+      const userCSBLayer = getCSBLayer({ providerId: providerId });
+      if (userCSBLayer) {
+        setLayers([...getDefaultLayers(), userCSBLayer]);
+      }
+    }
+  }, [providerId]);
 
   const handleToggleLegendVisible = () => {
     if (legendRef.current) {
