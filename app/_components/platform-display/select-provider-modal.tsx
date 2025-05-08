@@ -18,8 +18,6 @@ import {
 import { useMemo } from "react";
 import { CSBProvider } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
-
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 
 export function SelectProviderModal({
@@ -29,7 +27,7 @@ export function SelectProviderModal({
 }: {
   availableProviders: CSBProvider[];
   selectedProvider?: string;
-  setSelectedProvider: (provider: string) => void;
+  setSelectedProvider: (provider: CSBProvider) => void;
 }) {
   const { toast } = useToast();
   const router = useRouter();
@@ -49,7 +47,7 @@ export function SelectProviderModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="secondary">Change Trusted Node</Button>
+        <Button variant="secondary" className="text-xs lg:text-sm">Change TN</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -70,7 +68,9 @@ export function SelectProviderModal({
               onValueChange={(name: string) => {
                 // get the noaa_id from the selected platform name
                 const provider = availableProviders.find((ap) => ap.provider === name);
-                setSelectedProvider(provider?.provider || "");
+                if (provider) {
+                  setSelectedProvider(provider);
+                }
               }}
             >
               <SelectTrigger>
@@ -96,7 +96,10 @@ export function SelectProviderModal({
                   if (!selectedProvider) {
                     return;
                   }
-                  setSelectedProvider(selectedProvider);
+                  const provider = availableProviders.find((ap) => ap.provider === selectedProvider);
+                  if (provider) {
+                    setSelectedProvider(provider);
+                  }
                   toast({
                     title: "Success!",
                     description: "Your Trusted Node has been updated",

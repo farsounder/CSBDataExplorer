@@ -19,7 +19,6 @@ import { useMemo, useCallback, memo } from "react";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 import { CSBPlatform } from "@/lib/types";
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { AutoSizer, List } from "react-virtualized";
 
@@ -78,7 +77,7 @@ const VirtualizedSelectContent = memo(function VirtualizedSelectContent({
   );
 });
 
-const SelectShipModal = memo(function SelectShipModal({
+function SelectShipModal({
   availablePlatforms,
   selectedUserData,
   saveUserData,
@@ -115,9 +114,7 @@ const SelectShipModal = memo(function SelectShipModal({
     [selectedUserData]
   );
 
-  // Memoize the handlers
-  const handlePlatformChange = useCallback(
-    (name: string) => {
+  const handlePlatformChange = (name: string) => {
       const platform = availablePlatforms.find((ap) => ap.platform === name);
       saveUserData({
         ...selectedUserData,
@@ -127,13 +124,10 @@ const SelectShipModal = memo(function SelectShipModal({
           noaa_id: platform?.noaa_id || "",
           provider: platform?.provider || "",
         },
-      } as UserData);
-    },
-    [availablePlatforms, selectedUserData, saveUserData]
-  );
+    } as UserData);
+  };
 
-  const handleNoaaIdChange = useCallback(
-    (id: string) => {
+  const handleNoaaIdChange = (id: string) => {
       const platform = availablePlatforms.find((ap) => ap.noaa_id === id);
       saveUserData({
         ...selectedUserData,
@@ -144,11 +138,9 @@ const SelectShipModal = memo(function SelectShipModal({
           provider: platform?.provider || "",
         },
       } as UserData);
-    },
-    [availablePlatforms, selectedUserData, saveUserData]
-  );
+  };
 
-  const handleSave = useCallback(() => {
+  const handleSave = () => {
     if (!selectedUserData) return;
 
     saveUserData(selectedUserData);
@@ -157,7 +149,7 @@ const SelectShipModal = memo(function SelectShipModal({
       description: "Your platform has been updated",
     });
     router.push(`/platform/${selectedUserData.csbPlatform.noaa_id}`);
-  }, [selectedUserData, saveUserData, toast, router]);
+  };
 
   return (
     <Dialog>
@@ -237,6 +229,6 @@ const SelectShipModal = memo(function SelectShipModal({
       </DialogContent>
     </Dialog>
   );
-});
+};
 
 export { SelectShipModal };

@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { SelectProviderModal } from "./select-provider-modal";
+import { useLocalStorage } from "@/app/hooks/useLocalStorage";
 
 // generic display panel to wrap the platform or provider display panels
 // decide which one to show based on the pathname
@@ -22,46 +23,43 @@ export default function DisplayPanel({
   const isProvider = pathname.includes("provider");
   if (isPlatform) {
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 p-4">
         <PlatformDisplayPanel availablePlatforms={availablePlatforms} />
-        <Link href="/provider">
-          <Button>Trusted Node View</Button>
+        <Link href="/provider" className="w-full sm:w-auto">
+          <Button className="w-full text-xs lg:text-sm">Trusted Node</Button>
         </Link>
       </div>
     );
   } else if (isProvider) {
     return (
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 p-4">
         <ProviderDisplayPanel availableProviders={availableProviders} />
-        <Link href="/platform">
-          <Button>Platform View</Button>
+        <Link href="/platform" className="w-full sm:w-auto">
+          <Button className="w-full text-xs lg:text-sm">Platform</Button>
         </Link>
       </div>
     );
   } else {
     return (
-      <div className="flex gap-2">
-        <Link href="/platform">
-          <Button>Platform View</Button>
+      <div className="flex flex-col sm:flex-row gap-2 p-4">
+        <Link href="/platform" className="w-full sm:w-auto">
+          <Button className="w-full text-xs lg:text-sm">Platform</Button>
         </Link>
-        <Link href="/provider">
-          <Button variant="secondary">Trusted Node View</Button>
+        <Link href="/provider" className="w-full sm:w-auto">
+          <Button variant="secondary" className="w-full text-xs lg:text-sm">
+            Trusted Node
+          </Button>
         </Link>
       </div>
     );
   }
 }
 
-function ProviderDisplayPanel({
-  availableProviders,
-}: {
-  availableProviders: CSBProvider[];
-}) {
-  // same as platform display panel but for providers
+function ProviderDisplayPanel({ availableProviders }: { availableProviders: CSBProvider[] }) {
+  const [ providerData, setProviderData ] = useLocalStorage<CSBProvider>("provider", undefined);
   const { toast } = useToast();
 
   const [selectedProvider, setSelectedProvider] = useState<string>();
-  const pathname = usePathname();
   useEffect(() => {
     if (!availableProviders || availableProviders.length === 0) {
       toast({
@@ -73,54 +71,24 @@ function ProviderDisplayPanel({
     }
   }, [availableProviders, toast]);
 
-  /*useEffect(() => {
-    const user = localStorage.getItem("user") ?? "{}";
-    const data = JSON.parse(user);
-    const providerId = pathname.split("/").pop();
-    if (providerId) {
-      const provider = availableProviders.find(
-        (ap) => ap.provider.toUpperCase() === providerId.toUpperCase()
-      );
-      if (provider) {
-        saveUserData({
-          csbProvider: provider,
-        });
-        return;
-      }
-    }
-    if (data) {
-      setUserData(data);
-    }
-  }, [pathname, availableProviders]);*/
-
-  /*const saveUserData = (userData: UserData) => {
-    // update state and save in local storage
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUserData(userData);
-  };*/
 
   return (
-    <div className="px-8 gap-2 items-center justify-center hidden sm:flex">
-      <div className="flex justify-center items-center">
+    <div className="px-4 sm:px-8 gap-2 items-center justify-center flex flex-col sm:flex-row">
+      <div className="flex justify-center items-center w-full">
         <SelectProviderModal
           availableProviders={availableProviders}
-          selectedProvider={selectedProvider}
-          setSelectedProvider={setSelectedProvider}
+          selectedProvider={providerData?.provider}
+          setSelectedProvider={setProviderData}
         />
       </div>
     </div>
   );
 }
 
-function PlatformDisplayPanel({
-  availablePlatforms,
-}: {
-  availablePlatforms: CSBPlatform[];
-}) {
+function PlatformDisplayPanel({ availablePlatforms }: { availablePlatforms: CSBPlatform[] }) {
   const { toast } = useToast();
 
-  const [userData, setUserData] = useState<UserData>();
-  const pathname = usePathname();
+  const [userData, setUserData] = useLocalStorage<UserData>("user", undefined);
 
   useEffect(() => {
     if (!availablePlatforms || availablePlatforms.length === 0) {
@@ -133,41 +101,13 @@ function PlatformDisplayPanel({
     }
   }, [availablePlatforms, toast]);
 
-  useEffect(() => {
-    const user = localStorage.getItem("user") ?? "{}";
-    const data = JSON.parse(user);
-    const platformId = pathname.split("/").pop();
-    if (platformId) {
-      const platform = availablePlatforms.find(
-        (ap) => ap.noaa_id.toUpperCase() === platformId.toUpperCase()
-      );
-      if (platform) {
-        saveUserData({
-          platform_nickname: "My boat",
-          ...data,
-          csbPlatform: platform,
-        });
-        return;
-      }
-    }
-    if (data) {
-      setUserData(data);
-    }
-  }, [pathname, availablePlatforms]);
-
-  const saveUserData = (userData: UserData) => {
-    // update state and save in local storage
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUserData(userData);
-  };
-
   return (
-    <div className="px-8 gap-2 items-center justify-center hidden sm:flex">
-      <div className="flex justify-center items-center">
+    <div className="px-4 sm:px-8 gap-2 items-center justify-center flex flex-col sm:flex-row">
+      <div className="flex justify-center items-center w-full">
         <SelectShipModal
           availablePlatforms={availablePlatforms}
           selectedUserData={userData}
-          saveUserData={saveUserData}
+          saveUserData={setUserData}
         />
       </div>
     </div>
