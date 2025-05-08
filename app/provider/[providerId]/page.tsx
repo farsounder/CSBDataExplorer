@@ -1,6 +1,27 @@
 import MapViewer from "@/app/_components/map/mapviewer";
+import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
+import { CSBProvider } from "@/lib/types";
 import { getProviderInfoFromNoaa } from "@/services/noaa";
+import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
+import { Suspense } from "react";
+import StatsCardTrustedNode from "@/app/_components/stats/stats-card-provider";
+import ToggleChartButton from "@/app/provider/[providerId]/_components/plot/toggle-chart-button";
+import PlotContainer from "@/app/provider/[providerId]/_components/plot/plot-container";
+
+const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
+  return (
+    <div className="p-2 bg-white bg-opacity-80 rounded-lg flex items-center">
+      <div className="p-2">
+        <BuildingOfficeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
+      </div>
+      <div>
+        <div className="text-sm font-bold text-blue-800">Displaying data for:</div>
+        <div className="text-xs">Trusted Node: {provider.provider}</div>
+      </div>
+    </div>
+  );
+};
 
 export default async function ProviderPage({
   params,
@@ -29,29 +50,35 @@ export default async function ProviderPage({
     throw new Error("Invalid provider ID");
   }
 
+  const providerData = validProvider.find((provider) => provider.provider === decodedProviderId);
+
   return (
     <div className="flex flex-col p-0 m-0 h-full relative">
-      {/*platform?.provider && (
+      {providerData && (
         <ToggleChartButton>
           <PlotContainer
-            platformId={platformId}
-            provider={platform.provider}
+            provider={providerData}
             timeWindowDays={timeWindowDays}
           />
         </ToggleChartButton>
-      )*/}
+      )}
       <MapViewer providerId={decodedProviderId} />
-      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
-        {/*platform && (
+      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-1/2 pr-8 max-w-lg">
+        {providerData && (
           <Suspense fallback={<div>Loading...</div>}>
-            <ToggleStatsCard>
-              <StatsCard platformId={platformId} timeWindowDays={timeWindowDays}>
-                <SocialButtons platformId={platformId} timeWindowDays={timeWindowDays} />
-              </StatsCard>
+            <ToggleStatsCard
+              triggerTitle="See/Share Platform Stats"
+              triggerDescription="Click to view a summary of the data collected by this provider over the selected time window."
+              title="Trusted Node Stats Summary"
+              description="A simple summary of the data collected by this provider over the selected time window."
+            >
+              <StatsCardTrustedNode providerId={decodedProviderId} timeWindowDays={timeWindowDays}>
+                <></>
+              </StatsCardTrustedNode>
             </ToggleStatsCard>
           </Suspense>
-        )*/}
-        {/*platform && <VesselInfoDisplay platform={platform} />*/}
+        )}
+        {providerData && <ProviderInfoDisplay provider={providerData} />}
       </div>
     </div>
   );

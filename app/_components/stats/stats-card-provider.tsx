@@ -1,12 +1,14 @@
 import { BuildingOfficeIcon, CalendarIcon, FaceFrownIcon } from "@heroicons/react/24/outline";
-import { getPlatformCountPerDayData } from "@/services/noaa";
+import { getPlatformCountPerDayData, getProviderCountPerDayData } from "@/services/noaa";
 import { formatNumber, bytesToDepthPoints } from "@/lib/utils";
 
 function NoDataCard({
   platformId,
+  providerId,
   timeWindowDays,
 }: {
-  platformId: string;
+  platformId?: string;
+  providerId?: string;
   timeWindowDays: number;
 }) {
   return (
@@ -18,7 +20,8 @@ function NoDataCard({
         No data found in the last{" "}
         <span className="text-blue-500 font-bold">{timeWindowDays} days</span>
       </div>
-      <div className="text-xs text-gray-500">Unique ID: {platformId}</div>
+      {platformId && <div className="text-xs text-gray-500">Unique ID: {platformId}</div>}
+      {providerId && <div className="text-xs text-gray-500">Trusted Node: {providerId}</div>}
     </div>
   );
 }
@@ -32,32 +35,31 @@ function CoolNumber({ stat, label }: { stat: number; label: string }) {
   );
 }
 
-export default async function StatsCard({
-  platformId,
+export default async function StatsCardTrustedNode({
+  providerId,
   timeWindowDays,
   children,
 }: {
-  platformId: string;
+  providerId: string;
   timeWindowDays: number;
   children: React.ReactNode;
 }) {
-  const data = await getPlatformCountPerDayData({
-    noaaId: platformId,
+  const data = await getProviderCountPerDayData({
+    provider: providerId,
     timeWindowDays: timeWindowDays,
   });
 
   if (!data || data.length === 0) {
-    return <NoDataCard platformId={platformId} timeWindowDays={timeWindowDays} />;
+    return <NoDataCard providerId={providerId} timeWindowDays={timeWindowDays} />;
   }
 
   const totalDataSize = data.reduce((acc, { dataSize }) => acc + dataSize, 0);
-  const provider = data[0].provider;
   return (
     <div className="flex flex-col gap-4">
       <div className="">
         <div className="text-gray-500 text-sm flex items-center">
           <BuildingOfficeIcon className="w-4 h-4 inline-block" />
-          Trusted Node: {provider}
+          Trusted Node: {providerId}
         </div>
         <div className="text-gray-500 text-sm flex items-center">
           <CalendarIcon className="w-4 h-4 inline-block" />
