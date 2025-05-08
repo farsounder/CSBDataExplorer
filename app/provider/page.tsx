@@ -6,25 +6,23 @@ import { CSBProvider } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+const defaultProvider = {
+  provider: "FarSounder",
+};
+
 export default function ProviderPage() {
-  const [providerData] = useLocalStorage<CSBProvider>("provider", undefined);
+  const [providerData] = useLocalStorage<CSBProvider>("provider", defaultProvider);
   const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    if (!providerData) {
+    if (providerData) {
       toast({
-        title: "No Trusted Node Selected",
-        description:
-          "Please select a Trusted Node using the 'Change Trusted Node' button at the top of the page",
+        title: "Redirecting to your default provider",
+        description: `Your default provider is: ${providerData.provider}`,
       });
-      return;
+      router.push(`/provider/${providerData.provider}`);
     }
-    toast({
-      title: "Redirecting to your last selected provider",
-      description: `Your last selected provider is: ${providerData.provider}`,
-    });
-    router.push(`/provider/${providerData.provider}`);
   }, [providerData, router, toast]);
 
   return (
