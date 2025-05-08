@@ -62,15 +62,20 @@ const baseStatistics = [
 
 // Generic function to generate stats URL
 function generateStatsUrl(
-  identifier: { type: "provider" | "platform"; value: string },
-  timeWindowDays: number
+  timeWindowDays: number,
+  filters?: { type: "provider" | "platform"; value: string }[]
 ): string {
-  const field = identifier.type === "provider" ? "PROVIDER" : "EXTERNAL_ID";
-  const where = `UPPER(${field}) LIKE '${identifier.value}' AND START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${timeWindowDays}' DAY`;
-
+  let where = `START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${timeWindowDays}' DAY`;
+  if (filters) {
+    where += filters.map((filter) => {
+      const field = filter.type === "provider" ? "PROVIDER" : "EXTERNAL_ID";
+      return ` AND UPPER(${field}) LIKE '${filter.value}'`;
+    }).join("");
+  }
+  const groupByFields = "EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)";
   return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(
     baseStatistics
-  )}&groupByFieldsForStatistics=UPPER(PROVIDER),EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)`;
+  )}&groupByFieldsForStatistics=${groupByFields}`;
 }
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
@@ -119,23 +124,44 @@ export async function getProviderCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBData[]> {
   try {
-    const url = generateStatsUrl(
-      { type: "provider", value: provider.toUpperCase() },
-      timeWindowDays
-    );
+    const url = generateStatsUrl(timeWindowDays, [{ type: "provider", value: provider.toUpperCase() }]);
     const data = await fetchNoaaData<any>({ url });
 
     return (
       data.features?.map((item: any) => ({
-        provider: item.attributes.Expr1,
-        month: item.attributes.Expr2,
-        day: item.attributes.Expr3,
-        year: item.attributes.Expr4,
+        month: item.attributes.Expr1,
+        day: item.attributes.Expr2,
+        year: item.attributes.Expr3,
+        provider: provider,
         dataSize: item.attributes.total_data_size,
       })) ?? []
     );
   } catch (error) {
     console.error("Error fetching provider data:", error);
+    return [];
+  }
+}
+
+export async function getTotalPerDayAllProviders({
+  timeWindowDays,
+}: {
+  timeWindowDays: number;
+}): Promise<CSBData[]> {
+  // Return the total data size per day, across all providers
+  try {
+    const url = generateStatsUrl(timeWindowDays, []);
+    const data = await fetchNoaaData<any>({ url });
+
+    return (
+      data.features?.map((item: any) => ({
+        month: item.attributes.Expr1,
+        day: item.attributes.Expr2,
+        year: item.attributes.Expr3,
+        dataSize: item.attributes.total_data_size,
+      })) ?? []
+    );
+  } catch (error) {
+    console.error("Error fetching total per day data:", error);
     return [];
   }
 }
@@ -148,17 +174,21 @@ export async function getPlatformCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBPlatformData[]> {
   try {
-    const url = generateStatsUrl({ type: "platform", value: noaaId.toUpperCase() }, timeWindowDays);
+    const url = generateStatsUrl(timeWindowDays, [{ type: "platform", value: noaaId.toUpperCase() }]);
     const data = await fetchNoaaData<any>({ url });
+
+    // Get the provider from the noaaId
+    const providers = await getProviderInfoFromNoaa();
+    const provider = providers.find((p) => p.provider === noaaId);
 
     return (
       data.features?.map((item: any) => ({
-        provider: item.attributes.Expr1,
         noaaId,
-        month: item.attributes.Expr2,
-        day: item.attributes.Expr3,
-        year: item.attributes.Expr4,
+        month: item.attributes.Expr1,
+        day: item.attributes.Expr2,
+        year: item.attributes.Expr3,
         dataSize: item.attributes.total_data_size,
+        provider: provider?.provider,
       })) ?? []
     );
   } catch (error) {

@@ -1,4 +1,4 @@
-import { getPlatformCountPerDayData, getProviderCountPerDayData } from "@/services/noaa";
+import { getPlatformCountPerDayData, getProviderCountPerDayData, getTotalPerDayAllProviders } from "@/services/noaa";
 import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { CSBProvider } from "@/lib/types";
@@ -31,9 +31,15 @@ export default async function PlotContainer({
   provider: CSBProvider;
   timeWindowDays: number;
 }) {
-  const [providerData, platformData] = await Promise.all([
+  const [providerData, totalData] = await Promise.all([
     getProviderCountPerDayData({
       provider: provider.provider,
+      timeWindowDays: timeWindowDays,
+    }).catch((e) => {
+      console.error(e);
+      return [];
+    }),
+    getTotalPerDayAllProviders({
       timeWindowDays: timeWindowDays,
     }).catch((e) => {
       console.error(e);
@@ -46,7 +52,7 @@ export default async function PlotContainer({
   return (
     <>
       {showPlot ? (
-        <ContributionsPlot providerContributions={providerData} />
+        <ContributionsPlot providerContributions={providerData} totalData={totalData} />
       ) : (
         <ErrorMessage timeWindowDays={timeWindowDays} />
       )}
