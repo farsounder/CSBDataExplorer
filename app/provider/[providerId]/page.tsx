@@ -18,6 +18,7 @@ const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
       <div>
         <div className="text-sm font-bold text-blue-800">Displaying data for:</div>
         <div className="text-xs">Trusted Node: {provider.provider}</div>
+        <div className="text-xs"> NOTE: Data displayed on the map is all time </div>
       </div>
     </div>
   );

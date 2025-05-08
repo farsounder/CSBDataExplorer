@@ -52,6 +52,7 @@ function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
         <div className="text-xs">Unique ID: {platform.noaa_id}</div>
         <div className="text-xs">Vessel: {platform.platform}</div>
         <div className="text-xs">Trusted Node: {platform.provider}</div>
+        <div className="text-xs"> NOTE: Data displayed on the map is all time </div>
       </div>
     </div>
   );
