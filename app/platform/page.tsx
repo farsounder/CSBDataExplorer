@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 
 export default function PlatformPage() {
-  const [ userData ] = useLocalStorage<UserData>("user", undefined);
+  const [userData] = useLocalStorage<UserData>("user", undefined);
   const { toast } = useToast();
   const router = useRouter();
 

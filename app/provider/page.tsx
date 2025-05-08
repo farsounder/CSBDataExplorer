@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function ProviderPage() {
-  const [ providerData ] = useLocalStorage<CSBProvider>("provider", undefined);
+  const [providerData] = useLocalStorage<CSBProvider>("provider", undefined);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -15,7 +15,8 @@ export default function ProviderPage() {
     if (!providerData) {
       toast({
         title: "No Trusted Node Selected",
-        description: "Please select a Trusted Node using the 'Change Trusted Node' button at the top of the page",
+        description:
+          "Please select a Trusted Node using the 'Change Trusted Node' button at the top of the page",
       });
       return;
     }

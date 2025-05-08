@@ -115,29 +115,29 @@ function SelectShipModal({
   );
 
   const handlePlatformChange = (name: string) => {
-      const platform = availablePlatforms.find((ap) => ap.platform === name);
-      saveUserData({
-        ...selectedUserData,
-        csbPlatform: {
-          ...selectedUserData?.csbPlatform,
-          platform: name,
-          noaa_id: platform?.noaa_id || "",
-          provider: platform?.provider || "",
-        },
+    const platform = availablePlatforms.find((ap) => ap.platform === name);
+    saveUserData({
+      ...selectedUserData,
+      csbPlatform: {
+        ...selectedUserData?.csbPlatform,
+        platform: name,
+        noaa_id: platform?.noaa_id || "",
+        provider: platform?.provider || "",
+      },
     } as UserData);
   };
 
   const handleNoaaIdChange = (id: string) => {
-      const platform = availablePlatforms.find((ap) => ap.noaa_id === id);
-      saveUserData({
-        ...selectedUserData,
-        csbPlatform: {
-          ...selectedUserData?.csbPlatform,
-          noaa_id: id,
-          platform: platform?.platform || "",
-          provider: platform?.provider || "",
-        },
-      } as UserData);
+    const platform = availablePlatforms.find((ap) => ap.noaa_id === id);
+    saveUserData({
+      ...selectedUserData,
+      csbPlatform: {
+        ...selectedUserData?.csbPlatform,
+        noaa_id: id,
+        platform: platform?.platform || "",
+        provider: platform?.provider || "",
+      },
+    } as UserData);
   };
 
   const handleSave = () => {
@@ -229,6 +229,6 @@ function SelectShipModal({
       </DialogContent>
     </Dialog>
   );
-};
+}
 
 export { SelectShipModal };

@@ -1,4 +1,8 @@
-import { getPlatformCountPerDayData, getProviderCountPerDayData, getTotalPerDayAllProviders } from "@/services/noaa";
+import {
+  getPlatformCountPerDayData,
+  getProviderCountPerDayData,
+  getTotalPerDayAllProviders,
+} from "@/services/noaa";
 import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { CSBProvider } from "@/lib/types";

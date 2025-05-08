@@ -23,7 +23,6 @@ const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
   );
 };
 
-
 export async function generateMetadata({
   params,
   searchParams,
@@ -51,7 +50,6 @@ export async function generateMetadata({
     },
   };
 }
-
 
 export default async function ProviderPage({
   params,
@@ -86,10 +84,7 @@ export default async function ProviderPage({
     <div className="flex flex-col p-0 m-0 h-full relative">
       {providerData && (
         <ToggleChartButton>
-          <PlotContainer
-            provider={providerData}
-            timeWindowDays={timeWindowDays}
-          />
+          <PlotContainer provider={providerData} timeWindowDays={timeWindowDays} />
         </ToggleChartButton>
       )}
       <MapViewer providerId={decodedProviderId} />

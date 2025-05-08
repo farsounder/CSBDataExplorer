@@ -56,7 +56,7 @@ export default function DisplayPanel({
 }
 
 function ProviderDisplayPanel({ availableProviders }: { availableProviders: CSBProvider[] }) {
-  const [ providerData, setProviderData ] = useLocalStorage<CSBProvider>("provider", undefined);
+  const [providerData, setProviderData] = useLocalStorage<CSBProvider>("provider", undefined);
   const { toast } = useToast();
 
   const [selectedProvider, setSelectedProvider] = useState<string>();
@@ -70,7 +70,6 @@ function ProviderDisplayPanel({ availableProviders }: { availableProviders: CSBP
       });
     }
   }, [availableProviders, toast]);
-
 
   return (
     <div className="px-4 sm:px-8 gap-2 items-center justify-center flex flex-col sm:flex-row">

@@ -25,8 +25,9 @@ export default async function Header() {
             <TimeWindowSelect />
             {availablePlatforms && (
               <DisplayPanel
-              availablePlatforms={availablePlatforms}
-              availableProviders={availableProviders} />
+                availablePlatforms={availablePlatforms}
+                availableProviders={availableProviders}
+              />
             )}
           </Suspense>
         </div>

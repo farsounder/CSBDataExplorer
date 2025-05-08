@@ -67,12 +67,15 @@ function generateStatsUrl(
 ): string {
   let where = `START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${timeWindowDays}' DAY`;
   if (filters) {
-    where += filters.map((filter) => {
-      const field = filter.type === "provider" ? "PROVIDER" : "EXTERNAL_ID";
-      return ` AND UPPER(${field}) LIKE '${filter.value}'`;
-    }).join("");
+    where += filters
+      .map((filter) => {
+        const field = filter.type === "provider" ? "PROVIDER" : "EXTERNAL_ID";
+        return ` AND UPPER(${field}) LIKE '${filter.value}'`;
+      })
+      .join("");
   }
-  const groupByFields = "EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)";
+  const groupByFields =
+    "EXTRACT(MONTH from START_DATE),EXTRACT(DAY from START_DATE),EXTRACT(YEAR FROM START_DATE)";
   return `${NOAA_BASE}&where=${where}&returnGeometry=false&outStatistics=${JSON.stringify(
     baseStatistics
   )}&groupByFieldsForStatistics=${groupByFields}`;
@@ -124,7 +127,9 @@ export async function getProviderCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBData[]> {
   try {
-    const url = generateStatsUrl(timeWindowDays, [{ type: "provider", value: provider.toUpperCase() }]);
+    const url = generateStatsUrl(timeWindowDays, [
+      { type: "provider", value: provider.toUpperCase() },
+    ]);
     const data = await fetchNoaaData<any>({ url });
 
     return (
@@ -174,7 +179,9 @@ export async function getPlatformCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBPlatformData[]> {
   try {
-    const url = generateStatsUrl(timeWindowDays, [{ type: "platform", value: noaaId.toUpperCase() }]);
+    const url = generateStatsUrl(timeWindowDays, [
+      { type: "platform", value: noaaId.toUpperCase() },
+    ]);
     const data = await fetchNoaaData<any>({ url });
 
     // Get the provider from the noaaId

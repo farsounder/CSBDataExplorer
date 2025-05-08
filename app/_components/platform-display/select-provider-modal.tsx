@@ -47,22 +47,22 @@ export function SelectProviderModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="text-xs lg:text-sm">Change TN</Button>
+        <Button variant="secondary" className="text-xs lg:text-sm">
+          Change TN
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            <span className="sm:text-xl text-gray-800">
-              Select a NOAA Trusted Node
-            </span>
+            <span className="sm:text-xl text-gray-800">Select a NOAA Trusted Node</span>
           </DialogTitle>
           <DialogDescription>
             Select a NOAA Trusted Node to track its stats relative to other NOAA Trusted Nodes.
           </DialogDescription>
         </DialogHeader>
-          <div className="flex flex-col justity-center items-center gap-2 text-gray-600">
-            <div className="text-left w-full pl-4">Select one of:</div>
-            <div className="border p-4 rounded-lg w-full">
+        <div className="flex flex-col justity-center items-center gap-2 text-gray-600">
+          <div className="text-left w-full pl-4">Select one of:</div>
+          <div className="border p-4 rounded-lg w-full">
             <Select
               value={selectedProvider}
               onValueChange={(name: string) => {
@@ -86,31 +86,31 @@ export function SelectProviderModal({
                 })}
               </SelectContent>
             </Select>
-            </div>
-            <DialogTrigger asChild>
-              <Button
-                type="submit"
-                className="px-3 bg-blue-700"
-                disabled={isButtonDisabled}
-                onClick={() => {
-                  if (!selectedProvider) {
-                    return;
-                  }
-                  const provider = availableProviders.find((ap) => ap.provider === selectedProvider);
-                  if (provider) {
-                    setSelectedProvider(provider);
-                  }
-                  toast({
-                    title: "Success!",
-                    description: "Your Trusted Node has been updated",
-                  });
-                  router.push(`/provider/${selectedProvider}`);
-                }}
-              >
-                Save
-              </Button>
-            </DialogTrigger>
           </div>
+          <DialogTrigger asChild>
+            <Button
+              type="submit"
+              className="px-3 bg-blue-700"
+              disabled={isButtonDisabled}
+              onClick={() => {
+                if (!selectedProvider) {
+                  return;
+                }
+                const provider = availableProviders.find((ap) => ap.provider === selectedProvider);
+                if (provider) {
+                  setSelectedProvider(provider);
+                }
+                toast({
+                  title: "Success!",
+                  description: "Your Trusted Node has been updated",
+                });
+                router.push(`/provider/${selectedProvider}`);
+              }}
+            >
+              Save
+            </Button>
+          </DialogTrigger>
+        </div>
       </DialogContent>
     </Dialog>
   );

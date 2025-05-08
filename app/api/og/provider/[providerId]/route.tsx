@@ -1,4 +1,7 @@
-import { getPlatformCountPerDayData, getProviderCountPerDayData } from "../../../../../services/noaa";
+import {
+  getPlatformCountPerDayData,
+  getProviderCountPerDayData,
+} from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
 
