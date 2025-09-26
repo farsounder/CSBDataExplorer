@@ -8,6 +8,7 @@ import { Suspense } from "react";
 import StatsCardTrustedNode from "@/app/_components/stats/stats-card-provider";
 import ToggleChartButton from "@/app/provider/[providerId]/_components/plot/toggle-chart-button";
 import PlotContainer from "@/app/provider/[providerId]/_components/plot/plot-container";
+import SocialButtonsProvider from "@/app/_components/stats/social-buttons-provider";
 
 const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
   return (
@@ -81,6 +82,8 @@ export default async function ProviderPage({
 
   const providerData = validProvider.find((provider) => provider.provider === decodedProviderId);
 
+  const captureElementId = "stats-card-provider-capture";
+
   return (
     <div className="flex flex-col p-0 m-0 h-full relative">
       {providerData && (
@@ -98,8 +101,15 @@ export default async function ProviderPage({
               title="Trusted Node Stats Summary"
               description="A simple summary of the data collected by this provider over the selected time window."
             >
-              <StatsCardTrustedNode providerId={decodedProviderId} timeWindowDays={timeWindowDays}>
-                <></>
+              <StatsCardTrustedNode
+                providerId={decodedProviderId}
+                timeWindowDays={timeWindowDays}
+                captureElementId={captureElementId}
+              >
+                <SocialButtonsProvider
+                  captureElementId={captureElementId}
+                  fileBase={`csb-provider-${decodedProviderId}-${timeWindowDays}`}
+                />
               </StatsCardTrustedNode>
             </ToggleStatsCard>
           </Suspense>
