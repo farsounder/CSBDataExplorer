@@ -25,8 +25,8 @@ function NoDataCard({
 
 function CoolNumber({ stat, label }: { stat: number; label: string }) {
   return (
-    <div className="flex flex-col items-center border border-gray-200 rounded-lg p-4 shadow-lg">
-      <div className="text-4xl font-bold text-blue-800">{formatNumber(stat)}</div>
+    <div className="flex flex-col items-center border border-gray-200 rounded-lg p-4 shadow-lg bg-white">
+      <div className="text-3xl font-bold text-blue-800">{formatNumber(stat)}</div>
       <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
@@ -36,10 +36,12 @@ export default async function StatsCard({
   platformId,
   timeWindowDays,
   children,
+  captureElementId,
 }: {
   platformId: string;
   timeWindowDays: number;
   children: React.ReactNode;
+  captureElementId?: string;
 }) {
   const data = await getPlatformCountPerDayData({
     noaaId: platformId,
@@ -54,28 +56,34 @@ export default async function StatsCard({
   const provider = data[0].provider;
   return (
     <div className="flex flex-col gap-4">
-      <div className="">
-        <div className="text-gray-500 text-sm flex items-center">
-          <BuildingOfficeIcon className="w-4 h-4 inline-block" />
-          Trusted Node: {provider}
+      <div
+        id={captureElementId}
+        className="bg-white rounded-xl p-6 shadow-lg border border-gray-200"
+      >
+        <div className="text-blue-800 text-xl font-bold text-center">Platform Stats Summary</div>
+        <div className="mt-2 flex flex-col items-center gap-1">
+          <div className="text-gray-500 text-sm flex items-center justify-center gap-2">
+            <BuildingOfficeIcon className="w-4 h-4 inline-block" />
+            <span>Trusted Node: {provider}</span>
+          </div>
+          <div className="text-gray-500 text-sm flex items-center justify-center gap-2">
+            <CalendarIcon className="w-4 h-4 inline-block" />
+            <span>Time Window: {timeWindowDays} days</span>
+          </div>
         </div>
-        <div className="text-gray-500 text-sm flex items-center">
-          <CalendarIcon className="w-4 h-4 inline-block" />
-          Time Window: {timeWindowDays} days
+        <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-3 text-center">
+          <CoolNumber stat={data.length} label={`of ${timeWindowDays} days with data`} />
+          <CoolNumber stat={totalDataSize} label="approximate bytes of data" />
+          <CoolNumber
+            stat={bytesToDepthPoints(totalDataSize)}
+            label="approximate depth measurements"
+          />
         </div>
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 text-center">
-        <CoolNumber stat={data.length} label={`of ${timeWindowDays} days with data`} />
-        <CoolNumber stat={totalDataSize} label="approximate bytes of data" />
-        <CoolNumber
-          stat={bytesToDepthPoints(totalDataSize)}
-          label="approximate depth measurements"
-        />
-      </div>
-      <div>
-        <div className="text-gray-500 text-xs text-center">
-          <span className="font-bold">Note:</span> These are approximate values based on the data we
-          have collected.
+        <div className="mt-4">
+          <div className="text-gray-500 text-xs text-center">
+            <span className="font-bold">Note:</span> These are approximate values based on the data
+            we have collected.
+          </div>
         </div>
       </div>
       <div className="pt-4 flex flex-col gap-1">{children}</div>

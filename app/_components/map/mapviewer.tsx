@@ -269,9 +269,11 @@ export default function MapViewer({
     <div className="relative h-full">
       <DeckGL
         initialViewState={viewState}
-        views={new MapView({
-          repeat: true,
-        })}
+        views={
+          new MapView({
+            repeat: true,
+          })
+        }
         controller={true}
         layers={layers}
         getTooltip={getTooltip}

@@ -1,29 +1,19 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { LinkIcon, CopyIcon, DownloadIcon } from "lucide-react";
-import { createUniqueIdAction } from "@/app/actions";
-
+import { CopyIcon, DownloadIcon } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { toPng } from "html-to-image";
 
-export default function SocialButtons({
-  platformId,
-  timeWindowDays,
+export default function SocialButtonsProvider({
   captureElementId,
+  fileBase,
 }: {
-  platformId: string;
-  timeWindowDays: number;
   captureElementId?: string;
+  fileBase: string;
 }) {
-  const createUniqueIdActionWithPlatformId = createUniqueIdAction.bind(null, {
-    platformId,
-  });
-
-  const router = useRouter();
   const { toast } = useToast();
 
   const getCaptureElement = (): HTMLElement | null => {
-    const id = captureElementId || "stats-card-capture";
+    const id = captureElementId || "stats-card-provider-capture";
     return document.getElementById(id);
   };
 
@@ -82,7 +72,7 @@ export default function SocialButtons({
       });
       const link = document.createElement("a");
       link.href = dataUrl;
-      link.download = `csb-stats-${platformId}-${timeWindowDays}.png`;
+      link.download = `${fileBase}.png`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -97,7 +87,6 @@ export default function SocialButtons({
     }
   };
 
-  // TODO: dry out handler
   return (
     <div className="flex justify-center space-x-4">
       <CopyIcon
@@ -107,26 +96,6 @@ export default function SocialButtons({
       <DownloadIcon
         className="w-8 h-8 text-blue-800 hover:cursor-pointer"
         onClick={downloadImage}
-      />
-      <LinkIcon
-        className="w-8 h-8 text-blue-800 hover:cursor-pointer"
-        onClick={async () => {
-          toast({
-            title: "Making a unique share URL...",
-            description:
-              "Generating unique share URL for your platform, you will be redirected shortly...",
-          });
-          const id = await createUniqueIdActionWithPlatformId();
-          if (id) {
-            router.push(`/share/${id}?timeWindowDays=${timeWindowDays}`);
-          } else {
-            toast({
-              title: "Error",
-              description: "Failed to generate unique share URL",
-              variant: "destructive",
-            });
-          }
-        }}
       />
     </div>
   );

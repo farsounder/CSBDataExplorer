@@ -82,6 +82,8 @@ export default async function Page({
 
   const platform = validPlatforms.find((platform) => platform.noaa_id === platformId);
 
+  const captureElementId = "stats-card-capture";
+
   return (
     <div className="flex flex-col p-0 m-0 h-full relative">
       {platform?.provider && (
@@ -103,8 +105,16 @@ export default async function Page({
               title="Platform Stats Summary"
               description="A simple summary of the data collected by this vessel over the selected time window."
             >
-              <StatsCard platformId={platformId} timeWindowDays={timeWindowDays}>
-                <SocialButtons platformId={platformId} timeWindowDays={timeWindowDays} />
+              <StatsCard
+                platformId={platformId}
+                timeWindowDays={timeWindowDays}
+                captureElementId={captureElementId}
+              >
+                <SocialButtons
+                  platformId={platformId}
+                  timeWindowDays={timeWindowDays}
+                  captureElementId={captureElementId}
+                />
               </StatsCard>
             </ToggleStatsCard>
           </Suspense>
