@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import proj4 from "proj4";
+import { MapView } from "@deck.gl/core/typed";
 import DeckGL from "@deck.gl/react/typed";
 import { TileLayer, MVTLayer, GeoBoundingBox } from "@deck.gl/geo-layers/typed";
 import { BitmapLayer } from "@deck.gl/layers/typed";
@@ -119,7 +120,7 @@ const getDefaultLayers = (): TileLayer[] => {
   return [
     new TileLayer({
       id: OSM_BASE_LAYER_NAME,
-      data: "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      data: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       minZoom: 0,
       maxZoom: 19,
       tileSize: 256,
@@ -268,6 +269,9 @@ export default function MapViewer({
     <div className="relative h-full">
       <DeckGL
         initialViewState={viewState}
+        views={new MapView({
+          repeat: true,
+        })}
         controller={true}
         layers={layers}
         getTooltip={getTooltip}
