@@ -65,7 +65,6 @@ export default async function StatsCardTrustedNode({
         <div className="text-blue-800 text-xl font-bold text-center">
           Trusted Node Stats Summary
         </div>
-        <div className="text-gray-500 text-xs text-center mt-1">Trusted Node: {providerId}</div>
         <div className="mt-2 flex flex-col items-center gap-1">
           <div className="text-gray-500 text-sm flex items-center justify-center gap-2">
             <BuildingOfficeIcon className="w-4 h-4 inline-block" />
