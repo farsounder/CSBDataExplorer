@@ -1,6 +1,7 @@
 "use client";
 import Plot from "react-plotly.js";
 import { CSBData, CSBPlatformData } from "@/lib/types";
+import { formatNumber } from "@/lib/utils";
 
 export default function ContributionsPlot({
   userContributions,
@@ -10,6 +11,8 @@ export default function ContributionsPlot({
   providerContributions: CSBData[];
 }) {
   const provider = providerContributions[0].provider;
+  const providerTotal = providerContributions.reduce((acc, d) => d.dataSize + acc, 0);
+  const userTotal = userContributions.reduce((acc, d) => d.dataSize + acc, 0);
   return (
     <Plot
       className="w-full h-full"
@@ -18,14 +21,14 @@ export default function ContributionsPlot({
           x: providerContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
           y: providerContributions.map((d) => d.dataSize),
           type: "bar",
-          name: `All ${provider}`,
+          name: `All ${provider} (${formatNumber(providerTotal)})`,
           hovertemplate: "Date: %{x}<br>Data: %{y}",
         },
         {
           x: userContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
           y: userContributions.map((d) => d.dataSize),
           type: "bar",
-          name: "Your Contributions",
+          name: `Your Contributions (${formatNumber(userTotal)})`,
           hovertemplate: "Date: %{x}<br>Data: %{y}",
         },
       ]}
