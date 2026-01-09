@@ -2,22 +2,19 @@ import db from "../../../../../lib/db";
 import { getPlatformCountPerDayData } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
+import type { NextRequest } from "next/server";
 
 export async function GET(
-  request: Request,
-  {
-    params,
-  }: {
-    params: { randomId: string };
-  }
+  request: NextRequest,
+  { params }: { params: Promise<{ randomId: string }> }
 ) {
-  if (!params.randomId) {
+  const { randomId } = await params;
+  if (!randomId) {
     return new Response("no id provided", { status: 404 });
   }
+
   // strip out the .png if it was included
-  if (params.randomId.includes(".png")) {
-    params.randomId = params.randomId.replace(".png", "");
-  }
+  const identifier = randomId.includes(".png") ? randomId.replace(".png", "") : randomId;
 
   const { searchParams } = new URL(request.url);
   const timeWindowDays = Number(searchParams.get("timeWindowDays")) || 30;
@@ -30,7 +27,7 @@ export async function GET(
 
   // get platform id for the random_id from prisma
   const row = await db.platformIdentifier.findFirst({
-    where: { id: params.randomId },
+    where: { id: identifier },
   });
 
   if (!row) {

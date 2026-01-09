@@ -8,10 +8,12 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: { uniqueId: string };
-  searchParams?: { timeWindowDays: string };
+  params: Promise<{ uniqueId: string }>;
+  searchParams?: Promise<{ timeWindowDays?: string }>;
 }) {
-  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const { uniqueId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
+  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   return {
     title: `My CSB Data Summary | ${timeWindowDays} days`,
     description: `CSB data collected in the DCDB Crowd-sourced Bathymetry  Database.`,
@@ -19,13 +21,13 @@ export async function generateMetadata({
       title: `My CSB Data summary for ${timeWindowDays} days`,
       images: [
         {
-          url: `/api/og/share/${params.uniqueId}.png?timeWindowDays=${timeWindowDays}`,
+          url: `/api/og/share/${uniqueId}.png?timeWindowDays=${timeWindowDays}`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      images: `/api/og/share/${params.uniqueId}.png?timeWindowDays=${timeWindowDays}`,
+      images: `/api/og/share/${uniqueId}.png?timeWindowDays=${timeWindowDays}`,
     },
   };
 }
@@ -34,12 +36,12 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { uniqueId: string };
-  searchParams?: { timeWindowDays: string };
+  params: Promise<{ uniqueId: string }>;
+  searchParams?: Promise<{ timeWindowDays?: string }>;
 }) {
-  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
-
-  const { uniqueId } = params;
+  const { uniqueId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
+  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
 
   // hit db to get platformId, check if it's valid
   const res = await db.platformIdentifier.findUnique({

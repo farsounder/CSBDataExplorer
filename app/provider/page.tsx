@@ -26,8 +26,10 @@ export default function ProviderPage() {
   }, [providerData, router, toast]);
 
   return (
-    <div className="flex flex-col p-0 m-0 h-full relative">
-      <MapViewer />
+    <div className="flex flex-col p-0 m-0 flex-1 min-h-0 relative">
+      <div className="flex-1 min-h-0">
+        <MapViewer />
+      </div>
     </div>
   );
 }

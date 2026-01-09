@@ -1,18 +1,10 @@
 import {
-  getPlatformCountPerDayData,
   getProviderCountPerDayData,
   getTotalPerDayAllProviders,
 } from "@/services/noaa";
-import dynamic from "next/dynamic";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { CSBProvider } from "@/lib/types";
-
-// was getting an ssr error with the plotly plot, this should force it to be
-// completely client side, we need this file to be server side rendered so it
-// can fetch the data
-const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
-  ssr: false,
-});
+import PlotClient from "./plot-client";
 
 const ErrorMessage = ({ timeWindowDays }: { timeWindowDays: number }) => {
   return (
@@ -56,7 +48,7 @@ export default async function PlotContainer({
   return (
     <>
       {showPlot ? (
-        <ContributionsPlot providerContributions={providerData} totalData={totalData} />
+        <PlotClient providerContributions={providerData} totalData={totalData} />
       ) : (
         <ErrorMessage timeWindowDays={timeWindowDays} />
       )}

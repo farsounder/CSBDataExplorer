@@ -4,16 +4,14 @@ import {
 } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
+import type { NextRequest } from "next/server";
 
 export async function GET(
-  request: Request,
-  {
-    params,
-  }: {
-    params: { providerId: string };
-  }
+  request: NextRequest,
+  { params }: { params: Promise<{ providerId: string }> }
 ) {
-  if (!params.providerId) {
+  const { providerId } = await params;
+  if (!providerId) {
     return new Response("no id provided", { status: 404 });
   }
 
@@ -26,12 +24,10 @@ export async function GET(
   }
 
   // strip out the .png if it was included
-  if (params.providerId.includes(".png")) {
-    params.providerId = params.providerId.replace(".png", "");
-  }
+  const provider = providerId.includes(".png") ? providerId.replace(".png", "") : providerId;
 
   const data = await getProviderCountPerDayData({
-    provider: params.providerId,
+    provider,
     timeWindowDays: timeWindowDays,
   });
 
@@ -41,9 +37,9 @@ export async function GET(
   try {
     return shareImageResponse({
       title: "Provider Contributions",
-      description: `Total data contributed via ${params.providerId} for the last ${timeWindowDays} days`,
+      description: `Total data contributed via ${provider} for the last ${timeWindowDays} days`,
       dataLength: data.length,
-      provider: params.providerId,
+      provider,
       totalDataSize,
       timeWindowDays,
     });

@@ -29,26 +29,28 @@ export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: { providerId: string };
-  searchParams?: { timeWindowDays: string };
+  params: Promise<{ providerId: string }>;
+  searchParams?: Promise<{ timeWindowDays?: string }>;
 }) {
-  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const { providerId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
+  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   return {
-    title: `CSB Data for ID: ${params.providerId} | ${timeWindowDays} Days`,
-    description: `CSB data collected by provider ${params.providerId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
+    title: `CSB Data for ID: ${providerId} | ${timeWindowDays} Days`,
+    description: `CSB data collected by provider ${providerId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
     openGraph: {
-      title: `CSB Data for ID: ${params.providerId} | ${timeWindowDays} Days`,
+      title: `CSB Data for ID: ${providerId} | ${timeWindowDays} Days`,
       images: [
         {
-          url: `/api/og/provider/${params.providerId}.png?timeWindowDays=${timeWindowDays}`,
+          url: `/api/og/provider/${providerId}.png?timeWindowDays=${timeWindowDays}`,
         },
       ],
-      url: `/provider/${params.providerId}?timeWindowDays=${timeWindowDays}`,
+      url: `/provider/${providerId}?timeWindowDays=${timeWindowDays}`,
     },
     twitter: {
       card: "summary_large_image",
-      site: `/provider/${params.providerId}?timeWindowDays=${timeWindowDays}`,
-      images: `/api/og/provider/${params.providerId}.png?timeWindowDays=${timeWindowDays}`,
+      site: `/provider/${providerId}?timeWindowDays=${timeWindowDays}`,
+      images: `/api/og/provider/${providerId}.png?timeWindowDays=${timeWindowDays}`,
     },
   };
 }
@@ -57,15 +59,16 @@ export default async function ProviderPage({
   params,
   searchParams,
 }: {
-  params: { providerId: string };
-  searchParams?: { timeWindowDays: string };
+  params: Promise<{ providerId: string }>;
+  searchParams?: Promise<{ timeWindowDays?: string }>;
 }) {
-  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const { providerId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
+  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   if (isNaN(timeWindowDays)) {
     throw new Error("Invalid time window days");
   }
 
-  const { providerId } = params;
   // it's URL encoded, so we need to decode it
   const decodedProviderId = decodeURIComponent(providerId);
   const validProvider = await getProviderInfoFromNoaa();
@@ -85,13 +88,15 @@ export default async function ProviderPage({
   const captureElementId = "stats-card-provider-capture";
 
   return (
-    <div className="flex flex-col p-0 m-0 h-full relative">
+    <div className="flex flex-col p-0 m-0 flex-1 min-h-0 relative">
       {providerData && (
         <ToggleChartButton>
           <PlotContainer provider={providerData} timeWindowDays={timeWindowDays} />
         </ToggleChartButton>
       )}
-      <MapViewer providerId={decodedProviderId} />
+      <div className="flex-1 min-h-0">
+        <MapViewer providerId={decodedProviderId} />
+      </div>
       <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-1/2 pr-8 max-w-lg">
         {providerData && (
           <Suspense fallback={<div>Loading...</div>}>

@@ -9,34 +9,36 @@ import StatsCard from "@/app/_components/stats/stats-card";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
 import SocialButtons from "@/app/_components/stats/social-buttons-with-create";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
-import { DATA_CACHE_SECONDS } from "@/lib/constants";
-
-export const revalidate = DATA_CACHE_SECONDS;
+// Next 16 requires segment config exports like `revalidate` to be statically analyzable.
+// Using an imported constant can be flagged as invalid, so keep this as a literal.
+export const revalidate = 21600; // 6 hours
 
 export async function generateMetadata({
   params,
   searchParams,
 }: {
-  params: { platformId: string };
-  searchParams?: { timeWindowDays: string };
+  params: Promise<{ platformId: string }>;
+  searchParams?: Promise<{ timeWindowDays?: string }>;
 }) {
-  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const { platformId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
+  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   return {
-    title: `CSB Data for ID: ${params.platformId} | ${timeWindowDays} Days`,
-    description: `CSB data collected by platform ${params.platformId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
+    title: `CSB Data for ID: ${platformId} | ${timeWindowDays} Days`,
+    description: `CSB data collected by platform ${platformId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
     openGraph: {
-      title: `CSB Data for ID: ${params.platformId} | ${timeWindowDays} Days`,
+      title: `CSB Data for ID: ${platformId} | ${timeWindowDays} Days`,
       images: [
         {
-          url: `/api/og/platform/${params.platformId}.png?timeWindowDays=${timeWindowDays}`,
+          url: `/api/og/platform/${platformId}.png?timeWindowDays=${timeWindowDays}`,
         },
       ],
-      url: `/platform/${params.platformId}?timeWindowDays=${timeWindowDays}`,
+      url: `/platform/${platformId}?timeWindowDays=${timeWindowDays}`,
     },
     twitter: {
       card: "summary_large_image",
-      site: `/platform/${params.platformId}?timeWindowDays=${timeWindowDays}`,
-      images: `/api/og/platform/${params.platformId}.png?timeWindowDays=${timeWindowDays}`,
+      site: `/platform/${platformId}?timeWindowDays=${timeWindowDays}`,
+      images: `/api/og/platform/${platformId}.png?timeWindowDays=${timeWindowDays}`,
     },
   };
 }
@@ -62,12 +64,12 @@ export default async function Page({
   params,
   searchParams,
 }: {
-  params: { platformId: string };
-  searchParams?: { timeWindowDays: string };
+  params: Promise<{ platformId: string }>;
+  searchParams?: Promise<{ timeWindowDays?: string }>;
 }) {
-  const timeWindowDays = Number(searchParams?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
-
-  const { platformId } = params;
+  const { platformId } = await params;
+  const sp = searchParams ? await searchParams : undefined;
+  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
   const validPlatforms = await getPlatformInfoFromNoaa();
 
   if (!validPlatforms || validPlatforms.length === 0) {
@@ -85,7 +87,7 @@ export default async function Page({
   const captureElementId = "stats-card-capture";
 
   return (
-    <div className="flex flex-col p-0 m-0 h-full relative">
+    <div className="flex flex-col p-0 m-0 flex-1 min-h-0 relative">
       {platform?.provider && (
         <ToggleChartButton>
           <PlotContainer
@@ -95,7 +97,9 @@ export default async function Page({
           />
         </ToggleChartButton>
       )}
-      <MapViewer platformId={platformId} />
+      <div className="flex-1 min-h-0">
+        <MapViewer platformId={platformId} />
+      </div>
       <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
         {platform && (
           <Suspense fallback={<div>Loading...</div>}>
