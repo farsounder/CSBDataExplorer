@@ -1,16 +1,14 @@
 import { getPlatformCountPerDayData } from "../../../../../services/noaa";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
+import type { NextRequest } from "next/server";
 
 export async function GET(
-  request: Request,
-  {
-    params,
-  }: {
-    params: { noaaId: string };
-  }
+  request: NextRequest,
+  { params }: { params: Promise<{ noaaId: string }> }
 ) {
-  if (!params.noaaId) {
+  const { noaaId } = await params;
+  if (!noaaId) {
     return new Response("no id provided", { status: 404 });
   }
 
@@ -23,12 +21,10 @@ export async function GET(
   }
 
   // strip out the .png if it was included
-  if (params.noaaId.includes(".png")) {
-    params.noaaId = params.noaaId.replace(".png", "");
-  }
+  const platformId = noaaId.includes(".png") ? noaaId.replace(".png", "") : noaaId;
 
   const data = await getPlatformCountPerDayData({
-    noaaId: params.noaaId,
+    noaaId: platformId,
     timeWindowDays: timeWindowDays,
   });
 

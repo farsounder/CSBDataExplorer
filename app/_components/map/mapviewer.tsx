@@ -212,11 +212,13 @@ export default function MapViewer({
   platformId?: string;
   providerId?: string;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [viewState, setViewState] = useState<ViewState>(INITIAL_VIEW_STATE);
 
   const [layers, setLayers] = useState<TileLayer[]>(getDefaultLayers());
   const [legendVisible, setLegendVisible] = useState(false);
   const legendRef = useRef<HTMLDivElement>(null);
+  const [containerSize, setContainerSize] = useState<{ w: number; h: number }>({ w: 0, h: 0 });
 
   const handleToggleLayerVisibility = (layerId: string) => {
     const newLayers = layers.map((layer) => {
@@ -234,6 +236,27 @@ export default function MapViewer({
     if (storedViewState) {
       setViewState(JSON.parse(storedViewState));
     }
+  }, []);
+
+  // Track container size. DeckGL can mount while the parent is 0x0 (especially during layout
+  // shifts/hydration), and it doesn't always recompute its internal viewport unless width/height change.
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const el = containerRef.current;
+
+    const update = () => {
+      const r = el.getBoundingClientRect();
+      setContainerSize({ w: Math.round(r.width), h: Math.round(r.height) });
+    };
+
+    update();
+    const ro = new ResizeObserver(() => update());
+    ro.observe(el);
+
+    return () => {
+      ro.disconnect();
+    };
   }, []);
 
   // Add data layer for CSB from this user when auth state changes or they
@@ -266,25 +289,34 @@ export default function MapViewer({
   };
 
   return (
-    <div className="relative h-full">
-      <DeckGL
-        initialViewState={viewState}
-        views={
-          new MapView({
-            repeat: true,
-          })
-        }
-        controller={true}
-        layers={layers}
-        getTooltip={getTooltip}
-        onViewStateChange={(e) => {
-          const { viewState } = e;
-          if (!viewState) {
-            return;
+    <div ref={containerRef} className="relative w-full h-full">
+      {containerSize.w > 0 && containerSize.h > 0 ? (
+        <DeckGL
+          // When the container starts at 0x0 during initial layout, DeckGL can miss the resize.
+          // Passing explicit width/height (driven by ResizeObserver) forces correct viewport sizing.
+          width={containerSize.w}
+          height={containerSize.h}
+          initialViewState={viewState}
+          views={
+            new MapView({
+              repeat: true,
+            })
           }
-          localStorage.setItem("viewState", JSON.stringify(viewState));
-        }}
-      />
+          style={{ position: "absolute", top: "0", right: "0", bottom: "0", left: "0" }}
+          controller={true}
+          layers={layers}
+          getTooltip={getTooltip}
+          onViewStateChange={(e) => {
+            const { viewState } = e;
+            if (!viewState) {
+              return;
+            }
+            localStorage.setItem("viewState", JSON.stringify(viewState));
+          }}
+        />
+      ) : (
+        <div className="absolute inset-0" />
+      )}
       <Button
         variant="outline"
         className="absolute top-4 right-4 bg-white/60 visible md:hidden"

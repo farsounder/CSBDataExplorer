@@ -7,6 +7,7 @@ const nextConfig = {
     };
     return config;
   },
+  turbopack: {},
   /*async redirects() {
     return [
       {
