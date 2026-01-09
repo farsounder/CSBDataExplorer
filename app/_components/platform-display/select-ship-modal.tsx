@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMemo, useCallback, memo } from "react";
+import { useMemo, useCallback, memo, useEffect, useState } from "react";
 import { UserData } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 import { CSBPlatform } from "@/lib/types";
@@ -81,13 +81,25 @@ function SelectShipModal({
   availablePlatforms,
   selectedUserData,
   saveUserData,
+  openByDefault = false,
 }: {
   availablePlatforms: CSBPlatform[];
   selectedUserData?: UserData;
   saveUserData: (userData: UserData) => void;
+  openByDefault?: boolean;
 }) {
   const { toast } = useToast();
   const router = useRouter();
+  const [open, setOpen] = useState(openByDefault);
+
+  // `openByDefault` can flip from false -> true after hydration; when it does,
+  // we want to open the dialog without relying on remounting.
+  useEffect(() => {
+    if (openByDefault && !open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOpen(true);
+    }
+  }, [openByDefault, open]);
 
   // remove duplicates for platform list dropdown
   const uniquePlatforms = useMemo(
@@ -149,10 +161,11 @@ function SelectShipModal({
       description: "Your platform has been updated",
     });
     router.push(`/platform/${selectedUserData.csbPlatform.noaa_id}`);
+    setOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="secondary">Change Vessel</Button>
       </DialogTrigger>
@@ -215,16 +228,9 @@ function SelectShipModal({
               </Select>
             </div>
           </div>
-          <DialogTrigger asChild>
-            <Button
-              type="submit"
-              className="px-3 bg-blue-700"
-              disabled={isButtonDisabled}
-              onClick={handleSave}
-            >
-              Save
-            </Button>
-          </DialogTrigger>
+          <Button type="submit" className="px-3 bg-blue-700" disabled={isButtonDisabled} onClick={handleSave}>
+            Save
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

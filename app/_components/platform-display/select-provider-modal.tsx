@@ -48,7 +48,7 @@ export function SelectProviderModal({
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="secondary" className="text-xs lg:text-sm">
-          Change TN
+          Change Trusted Node
         </Button>
       </DialogTrigger>
       <DialogContent>
