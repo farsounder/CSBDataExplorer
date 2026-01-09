@@ -9,11 +9,12 @@ export default function Page() {
   const router = useRouter();
   const didRedirectRef = useRef(false);
 
-  const [userData] = useLocalStorage<UserData>("user", undefined);
-  const [providerData] = useLocalStorage<CSBProvider>("provider", undefined);
+  const [userData, , userHydrated] = useLocalStorage<UserData>("user", undefined);
+  const [providerData, , providerHydrated] = useLocalStorage<CSBProvider>("provider", undefined);
 
   useEffect(() => {
     if (didRedirectRef.current) return;
+    if (!userHydrated || !providerHydrated) return;
 
     const platformId = userData?.csbPlatform?.noaa_id;
     const providerId = providerData?.provider;
@@ -29,7 +30,7 @@ export default function Page() {
       didRedirectRef.current = true;
       router.push(`/provider/${providerId}`);
     }
-  }, [providerData?.provider, router, userData?.csbPlatform?.noaa_id]);
+  }, [providerData?.provider, providerHydrated, router, userData?.csbPlatform?.noaa_id, userHydrated]);
 
   return (
     <div className="flex flex-col p-0 m-0 flex-1 min-h-0 relative">

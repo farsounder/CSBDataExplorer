@@ -95,11 +95,11 @@ function SelectShipModal({
   // `openByDefault` can flip from false -> true after hydration; when it does,
   // we want to open the dialog without relying on remounting.
   useEffect(() => {
-    if (openByDefault) {
+    if (openByDefault && !open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpen(true);
     }
-  }, [openByDefault]);
+  }, [openByDefault, open]);
 
   // remove duplicates for platform list dropdown
   const uniquePlatforms = useMemo(
