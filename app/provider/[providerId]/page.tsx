@@ -97,7 +97,7 @@ export default async function ProviderPage({
       <div className="flex-1 min-h-0">
         <MapViewer providerId={decodedProviderId} />
       </div>
-      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-1/2 pr-8 max-w-lg">
+      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
         {providerData && (
           <Suspense fallback={<div>Loading...</div>}>
             <ToggleStatsCard
