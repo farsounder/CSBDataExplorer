@@ -108,26 +108,6 @@ export default function SocialButtons({
         className="w-8 h-8 text-blue-800 hover:cursor-pointer"
         onClick={downloadImage}
       />
-      <LinkIcon
-        className="w-8 h-8 text-blue-800 hover:cursor-pointer"
-        onClick={async () => {
-          toast({
-            title: "Making a unique share URL...",
-            description:
-              "Generating unique share URL for your platform, you will be redirected shortly...",
-          });
-          const id = await createUniqueIdActionWithPlatformId();
-          if (id) {
-            router.push(`/share/${id}?timeWindowDays=${timeWindowDays}`);
-          } else {
-            toast({
-              title: "Error",
-              description: "Failed to generate unique share URL",
-              variant: "destructive",
-            });
-          }
-        }}
-      />
     </div>
   );
 }
