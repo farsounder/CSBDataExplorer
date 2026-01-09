@@ -2,7 +2,7 @@
 import { CSBPlatform, CSBProvider, UserData } from "@/lib/types";
 import { SelectShipModal } from "./select-ship-modal";
 import { useToast } from "@/components/ui/use-toast";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { SelectProviderModal } from "./select-provider-modal";
 import { useLocalStorage } from "@/app/hooks/useLocalStorage";
@@ -27,8 +27,8 @@ export default function DisplayPanel({
   // Helps the toggle "do the right thing" when switching modes:
   // - If we have a last-selected item in localStorage, jump straight to it.
   // - Otherwise, fall back to the base pages (which themselves may redirect).
-  const [providerData] = useLocalStorage<CSBProvider>("provider", undefined);
-  const [userData] = useLocalStorage<UserData>("user", undefined);
+  const [providerData, , providerHydrated] = useLocalStorage<CSBProvider>("provider", undefined);
+  const [userData, , userHydrated] = useLocalStorage<UserData>("user", undefined);
   const providerId = providerData?.provider;
   const platformId = userData?.csbPlatform?.noaa_id;
   const hasProviderPreset = Boolean(providerId);
@@ -38,10 +38,13 @@ export default function DisplayPanel({
   const platformHref = platformId ? `/platform/${platformId}` : "/platform";
 
   const mode: "provider" | "platform" | "none" = isPlatform ? "platform" : isProvider ? "provider" : "none";
+  const effectiveMode: "provider" | "platform" | undefined =
+    mode !== "none" ? mode : hasPlatformPreset ? "platform" : hasProviderPreset ? "provider" : undefined;
 
   // If the user is on a "neutral" route (e.g. /) and hasn't selected either mode yet,
   // open a short chooser modal instead of defaulting the toggle to "Platform".
-  const shouldAskForMode = mode === "none" && !hasProviderPreset && !hasPlatformPreset;
+  const shouldAskForMode =
+    mode === "none" && providerHydrated && userHydrated && !hasProviderPreset && !hasPlatformPreset;
   if (shouldAskForMode) {
     return (
       <ModeSelectDialog
@@ -56,12 +59,14 @@ export default function DisplayPanel({
       {mode === "platform" && <PlatformDisplayPanel availablePlatforms={availablePlatforms} />}
       {mode === "provider" && <ProviderDisplayPanel availableProviders={availableProviders} />}
 
-      <ModeToggle
-        mode={mode === "none" ? "platform" : mode}
-        onToggle={() => {
-          router.push(mode === "platform" ? providerHref : platformHref);
-        }}
-      />
+      {effectiveMode && (
+        <ModeToggle
+          mode={effectiveMode}
+          onToggle={() => {
+            router.push(effectiveMode === "platform" ? providerHref : platformHref);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -75,7 +80,7 @@ function ModeSelectDialog({
 }) {
   return (
     <Dialog open>
-      <DialogContent className="max-w-lg">
+      <DialogContent hideClose className="max-w-lg">
         <DialogHeader>
           <DialogTitle>What would you like to explore?</DialogTitle>
           <DialogDescription>
@@ -212,8 +217,9 @@ function ProviderDisplayPanel({ availableProviders }: { availableProviders: CSBP
 function PlatformDisplayPanel({ availablePlatforms }: { availablePlatforms: CSBPlatform[] }) {
   const { toast } = useToast();
 
-  const [userData, setUserData] = useLocalStorage<UserData>("user", undefined);
-  const [autoOpenSelectVessel, setAutoOpenSelectVessel] = useState(false);
+  const [userData, setUserData, userHydrated] = useLocalStorage<UserData>("user", undefined);
+  const hasVessel = Boolean(userData?.csbPlatform?.noaa_id || userData?.csbPlatform?.platform);
+  const autoOpenSelectVessel = userHydrated && !hasVessel;
 
   useEffect(() => {
     if (!availablePlatforms || availablePlatforms.length === 0) {
@@ -225,26 +231,6 @@ function PlatformDisplayPanel({ availablePlatforms }: { availablePlatforms: CSBP
       });
     }
   }, [availablePlatforms, toast]);
-
-  useEffect(() => {
-    // Avoid a "flash open" before localStorage has hydrated.
-    if (typeof window === "undefined") return;
-
-    try {
-      const raw = localStorage.getItem("user");
-      if (!raw) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setAutoOpenSelectVessel(true);
-        return;
-      }
-
-      const parsed = JSON.parse(raw) as UserData | undefined;
-      const hasVessel = Boolean(parsed?.csbPlatform?.noaa_id || parsed?.csbPlatform?.platform);
-      setAutoOpenSelectVessel(!hasVessel);
-    } catch {
-      setAutoOpenSelectVessel(true);
-    }
-  }, []);
 
   return (
     <div className="px-4 sm:px-8 gap-2 items-center justify-center flex flex-col sm:flex-row">

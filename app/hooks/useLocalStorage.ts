@@ -5,9 +5,10 @@ import { useEffect, useState } from "react";
 export function useLocalStorage<T>(
   key: string,
   initialValue: T | undefined
-): [T | undefined, (value: T) => void] {
+): [T | undefined, (value: T) => void, boolean] {
   // start as undefined for the server side
   const [value, setValue] = useState<T | undefined>(undefined);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     // check if we are in the browser
@@ -16,6 +17,7 @@ export function useLocalStorage<T>(
     }
     const item = localStorage.getItem(key);
     setValue(item ? JSON.parse(item) : initialValue);
+    setHydrated(true);
   }, [key, initialValue]);
 
   const updateValue = (value: T) => {
@@ -23,5 +25,5 @@ export function useLocalStorage<T>(
     setValue(value);
   };
 
-  return [value, updateValue];
+  return [value, updateValue, hydrated];
 }

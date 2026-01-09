@@ -92,6 +92,15 @@ function SelectShipModal({
   const router = useRouter();
   const [open, setOpen] = useState(openByDefault);
 
+  // `openByDefault` can flip from false -> true after hydration; when it does,
+  // we want to open the dialog without relying on remounting.
+  useEffect(() => {
+    if (openByDefault) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setOpen(true);
+    }
+  }, [openByDefault]);
+
   // remove duplicates for platform list dropdown
   const uniquePlatforms = useMemo(
     () =>
@@ -154,13 +163,6 @@ function SelectShipModal({
     router.push(`/platform/${selectedUserData.csbPlatform.noaa_id}`);
     setOpen(false);
   };
-
-  useEffect(() => {
-    if (openByDefault) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setOpen(true);
-    }
-  }, [openByDefault]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
