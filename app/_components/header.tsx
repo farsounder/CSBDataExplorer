@@ -1,8 +1,7 @@
 import { getPlatformInfoFromNoaa, getProviderInfoFromNoaa } from "@/services/noaa";
 import Link from "next/link";
-import { TimeWindowSelect } from "./time-window-select";
 import { Suspense } from "react";
-import DisplayPanel from "./platform-display/platform-planel";
+import HeaderControls from "./header-controls";
 
 export default async function Header() {
   const availablePlatforms = await getPlatformInfoFromNoaa();
@@ -28,14 +27,10 @@ export default async function Header() {
             </Link>
           </div>
         </div>
-        <div className="justify-center items-center flex px-4 gap-4">
+        <div className="justify-center items-center flex px-4">
           <Suspense fallback={<div>Loading...</div>}>
-            <TimeWindowSelect />
-            {availablePlatforms && (
-              <DisplayPanel
-                availablePlatforms={availablePlatforms}
-                availableProviders={availableProviders}
-              />
+            {availablePlatforms && availableProviders && (
+              <HeaderControls availablePlatforms={availablePlatforms} availableProviders={availableProviders} />
             )}
           </Suspense>
         </div>
