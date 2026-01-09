@@ -2,18 +2,28 @@
 
 import { Button } from "@/components/ui/button";
 import { ChartBarSquareIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ToggleChartButton({ children }: { children: React.ReactNode }) {
   const [isVisible, setIsVisible] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const didInit = useRef(false);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsSmallScreen(window.innerWidth <= 640);
-      if (window.innerHeight < 600) {
-        setIsVisible(false);
+      const small = window.innerWidth <= 640;
+      setIsSmallScreen(small);
+
+      // Mobile-first: hide by default on small screens, but don't fight the user after init.
+      if (!didInit.current) {
+        const initialVisible = !small && window.innerHeight >= 600;
+        setIsVisible(initialVisible);
+        didInit.current = true;
+        return;
       }
+
+      // If the viewport is very short (landscape phones), keep it hidden to preserve map space.
+      if (window.innerHeight < 600) setIsVisible(false);
     };
     // Initialize on mount so SSR/first client render don't depend on `window`.
     handleResize();
@@ -25,9 +35,8 @@ export default function ToggleChartButton({ children }: { children: React.ReactN
     <>
       <Button
         variant="outline"
-        className="absolute sm:top-4 sm:left-4 z-50 border-0 bg-white/60"
+        className="absolute top-4 left-4 z-50 border-0 bg-white/60"
         onClick={() => setIsVisible(!isVisible)}
-        style={!isVisible && isSmallScreen ? { top: "1rem", left: "1rem" } : undefined}
       >
         {isVisible ? (
           <XMarkIcon className="w-8 h-8 text-gray-500" />
@@ -36,8 +45,15 @@ export default function ToggleChartButton({ children }: { children: React.ReactN
         )}
       </Button>
       {isVisible ? (
-        <div className="w-full sm:w-96 h-1/2 sm:h-80 sm:absolute sm:top-4 sm:left-4 z-10 bg-white rounded-lg p-1 shadow-md lg:w-2/5 lg:h-1/3 min-h-[200px]">
-          {children}{" "}
+        <div
+          className={
+            "absolute left-4 right-4 top-4 z-10 bg-white rounded-lg p-1 shadow-md " +
+            "h-[45vh] max-h-[420px] min-h-[200px] " +
+            "sm:left-4 sm:right-auto sm:w-96 sm:h-80 " +
+            "lg:w-2/5 lg:h-1/3"
+          }
+        >
+          {children}
         </div>
       ) : null}
     </>
