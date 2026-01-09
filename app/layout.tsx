@@ -59,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Use a definite height so children using `h-full` (DeckGL) can resolve percentage heights */}
         <section className="flex h-screen flex-col w-full overflow-hidden">
           <Header />
-          <main className="flex flex-1 min-h-0">
+          <main className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
             <div className="m-0 p-0 w-full flex flex-col flex-1 min-h-0">{children}</div>
           </main>
           <Footer />

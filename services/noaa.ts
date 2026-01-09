@@ -29,6 +29,12 @@ type NoaaApiProviderResponse = {
   }[];
 };
 
+type NoaaApiGroupedStatsResponse = {
+  features?: {
+    attributes: Record<string, any>;
+  }[];
+};
+
 // Common fetch function with error handling
 async function fetchNoaaData<T>({
   url,
@@ -81,6 +87,28 @@ function generateStatsUrl(
   )}&groupByFieldsForStatistics=${groupByFields}`;
 }
 
+function generateGroupedTotalsUrl({
+  timeWindowDays,
+  groupByField,
+  limit,
+}: {
+  timeWindowDays: number;
+  groupByField: "PROVIDER" | "EXTERNAL_ID";
+  limit: number;
+}): string {
+  const where = `START_DATE >= CURRENT_TIMESTAMP - INTERVAL '${timeWindowDays}' DAY`;
+  return (
+    `${NOAA_BASE}` +
+    `&where=${where}` +
+    `&returnGeometry=false` +
+    `&outFields=${groupByField}` +
+    `&outStatistics=${JSON.stringify(baseStatistics)}` +
+    `&groupByFieldsForStatistics=${groupByField}` +
+    `&orderByFields=total_data_size DESC` +
+    `&resultRecordCount=${limit}`
+  );
+}
+
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
   const url = `${NOAA_BASE}&where=1%3D1&outFields=EXTERNAL_ID,PROVIDER,PLATFORM&returnGeometry=false&orderByFields=EXTERNAL_ID&returnDistinctValues=true`;
   return fetchNoaaData<NoaaApiPlatformResponse>({ url }).then((data) =>
@@ -115,6 +143,58 @@ export async function getProviderInfoFromNoaa(): Promise<CSBProvider[]> {
     return await getAllProviders();
   } catch (error) {
     console.error(error);
+    return [];
+  }
+}
+
+export async function getTopProvidersByDataSize({
+  timeWindowDays,
+  limit,
+}: {
+  timeWindowDays: number;
+  limit: number;
+}): Promise<{ provider: string; totalDataSize: number }[]> {
+  try {
+    const url = generateGroupedTotalsUrl({ timeWindowDays, groupByField: "PROVIDER", limit });
+    const data = await fetchNoaaData<NoaaApiGroupedStatsResponse>({ url });
+    const rows =
+      data.features?.map((item) => ({
+        provider: String(item.attributes.PROVIDER),
+        totalDataSize: Number(item.attributes.total_data_size ?? 0),
+      })) ?? [];
+
+    return rows
+      .filter((r) => r.provider && !Number.isNaN(r.totalDataSize))
+      .sort((a, b) => b.totalDataSize - a.totalDataSize)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error fetching top providers:", error);
+    return [];
+  }
+}
+
+export async function getTopPlatformsByDataSize({
+  timeWindowDays,
+  limit,
+}: {
+  timeWindowDays: number;
+  limit: number;
+}): Promise<{ noaaId: string; totalDataSize: number }[]> {
+  try {
+    const url = generateGroupedTotalsUrl({ timeWindowDays, groupByField: "EXTERNAL_ID", limit });
+    const data = await fetchNoaaData<NoaaApiGroupedStatsResponse>({ url });
+    const rows =
+      data.features?.map((item) => ({
+        noaaId: String(item.attributes.EXTERNAL_ID),
+        totalDataSize: Number(item.attributes.total_data_size ?? 0),
+      })) ?? [];
+
+    return rows
+      .filter((r) => r.noaaId && !Number.isNaN(r.totalDataSize))
+      .sort((a, b) => b.totalDataSize - a.totalDataSize)
+      .slice(0, limit);
+  } catch (error) {
+    console.error("Error fetching top platforms:", error);
     return [];
   }
 }
