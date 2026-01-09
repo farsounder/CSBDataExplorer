@@ -19,6 +19,14 @@ export default async function Header() {
               collected and sent to the IHO DCDB
             </div>
           </Link>
+          <div className="mt-2 flex gap-3 text-sm text-gray-600">
+            <Link className="hover:underline" href="/">
+              Map
+            </Link>
+            <Link className="hover:underline" href="/stats">
+              Stats
+            </Link>
+          </div>
         </div>
         <div className="justify-center items-center flex px-4 gap-4">
           <Suspense fallback={<div>Loading...</div>}>

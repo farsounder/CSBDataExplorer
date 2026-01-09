@@ -21,6 +21,8 @@ export default function DisplayPanel({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isStats = pathname.includes("/stats");
+  if (isStats) return null;
   const isPlatform = pathname.includes("platform");
   const isProvider = pathname.includes("provider");
 
