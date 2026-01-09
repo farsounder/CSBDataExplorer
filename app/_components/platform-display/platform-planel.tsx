@@ -29,13 +29,13 @@ export default function DisplayPanel({
   // - Otherwise, fall back to the base pages (which themselves may redirect).
   const [providerData] = useLocalStorage<CSBProvider>("provider", undefined);
   const [userData] = useLocalStorage<UserData>("user", undefined);
-  const hasProviderPreset = Boolean(providerData?.provider);
-  const hasPlatformPreset = Boolean(userData?.csbPlatform?.noaa_id);
+  const providerId = providerData?.provider;
+  const platformId = userData?.csbPlatform?.noaa_id;
+  const hasProviderPreset = Boolean(providerId);
+  const hasPlatformPreset = Boolean(platformId);
 
-  const providerHref = hasProviderPreset ? `/provider/${providerData!.provider}` : "/provider";
-  const platformHref = hasPlatformPreset
-    ? `/platform/${userData.csbPlatform.noaa_id}`
-    : "/platform";
+  const providerHref = providerId ? `/provider/${providerId}` : "/provider";
+  const platformHref = platformId ? `/platform/${platformId}` : "/platform";
 
   const mode: "provider" | "platform" | "none" = isPlatform ? "platform" : isProvider ? "provider" : "none";
 
