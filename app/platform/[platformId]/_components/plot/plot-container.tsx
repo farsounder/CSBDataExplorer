@@ -47,7 +47,11 @@ export default async function PlotContainer({
   return (
     <>
       {showPlot ? (
-        <PlotClient providerContributions={providerData} userContributions={platformData} />
+        <PlotClient
+          providerContributions={providerData}
+          userContributions={platformData}
+          timeWindowDays={timeWindowDays}
+        />
       ) : (
         <ErrorMessage timeWindowDays={timeWindowDays} />
       )}

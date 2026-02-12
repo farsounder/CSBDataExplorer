@@ -10,14 +10,17 @@ const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
 export default function PlotClient({
   userContributions,
   providerContributions,
+  timeWindowDays,
 }: {
   userContributions: CSBPlatformData[];
   providerContributions: CSBData[];
+  timeWindowDays: number;
 }) {
   return (
     <ContributionsPlot
       providerContributions={providerContributions}
       userContributions={userContributions}
+      timeWindowDays={timeWindowDays}
     />
   );
 }

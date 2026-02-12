@@ -6,13 +6,22 @@ import { formatNumber } from "@/lib/utils";
 export default function ContributionsPlot({
   userContributions,
   providerContributions,
+  timeWindowDays,
 }: {
   userContributions: CSBPlatformData[];
   providerContributions: CSBData[];
+  timeWindowDays: number;
 }) {
   const provider = providerContributions[0].provider;
   const providerTotal = providerContributions.reduce((acc, d) => d.dataSize + acc, 0);
   const userTotal = userContributions.reduce((acc, d) => d.dataSize + acc, 0);
+  const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999);
+
+  const startDate = new Date(endDate);
+  startDate.setDate(endDate.getDate() - (timeWindowDays - 1));
+  startDate.setHours(0, 0, 0, 0);
+
   return (
     <Plot
       className="w-full h-full"
@@ -44,6 +53,7 @@ export default function ContributionsPlot({
         },
         xaxis: {
           title: "Date",
+          range: [startDate, endDate],
         },
         yaxis: {
           title: "Data (bytes)",
