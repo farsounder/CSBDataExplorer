@@ -16,8 +16,11 @@ export default function ContributionsPlot({
   const providerTotal = providerContributions.reduce((acc, d) => d.dataSize + acc, 0);
   const userTotal = userContributions.reduce((acc, d) => d.dataSize + acc, 0);
   const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(endDate.getDate() - timeWindowDays);
+  endDate.setHours(23, 59, 59, 999);
+
+  const startDate = new Date(endDate);
+  startDate.setDate(endDate.getDate() - (timeWindowDays - 1));
+  startDate.setHours(0, 0, 0, 0);
 
   return (
     <Plot
