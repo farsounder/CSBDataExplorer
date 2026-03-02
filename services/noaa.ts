@@ -3,6 +3,7 @@ import { DATA_CACHE_SECONDS } from "@/lib/constants";
 
 const NOAA_BASE = "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
 const NOAA_MAP_SERVER_METADATA_URL = "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/csb_vector_tiles/VectorTileServer";
+export const NOAA_CACHE_TAG = "noaa-data";
 const APP_NAME = "FarSounder CSB Viewer App";
 
 type NoaaRequestConfig = {
@@ -73,7 +74,7 @@ async function fetchNoaaData<T>({
       "Content-Type": "application/json",
       "x-application-name": APP_NAME,
     },
-    next: { revalidate },
+    next: { revalidate, tags: [NOAA_CACHE_TAG] },
   });
 
   if (!response.ok) {
