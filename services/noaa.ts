@@ -2,6 +2,7 @@ import { CSBData, CSBPlatform, CSBPlatformData, CSBProvider } from "@/lib/types"
 import { DATA_CACHE_SECONDS } from "@/lib/constants";
 
 const NOAA_BASE = "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/1/query?f=json";
+const NOAA_MAP_SERVER_METADATA_URL = "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/csb_vector_tiles/VectorTileServer";
 const APP_NAME = "FarSounder CSB Viewer App";
 
 type NoaaRequestConfig = {
@@ -35,6 +36,33 @@ type NoaaApiGroupedStatsResponse = {
   }[];
 };
 
+type ArcGisErrorPayload = {
+  error?: {
+    code?: number;
+    message?: string;
+    details?: string[];
+  };
+};
+
+export type NoaaAvailabilityStatus = {
+  availablePlatforms: CSBPlatform[];
+  availableProviders: CSBProvider[];
+  platformFetchFailed: boolean;
+  providerFetchFailed: boolean;
+  mapLayerUnavailable: boolean;
+  issues: string[];
+};
+
+function getArcGisErrorMessage(payload: ArcGisErrorPayload): string | null {
+  if (!payload?.error) {
+    return null;
+  }
+
+  const details = payload.error.details?.filter(Boolean).join(" | ");
+  const base = payload.error.message || "ArcGIS service error";
+  return details ? `${base} (${details})` : base;
+}
+
 // Common fetch function with error handling
 async function fetchNoaaData<T>({
   url,
@@ -49,12 +77,20 @@ async function fetchNoaaData<T>({
   });
 
   if (!response.ok) {
+    console.error(`[NOAA] Response error: ${response.status} ${response.statusText} for ${url}`);
     throw new Error(
       `Failed to fetch NOAA data. Code: ${response.status}, text: ${response.statusText}`
     );
   }
 
-  return response.json();
+  const payload = (await response.json()) as T & ArcGisErrorPayload;
+  const arcGisErrorMessage = getArcGisErrorMessage(payload);
+  if (arcGisErrorMessage) {
+    console.error(`[NOAA] ArcGIS error payload for ${url}: ${arcGisErrorMessage}`);
+    throw new Error(`NOAA ArcGIS error: ${arcGisErrorMessage}`);
+  }
+
+  return payload;
 }
 
 // Common statistics configuration
@@ -127,6 +163,40 @@ async function getAllProviders(): Promise<CSBProvider[]> {
   return fetchNoaaData<NoaaApiProviderResponse>({ url }).then((data) =>
     data.features.map((item: any) => ({ provider: item.attributes.PROVIDER }))
   );
+}
+
+export async function getNoaaAvailabilityStatus(): Promise<NoaaAvailabilityStatus> {
+  const [platformsResult, providersResult, mapLayerResult] = await Promise.allSettled([
+    getAllPlatforms(),
+    getAllProviders(),
+    fetchNoaaData<Record<string, unknown>>({ url: NOAA_MAP_SERVER_METADATA_URL }),
+  ]);
+
+  const availablePlatforms = platformsResult.status === "fulfilled" ? platformsResult.value : [];
+  const availableProviders = providersResult.status === "fulfilled" ? providersResult.value : [];
+  const platformFetchFailed = platformsResult.status === "rejected";
+  const providerFetchFailed = providersResult.status === "rejected";
+  const mapLayerUnavailable = mapLayerResult.status === "rejected";
+
+  const issues: string[] = [];
+  if (platformFetchFailed) {
+    issues.push("platform list is unavailable");
+  }
+  if (providerFetchFailed) {
+    issues.push("provider list is unavailable");
+  }
+  if (mapLayerUnavailable) {
+    issues.push("CSB map layer is unavailable");
+  }
+
+  return {
+    availablePlatforms,
+    availableProviders,
+    platformFetchFailed,
+    providerFetchFailed,
+    mapLayerUnavailable,
+    issues,
+  };
 }
 
 export async function getPlatformInfoFromNoaa(): Promise<CSBPlatform[]> {

@@ -1,11 +1,17 @@
-import { getPlatformInfoFromNoaa, getProviderInfoFromNoaa } from "@/services/noaa";
+import { getNoaaAvailabilityStatus } from "@/services/noaa";
 import Link from "next/link";
 import { Suspense } from "react";
 import HeaderControls from "./header-controls";
 
+const listFormatter = new Intl.ListFormat("en", {
+  style: "long",
+  type: "conjunction",
+});
+
 export default async function Header() {
-  const availablePlatforms = await getPlatformInfoFromNoaa();
-  const availableProviders = await getProviderInfoFromNoaa();
+  const noaaStatus = await getNoaaAvailabilityStatus();
+  const { availablePlatforms, availableProviders, issues } = noaaStatus;
+  const hasNoaaIssues = issues.length > 0;
 
   return (
     <header className="flex flex-col w-full">
@@ -29,12 +35,16 @@ export default async function Header() {
         </div>
         <div className="justify-center items-center flex px-4">
           <Suspense fallback={<div>Loading...</div>}>
-            {availablePlatforms && availableProviders && (
-              <HeaderControls availablePlatforms={availablePlatforms} availableProviders={availableProviders} />
-            )}
+            <HeaderControls availablePlatforms={availablePlatforms} availableProviders={availableProviders} />
           </Suspense>
         </div>
       </div>
+      {hasNoaaIssues && (
+        <div className="px-4 py-2 border-b border-amber-300 bg-amber-50 text-amber-900 text-sm">
+          NOAA service issue detected: {listFormatter.format(issues)}. Some controls and map data may be
+          unavailable until the service recovers.
+        </div>
+      )}
     </header>
   );
 }
