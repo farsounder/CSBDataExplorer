@@ -1,11 +1,11 @@
 import { revalidateTag } from "next/cache";
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { NOAA_CACHE_TAG } from "@/services/noaa";
 
 export async function POST(request: NextRequest) {
   const expectedToken = process.env.NOAA_REVALIDATE_TOKEN;
   if (!expectedToken) {
-    return Response.json(
+    return NextResponse.json(
       {
         ok: false,
         message: "NOAA_REVALIDATE_TOKEN is not configured on the server",
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
   const providedToken =
     request.headers.get("x-revalidate-token") || (await request.json().catch(() => null))?.token;
   if (!providedToken || providedToken !== expectedToken) {
-    return Response.json(
+    return NextResponse.json(
       {
         ok: false,
         message: "Unauthorized",
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   revalidateTag(NOAA_CACHE_TAG, "max");
 
-  return Response.json({
+  return NextResponse.json({
     ok: true,
     message: "NOAA cache revalidated",
     tag: NOAA_CACHE_TAG,
