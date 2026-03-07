@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
-import { bytesToDepthPoints, formatNumber } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
 import {
   getPlatformInfoFromNoaa,
-  getTopPlatformsByDataSize,
-  getTopProvidersByDataSize,
-} from "@/services/noaa";
+  getTopPlatformsByCount,
+  getTopProvidersByCount,
+} from "@/services/noaa-csb-api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const metadata = {
@@ -28,8 +28,8 @@ export default async function StatsPage({
   const topN = Math.min(50, Math.max(1, safeNumber(sp?.topN, 10)));
 
   const [topProviders, topPlatforms, platformInfo] = await Promise.all([
-    getTopProvidersByDataSize({ timeWindowDays, limit: topN }),
-    getTopPlatformsByDataSize({ timeWindowDays, limit: topN }),
+    getTopProvidersByCount({ timeWindowDays, limit: topN }),
+    getTopPlatformsByCount({ timeWindowDays, limit: topN }),
     getPlatformInfoFromNoaa(),
   ]);
 
@@ -51,8 +51,7 @@ export default async function StatsPage({
             <TableHeader>
               <TableRow>
                 <TableHead>Trusted Node</TableHead>
-                <TableHead className="text-right">Approx bytes</TableHead>
-                <TableHead className="text-right">Approx depth points</TableHead>
+                <TableHead className="text-right">Points</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -66,15 +65,12 @@ export default async function StatsPage({
                       {row.provider}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-right">{formatNumber(row.totalDataSize)}</TableCell>
-                  <TableCell className="text-right">
-                    {formatNumber(bytesToDepthPoints(row.totalDataSize))}
-                  </TableCell>
+                  <TableCell className="text-right">{formatNumber(row.totalCount)}</TableCell>
                 </TableRow>
               ))}
               {topProviders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-gray-500">
+                  <TableCell colSpan={2} className="text-gray-500">
                     No data found for this time window.
                   </TableCell>
                 </TableRow>
@@ -90,7 +86,7 @@ export default async function StatsPage({
               <TableRow>
                 <TableHead>Platform</TableHead>
                 <TableHead>Trusted Node</TableHead>
-                <TableHead className="text-right">Approx bytes</TableHead>
+                <TableHead className="text-right">Points</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -108,7 +104,7 @@ export default async function StatsPage({
                       </Link>
                     </TableCell>
                     <TableCell>{info?.provider ?? "-"}</TableCell>
-                    <TableCell className="text-right">{formatNumber(row.totalDataSize)}</TableCell>
+                    <TableCell className="text-right">{formatNumber(row.totalCount)}</TableCell>
                   </TableRow>
                 );
               })}

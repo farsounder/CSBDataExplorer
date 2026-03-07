@@ -3,7 +3,7 @@ import MapViewer from "@/app/_components/map/mapviewer";
 import PlotContainer from "@/app/platform/[platformId]/_components/plot/plot-container";
 import ToggleChartButton from "@/app/platform/[platformId]/_components/plot/toggle-chart-button";
 import { CSBPlatform } from "@/lib/types";
-import { getPlatformInfoFromNoaa } from "@/services/noaa";
+import { getPlatformInfoFromNoaa } from "@/services/noaa-csb-api";
 import { ShipIcon } from "lucide-react";
 import StatsCard from "@/app/_components/stats/stats-card";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";

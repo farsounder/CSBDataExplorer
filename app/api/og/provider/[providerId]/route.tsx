@@ -1,7 +1,4 @@
-import {
-  getPlatformCountPerDayData,
-  getProviderCountPerDayData,
-} from "../../../../../services/noaa";
+import { getProviderCountPerDayData } from "../../../../../services/noaa-csb-api";
 import { timeWindowValid } from "../../_shared/utils";
 import { shareImageResponse } from "../../_shared/share-image-response";
 import type { NextRequest } from "next/server";
@@ -31,16 +28,14 @@ export async function GET(
     timeWindowDays: timeWindowDays,
   });
 
-  const noData = !data || data.length === 0;
-  const totalDataSize = data.reduce((acc, d) => d.dataSize + acc, 0);
+  const totalCount = data.reduce((acc, d) => d.count + acc, 0);
 
   try {
     return shareImageResponse({
       title: "Provider Contributions",
-      description: `Total data contributed via ${provider} for the last ${timeWindowDays} days`,
+      description: `Total points contributed via ${provider} for the last ${timeWindowDays} days`,
       dataLength: data.length,
-      provider,
-      totalDataSize,
+      totalCount,
       timeWindowDays,
     });
   } catch (e: any) {

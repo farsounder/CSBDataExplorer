@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { CSBData, CSBPlatformData } from "@/lib/types";
+import type { CSBCountData, CSBPlatformCountData } from "@/lib/types";
 
 const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
   ssr: false,
@@ -12,8 +12,8 @@ export default function PlotClient({
   providerContributions,
   timeWindowDays,
 }: {
-  userContributions: CSBPlatformData[];
-  providerContributions: CSBData[];
+  userContributions: CSBPlatformCountData[];
+  providerContributions: CSBCountData[];
   timeWindowDays: number;
 }) {
   return (

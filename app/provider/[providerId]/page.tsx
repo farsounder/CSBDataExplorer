@@ -2,7 +2,7 @@ import MapViewer from "@/app/_components/map/mapviewer";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
 import { CSBProvider } from "@/lib/types";
-import { getProviderInfoFromNoaa } from "@/services/noaa";
+import { getProviderInfoFromNoaa } from "@/services/noaa-csb-api";
 import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 import { Suspense } from "react";
 import StatsCardTrustedNode from "@/app/_components/stats/stats-card-provider";

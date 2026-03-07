@@ -1,6 +1,6 @@
 import { BuildingOfficeIcon, CalendarIcon, FaceFrownIcon } from "@heroicons/react/24/outline";
-import { getPlatformCountPerDayData } from "@/services/noaa";
-import { formatNumber, bytesToDepthPoints } from "@/lib/utils";
+import { getPlatformCountPerDayData } from "@/services/noaa-csb-api";
+import { formatNumber } from "@/lib/utils";
 
 function NoDataCard({
   platformId,
@@ -52,7 +52,7 @@ export default async function StatsCard({
     return <NoDataCard platformId={platformId} timeWindowDays={timeWindowDays} />;
   }
 
-  const totalDataSize = data.reduce((acc, { dataSize }) => acc + dataSize, 0);
+  const totalCount = data.reduce((acc, { count }) => acc + count, 0);
   const provider = data[0].provider;
   return (
     <div className="flex flex-col gap-4">
@@ -73,17 +73,8 @@ export default async function StatsCard({
         </div>
         <div className="mt-4 grid grid-cols-1 gap-6 md:grid-cols-3 text-center">
           <CoolNumber stat={data.length} label={`of ${timeWindowDays} days with data`} />
-          <CoolNumber stat={totalDataSize} label="approximate bytes of data" />
-          <CoolNumber
-            stat={bytesToDepthPoints(totalDataSize)}
-            label="approximate depth measurements"
-          />
-        </div>
-        <div className="mt-4">
-          <div className="text-gray-500 text-xs text-center">
-            <span className="font-bold">Note:</span> These are approximate values based on the data
-            we have collected.
-          </div>
+          <CoolNumber stat={totalCount} label="total points submitted" />
+          <CoolNumber stat={Math.round(totalCount / Math.max(data.length, 1))} label="avg points per day" />
         </div>
       </div>
       <div className="pt-4 flex flex-col gap-1">{children}</div>
