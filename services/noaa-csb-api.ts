@@ -27,6 +27,56 @@ export type NoaaAvailabilityStatus = {
   issues: string[];
 };
 
+type PlatformsResponse = {
+  platforms: {
+    unique_id: string;
+    platform_name: string;
+    provider: string;
+  }[];
+};
+
+type PlatformByIdResponse = {
+  unique_id: string;
+  platform_name: string;
+  provider: string;
+};
+
+type ProvidersResponse =
+  | {
+      providers: string[];
+    }
+  | {
+      providers: {
+        provider: string;
+      }[];
+    };
+
+type TopProvidersResponse = {
+  providers: {
+    provider: string;
+    points: number;
+  }[];
+};
+
+type TopPlatformsResponse = {
+  platforms: {
+    unique_id?: string;
+    platform_name: string;
+    provider?: string;
+    points: number;
+  }[];
+};
+
+type DailyPointsRow = {
+  date: string;
+  points: number;
+  provider?: string;
+};
+
+type DailyResponse = {
+  daily: DailyPointsRow[];
+};
+
 function buildApiUrl(path: string): string {
   return `${NOAA_ANALYTICS_API_BASE_URL.replace(/\/$/, "")}${path}`;
 }
@@ -49,62 +99,16 @@ async function fetchNoaaData<T>({ path, revalidate = DATA_CACHE_SECONDS }: NoaaR
   return (await response.json()) as T;
 }
 
-function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === "object" ? (value as Record<string, unknown>) : null;
+function mapPlatform(row: PlatformsResponse["platforms"][number] | PlatformByIdResponse): CSBPlatform {
+  return {
+    noaa_id: row.unique_id,
+    platform: row.platform_name,
+    provider: row.provider,
+  };
 }
 
-function pickArray(payload: unknown, keys: string[]): unknown[] {
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-  const record = asRecord(payload);
-  if (!record) {
-    return [];
-  }
-  for (const key of keys) {
-    const maybeArray = record[key];
-    if (Array.isArray(maybeArray)) {
-      return maybeArray;
-    }
-  }
-  return [];
-}
-
-function pickString(record: Record<string, unknown>, keys: string[], fallback = ""): string {
-  for (const key of keys) {
-    const value = record[key];
-    if (typeof value === "string" && value.trim()) {
-      return value.trim();
-    }
-  }
-  return fallback;
-}
-
-function pickNumber(record: Record<string, unknown>, keys: string[], fallback = 0): number {
-  for (const key of keys) {
-    const raw = record[key];
-    const numeric = typeof raw === "number" ? raw : Number(raw);
-    if (Number.isFinite(numeric)) {
-      return numeric;
-    }
-  }
-  return fallback;
-}
-
-function parseDateParts(record: Record<string, unknown>): { year: number; month: number; day: number } | null {
-  const year = pickNumber(record, ["year", "Year", "YEAR"], NaN);
-  const month = pickNumber(record, ["month", "Month", "MONTH"], NaN);
-  const day = pickNumber(record, ["day", "Day", "DAY"], NaN);
-
-  if (Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)) {
-    return { year, month, day };
-  }
-
-  const dateText = pickString(record, ["date", "Date", "DATE", "day_date"]);
-  if (!dateText) {
-    return null;
-  }
-  const parsed = new Date(dateText);
+function parseDateParts(date: string): { year: number; month: number; day: number } | null {
+  const parsed = new Date(date);
   if (!Number.isFinite(parsed.getTime())) {
     return null;
   }
@@ -113,12 +117,6 @@ function parseDateParts(record: Record<string, unknown>): { year: number; month:
     month: parsed.getUTCMonth() + 1,
     day: parsed.getUTCDate(),
   };
-}
-
-function parseDailyRows(payload: unknown): Record<string, unknown>[] {
-  return pickArray(payload, ["daily", "rows", "data", "items", "results"])
-    .map(asRecord)
-    .filter((row): row is Record<string, unknown> => Boolean(row));
 }
 
 function sortByDateAsc<T extends { year: number; month: number; day: number }>(rows: T[]): T[] {
@@ -134,53 +132,13 @@ function sortByDateAsc<T extends { year: number; month: number; day: number }>(r
 }
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
-  const payload = await fetchNoaaData<unknown>({ path: "/platforms" });
-  const rows = pickArray(payload, ["platforms", "rows", "data", "items", "results"]);
-
-  const mapped = rows
-    .map(asRecord)
-    .filter((row): row is Record<string, unknown> => Boolean(row))
-    .map((row) => ({
-      noaa_id: pickString(row, [
-        "id",
-        "unique_id",
-        "external_id",
-        "platform_id",
-        "platformId",
-        "noaa_id",
-        "noaaId",
-      ]),
-      platform: pickString(row, ["name", "platform", "display_name", "platform_name"], "Unknown platform"),
-      provider: pickString(row, ["provider", "PROVIDER"], "Unknown provider"),
-    }))
-    .filter((row) => row.noaa_id);
-
-  const uniqueById = new Map<string, CSBPlatform>();
-  for (const row of mapped) {
-    if (!uniqueById.has(row.noaa_id)) {
-      uniqueById.set(row.noaa_id, row);
-    }
-  }
-
-  return Array.from(uniqueById.values()).sort((a, b) => a.noaa_id.localeCompare(b.noaa_id));
+  const payload = await fetchNoaaData<PlatformsResponse>({ path: "/platforms" });
+  return payload.platforms.map(mapPlatform).sort((a, b) => a.noaa_id.localeCompare(b.noaa_id));
 }
 
 async function getAllProviders(): Promise<CSBProvider[]> {
-  const payload = await fetchNoaaData<unknown>({ path: "/providers" });
-  const rows = pickArray(payload, ["providers", "rows", "data", "items", "results"]);
-
-  const names = rows
-    .map((row) => {
-      if (typeof row === "string") {
-        return row.trim();
-      }
-      const asObj = asRecord(row);
-      if (!asObj) {
-        return "";
-      }
-      return pickString(asObj, ["provider", "name", "id", "PROVIDER"]);
-    })
-    .filter(Boolean);
+  const payload = await fetchNoaaData<ProvidersResponse>({ path: "/providers" });
+  const names = payload.providers.map((row) => (typeof row === "string" ? row : row.provider));
 
   return Array.from(new Set(names))
     .sort((a, b) => a.localeCompare(b))
@@ -189,30 +147,10 @@ async function getAllProviders(): Promise<CSBProvider[]> {
 
 async function getPlatformById(noaaId: string): Promise<CSBPlatform | null> {
   try {
-    const payload = await fetchNoaaData<unknown>({
+    const payload = await fetchNoaaData<PlatformByIdResponse>({
       path: `/platforms/${encodeURIComponent(noaaId)}`,
     });
-    const row = asRecord(payload);
-    if (!row) {
-      return null;
-    }
-    const resolvedId = pickString(row, [
-      "id",
-      "unique_id",
-      "external_id",
-      "platform_id",
-      "platformId",
-      "noaa_id",
-      "noaaId",
-    ]);
-    if (!resolvedId) {
-      return null;
-    }
-    return {
-      noaa_id: resolvedId,
-      platform: pickString(row, ["name", "platform", "display_name", "platform_name"], "Unknown platform"),
-      provider: pickString(row, ["provider", "PROVIDER"], "Unknown provider"),
-    };
+    return mapPlatform(payload);
   } catch {
     return null;
   }
@@ -278,28 +216,16 @@ export async function getTopProvidersByCount({
   limit: number;
 }): Promise<{ provider: string; totalCount: number }[]> {
   try {
-    const payload = await fetchNoaaData<unknown>({
+    const payload = await fetchNoaaData<TopProvidersResponse>({
       path: `/top-providers?days=${encodeURIComponent(String(timeWindowDays))}&limit=${encodeURIComponent(
         String(limit)
       )}`,
     });
-    const rows = pickArray(payload, ["top_providers", "providers", "rows", "data", "items", "results"]);
-    return rows
-      .map(asRecord)
-      .filter((row): row is Record<string, unknown> => Boolean(row))
+    return payload.providers
       .map((row) => ({
-        provider: pickString(row, ["provider", "name", "id", "PROVIDER"]),
-        totalCount: pickNumber(row, [
-          "count",
-          "total_count",
-          "points",
-          "total_points",
-          "point_count",
-          "pointCount",
-          "value",
-        ]),
+        provider: row.provider,
+        totalCount: row.points,
       }))
-      .filter((row) => row.provider)
       .sort((a, b) => b.totalCount - a.totalCount)
       .slice(0, limit);
   } catch (error) {
@@ -317,7 +243,7 @@ export async function getTopPlatformsByCount({
 }): Promise<{ noaaId: string; totalCount: number }[]> {
   try {
     const [payload, allPlatforms] = await Promise.all([
-      fetchNoaaData<unknown>({
+      fetchNoaaData<TopPlatformsResponse>({
         path: `/top-platforms?days=${encodeURIComponent(String(timeWindowDays))}&limit=${encodeURIComponent(
           String(limit)
         )}`,
@@ -327,36 +253,10 @@ export async function getTopPlatformsByCount({
     const platformNameToId = new Map(
       allPlatforms.map((platform) => [platform.platform.toUpperCase(), platform.noaa_id])
     );
-    const rows = pickArray(payload, ["top_platforms", "platforms", "rows", "data", "items", "results"]);
-    return rows
-      .map(asRecord)
-      .filter((row): row is Record<string, unknown> => Boolean(row))
+    return payload.platforms
       .map((row) => ({
-        noaaId: (() => {
-          const id = pickString(row, [
-            "id",
-            "unique_id",
-            "external_id",
-            "platform_id",
-            "platformId",
-            "noaa_id",
-            "noaaId",
-          ]);
-          if (id) {
-            return id;
-          }
-          const platformName = pickString(row, ["platform_name", "platform", "name"]);
-          return platformNameToId.get(platformName.toUpperCase()) ?? "";
-        })(),
-        totalCount: pickNumber(row, [
-          "count",
-          "total_count",
-          "points",
-          "total_points",
-          "point_count",
-          "pointCount",
-          "value",
-        ]),
+        noaaId: row.unique_id ?? platformNameToId.get(row.platform_name.toUpperCase()) ?? "",
+        totalCount: row.points,
       }))
       .filter((row) => row.noaaId)
       .sort((a, b) => b.totalCount - a.totalCount)
@@ -375,30 +275,22 @@ export async function getProviderCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBCountData[]> {
   try {
-    const payload = await fetchNoaaData<unknown>({
+    const payload = await fetchNoaaData<DailyResponse>({
       path: `/stats/daily/provider/${encodeURIComponent(provider)}?days=${encodeURIComponent(
         String(timeWindowDays)
       )}`,
     });
 
     const rows: CSBCountData[] = [];
-    for (const row of parseDailyRows(payload)) {
-      const date = parseDateParts(row);
+    for (const row of payload.daily) {
+      const date = parseDateParts(row.date);
       if (!date) {
         continue;
       }
       rows.push({
         ...date,
-        provider: pickString(row, ["provider", "PROVIDER"], provider),
-        count: pickNumber(row, [
-          "count",
-          "total_count",
-          "points",
-          "total_points",
-          "point_count",
-          "pointCount",
-          "value",
-        ]),
+        provider: row.provider ?? provider,
+        count: row.points,
       });
     }
 
@@ -415,28 +307,20 @@ export async function getTotalPerDayAllProviders({
   timeWindowDays: number;
 }): Promise<CSBCountData[]> {
   try {
-    const payload = await fetchNoaaData<unknown>({
+    const payload = await fetchNoaaData<DailyResponse>({
       path: `/stats/daily/all/providers?days=${encodeURIComponent(String(timeWindowDays))}`,
     });
 
     const rows: CSBCountData[] = [];
-    for (const row of parseDailyRows(payload)) {
-      const date = parseDateParts(row);
+    for (const row of payload.daily) {
+      const date = parseDateParts(row.date);
       if (!date) {
         continue;
       }
       rows.push({
         ...date,
-        provider: "All Providers",
-        count: pickNumber(row, [
-          "count",
-          "total_count",
-          "points",
-          "total_points",
-          "point_count",
-          "pointCount",
-          "value",
-        ]),
+        provider: row.provider ?? "All Providers",
+        count: row.points,
       });
     }
 
@@ -456,7 +340,7 @@ export async function getPlatformCountPerDayData({
 }): Promise<CSBPlatformCountData[]> {
   try {
     const [payload, platformById, platforms] = await Promise.all([
-      fetchNoaaData<unknown>({
+      fetchNoaaData<DailyResponse>({
         path: `/stats/daily/platform/${encodeURIComponent(noaaId)}?days=${encodeURIComponent(
           String(timeWindowDays)
         )}`,
@@ -468,24 +352,16 @@ export async function getPlatformCountPerDayData({
     const provider = platformById?.provider ?? platforms.find((platform) => platform.noaa_id === noaaId)?.provider;
 
     const rows: CSBPlatformCountData[] = [];
-    for (const row of parseDailyRows(payload)) {
-      const date = parseDateParts(row);
+    for (const row of payload.daily) {
+      const date = parseDateParts(row.date);
       if (!date) {
         continue;
       }
       rows.push({
         ...date,
         noaa_id: noaaId,
-        provider: pickString(row, ["provider", "PROVIDER"], provider ?? "Unknown provider"),
-        count: pickNumber(row, [
-          "count",
-          "total_count",
-          "points",
-          "total_points",
-          "point_count",
-          "pointCount",
-          "value",
-        ]),
+        provider: row.provider ?? provider ?? "Unknown provider",
+        count: row.points,
       });
     }
 
