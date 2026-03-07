@@ -1,35 +1,35 @@
 "use client";
 import Plot from "react-plotly.js";
-import { CSBData } from "@/lib/types";
+import { CSBCountData } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
 
 export default function ContributionsPlot({
   providerContributions,
   totalData,
 }: {
-  providerContributions: CSBData[];
-  totalData: CSBData[];
+  providerContributions: CSBCountData[];
+  totalData: CSBCountData[];
 }) {
   const provider = providerContributions[0].provider;
-  const providerTotal = providerContributions.reduce((acc, d) => d.dataSize + acc, 0);
-  const totalTotal = totalData.reduce((acc, d) => d.dataSize + acc, 0);
+  const providerTotal = providerContributions.reduce((acc, d) => d.count + acc, 0);
+  const totalTotal = totalData.reduce((acc, d) => d.count + acc, 0);
   return (
     <Plot
       className="w-full h-full"
       data={[
         {
           x: totalData.map((d) => new Date(d.year, d.month - 1, d.day)),
-          y: totalData.map((d) => d.dataSize),
+          y: totalData.map((d) => d.count),
           type: "bar",
           name: `All Providers (${formatNumber(totalTotal)})`,
-          hovertemplate: "Date: %{x}<br>Data: %{y}",
+          hovertemplate: "Date: %{x}<br>Points: %{y}",
         },
         {
           x: providerContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
-          y: providerContributions.map((d) => d.dataSize),
+          y: providerContributions.map((d) => d.count),
           type: "bar",
           name: `${provider} (${formatNumber(providerTotal)})`,
-          hovertemplate: "Date: %{x}<br>Data: %{y}",
+          hovertemplate: "Date: %{x}<br>Points: %{y}",
         },
       ]}
       layout={{
@@ -46,7 +46,7 @@ export default function ContributionsPlot({
           title: "Date",
         },
         yaxis: {
-          title: "Data (bytes)",
+          title: "Points",
         },
       }}
       config={{ responsive: true }}

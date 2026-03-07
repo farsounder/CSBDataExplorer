@@ -1,7 +1,7 @@
 import {
   getProviderCountPerDayData,
   getTotalPerDayAllProviders,
-} from "@/services/noaa";
+} from "@/services/noaa-csb-api";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { CSBProvider } from "@/lib/types";
 import PlotClient from "./plot-client";

@@ -4,22 +4,19 @@ import { CoolNumber } from "./cool-number";
 import Seabed2030Logo from "../../../../components/icons/seabed";
 import NoaaLogo from "../../../../components/icons/noaalogo";
 import FSLogo from "../../../../components/icons/fslogo";
-import { bytesToDepthPoints } from "../../../../lib/utils";
 
 export const shareImageResponse = ({
   title,
   description,
   dataLength,
   timeWindowDays,
-  totalDataSize,
-  provider,
+  totalCount,
 }: {
   title: string;
   description: string;
   dataLength: number;
   timeWindowDays: number;
-  totalDataSize: number;
-  provider: string;
+  totalCount: number;
 }) =>
   new ImageResponse(
     (
@@ -97,10 +94,10 @@ export const shareImageResponse = ({
             }}
           >
             <CoolNumber number={dataLength} subtitle={`of ${timeWindowDays} days with data`} />
-            <CoolNumber number={totalDataSize} subtitle="approximate bytes of data" />
+            <CoolNumber number={totalCount} subtitle="total points submitted" />
             <CoolNumber
-              number={bytesToDepthPoints(totalDataSize)}
-              subtitle="approximate depth measurements"
+              number={Math.round(totalCount / Math.max(dataLength, 1))}
+              subtitle="average points per day"
             />
           </div>
         </div>

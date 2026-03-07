@@ -1,4 +1,4 @@
-import { getNoaaAvailabilityStatus } from "@/services/noaa";
+import { getNoaaAvailabilityStatus } from "@/services/noaa-csb-api";
 import Link from "next/link";
 import { Suspense } from "react";
 import HeaderControls from "./header-controls";
