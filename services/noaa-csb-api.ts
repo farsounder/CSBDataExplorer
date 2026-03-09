@@ -13,16 +13,19 @@ const NOAA_ANALYTICS_API_BASE_URL =
   process.env.NOAA_ANALYTICS_API_BASE_URL ??
   "https://noaa-csb-api-613155890800.us-central1.run.app";
 
-type NoaaRequestConfig = {
+const MAP_LAYER_URL = "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/csb_vector_tiles/VectorTileServer";
+
+type RequestConfig = {
   path: string;
   revalidate?: number;
 };
 
-export type NoaaAvailabilityStatus = {
+export type APIAvailabilityStatus = {
   availablePlatforms: CSBPlatform[];
   availableProviders: CSBProvider[];
   platformFetchFailed: boolean;
   providerFetchFailed: boolean;
+  apiUnavailable: boolean;
   mapLayerUnavailable: boolean;
   issues: string[];
 };
@@ -81,7 +84,7 @@ function buildApiUrl(path: string): string {
   return `${NOAA_ANALYTICS_API_BASE_URL.replace(/\/$/, "")}${path}`;
 }
 
-async function fetchNoaaData<T>({ path, revalidate = DATA_CACHE_SECONDS }: NoaaRequestConfig): Promise<T> {
+async function fetchData<T>({ path, revalidate = DATA_CACHE_SECONDS }: RequestConfig): Promise<T> {
   const url = buildApiUrl(path);
   const response = await fetch(url, {
     headers: {
@@ -132,12 +135,12 @@ function sortByDateAsc<T extends { year: number; month: number; day: number }>(r
 }
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
-  const payload = await fetchNoaaData<PlatformsResponse>({ path: "/platforms" });
+  const payload = await fetchData<PlatformsResponse>({ path: "/platforms" });
   return payload.platforms.map(mapPlatform).sort((a, b) => a.noaa_id.localeCompare(b.noaa_id));
 }
 
 async function getAllProviders(): Promise<CSBProvider[]> {
-  const payload = await fetchNoaaData<ProvidersResponse>({ path: "/providers" });
+  const payload = await fetchData<ProvidersResponse>({ path: "/providers" });
   const names = payload.providers.map((row) => (typeof row === "string" ? row : row.provider));
 
   return Array.from(new Set(names))
@@ -145,29 +148,20 @@ async function getAllProviders(): Promise<CSBProvider[]> {
     .map((provider) => ({ provider }));
 }
 
-async function getPlatformById(noaaId: string): Promise<CSBPlatform | null> {
-  try {
-    const payload = await fetchNoaaData<PlatformByIdResponse>({
-      path: `/platforms/${encodeURIComponent(noaaId)}`,
-    });
-    return mapPlatform(payload);
-  } catch {
-    return null;
-  }
-}
-
-export async function getNoaaAvailabilityStatus(): Promise<NoaaAvailabilityStatus> {
-  const [platformsResult, providersResult, healthResult] = await Promise.allSettled([
+export async function getAPIAvailabilityStatus(): Promise<APIAvailabilityStatus> {
+  const [platformsResult, providersResult, healthResult, mapLayerResult] = await Promise.allSettled([
     getAllPlatforms(),
     getAllProviders(),
-    fetchNoaaData<unknown>({ path: "/health", revalidate: 60 }),
+    fetchData<unknown>({ path: "/health", revalidate: 60 }),
+    fetch(MAP_LAYER_URL),
   ]);
 
   const availablePlatforms = platformsResult.status === "fulfilled" ? platformsResult.value : [];
   const availableProviders = providersResult.status === "fulfilled" ? providersResult.value : [];
   const platformFetchFailed = platformsResult.status === "rejected";
   const providerFetchFailed = providersResult.status === "rejected";
-  const mapLayerUnavailable = healthResult.status === "rejected";
+  const apiUnavailable = healthResult.status === "rejected";
+  const mapLayerUnavailable = mapLayerResult.status === "rejected";
 
   const issues: string[] = [];
   if (platformFetchFailed) {
@@ -176,8 +170,11 @@ export async function getNoaaAvailabilityStatus(): Promise<NoaaAvailabilityStatu
   if (providerFetchFailed) {
     issues.push("provider list is unavailable");
   }
-  if (mapLayerUnavailable) {
+  if (apiUnavailable) {
     issues.push("analytics API is unavailable");
+  }
+  if (mapLayerUnavailable) {
+    issues.push("CSB map layer is unavailable");
   }
 
   return {
@@ -185,6 +182,7 @@ export async function getNoaaAvailabilityStatus(): Promise<NoaaAvailabilityStatu
     availableProviders,
     platformFetchFailed,
     providerFetchFailed,
+    apiUnavailable,
     mapLayerUnavailable,
     issues,
   };
@@ -216,7 +214,7 @@ export async function getTopProvidersByCount({
   limit: number;
 }): Promise<{ provider: string; totalCount: number }[]> {
   try {
-    const payload = await fetchNoaaData<TopProvidersResponse>({
+    const payload = await fetchData<TopProvidersResponse>({
       path: `/top-providers?days=${encodeURIComponent(String(timeWindowDays))}&limit=${encodeURIComponent(
         String(limit)
       )}`,
@@ -243,7 +241,7 @@ export async function getTopPlatformsByCount({
 }): Promise<{ noaaId: string; totalCount: number }[]> {
   try {
     const [payload, allPlatforms] = await Promise.all([
-      fetchNoaaData<TopPlatformsResponse>({
+      fetchData<TopPlatformsResponse>({
         path: `/top-platforms?days=${encodeURIComponent(String(timeWindowDays))}&limit=${encodeURIComponent(
           String(limit)
         )}`,
@@ -275,26 +273,24 @@ export async function getProviderCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBCountData[]> {
   try {
-    const payload = await fetchNoaaData<DailyResponse>({
+    const payload = await fetchData<DailyResponse>({
       path: `/stats/daily/provider/${encodeURIComponent(provider)}?days=${encodeURIComponent(
         String(timeWindowDays)
       )}`,
     });
-
-    const rows: CSBCountData[] = [];
-    for (const row of payload.daily) {
-      const date = parseDateParts(row.date);
-      if (!date) {
-        continue;
-      }
-      rows.push({
-        ...date,
-        provider: row.provider ?? provider,
-        count: row.points,
-      });
-    }
-
-    return sortByDateAsc(rows);
+    return sortByDateAsc(
+      payload.daily.map((row) => {
+        const date = parseDateParts(row.date);
+        if (!date) {
+          return null;
+        }
+        return {
+          ...date,
+          provider: row.provider ?? provider,
+          count: row.points,
+        };
+      }).filter((row): row is CSBCountData => row !== null)
+    );
   } catch (error) {
     console.error("Error fetching provider daily counts:", error);
     return [];
@@ -307,24 +303,20 @@ export async function getTotalPerDayAllProviders({
   timeWindowDays: number;
 }): Promise<CSBCountData[]> {
   try {
-    const payload = await fetchNoaaData<DailyResponse>({
+    const payload = await fetchData<DailyResponse>({
       path: `/stats/daily/all/providers?days=${encodeURIComponent(String(timeWindowDays))}`,
     });
-
-    const rows: CSBCountData[] = [];
-    for (const row of payload.daily) {
+    return sortByDateAsc(payload.daily.map((row) => {
       const date = parseDateParts(row.date);
       if (!date) {
-        continue;
+        return null;
       }
-      rows.push({
+      return {
         ...date,
         provider: row.provider ?? "All Providers",
         count: row.points,
-      });
-    }
-
-    return sortByDateAsc(rows);
+      };
+    }).filter((row): row is CSBCountData => row !== null));
   } catch (error) {
     console.error("Error fetching all-provider daily counts:", error);
     return [];
@@ -339,33 +331,23 @@ export async function getPlatformCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBPlatformCountData[]> {
   try {
-    const [payload, platformById, platforms] = await Promise.all([
-      fetchNoaaData<DailyResponse>({
-        path: `/stats/daily/platform/${encodeURIComponent(noaaId)}?days=${encodeURIComponent(
-          String(timeWindowDays)
-        )}`,
-      }),
-      getPlatformById(noaaId),
-      getPlatformInfoFromNoaa(),
-    ]);
-
-    const provider = platformById?.provider ?? platforms.find((platform) => platform.noaa_id === noaaId)?.provider;
-
-    const rows: CSBPlatformCountData[] = [];
-    for (const row of payload.daily) {
+    const payload = await fetchData<DailyResponse>({
+      path: `/stats/daily/platform/${encodeURIComponent(noaaId)}?days=${encodeURIComponent(
+        String(timeWindowDays)
+      )}`,
+    });
+    return sortByDateAsc(payload.daily.map((row) => {
       const date = parseDateParts(row.date);
       if (!date) {
-        continue;
+        return null;
       }
-      rows.push({
+      return {
         ...date,
         noaa_id: noaaId,
-        provider: row.provider ?? provider ?? "Unknown provider",
+        provider: row.provider ?? "Unknown provider",
         count: row.points,
-      });
-    }
-
-    return sortByDateAsc(rows);
+      };
+    }).filter((row): row is CSBPlatformCountData => row !== null));
   } catch (error) {
     console.error("Error fetching platform daily counts:", error);
     return [];

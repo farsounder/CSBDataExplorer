@@ -31,7 +31,7 @@ export type CSBProviderData = {
 
 export type CSBCountData = {
   count: number;
-  provider?: string;
+  provider: string;
   year: number;
   day: number;
   month: number;
