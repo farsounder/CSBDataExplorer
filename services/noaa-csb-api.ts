@@ -38,12 +38,6 @@ type PlatformsResponse = {
   }[];
 };
 
-type PlatformByIdResponse = {
-  unique_id: string;
-  platform_name: string;
-  provider: string;
-};
-
 type ProvidersResponse =
   | {
       providers: string[];
@@ -102,7 +96,7 @@ async function fetchData<T>({ path, revalidate = DATA_CACHE_SECONDS }: RequestCo
   return (await response.json()) as T;
 }
 
-function mapPlatform(row: PlatformsResponse["platforms"][number] | PlatformByIdResponse): CSBPlatform {
+function mapPlatform(row: PlatformsResponse["platforms"][number]): CSBPlatform {
   return {
     noaa_id: row.unique_id,
     platform: row.platform_name,

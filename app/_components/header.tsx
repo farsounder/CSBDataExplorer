@@ -10,7 +10,7 @@ const listFormatter = new Intl.ListFormat("en", {
 
 export default async function Header() {
   const apiStatus = await getAPIAvailabilityStatus();
-  const { availablePlatforms, availableProviders, issues, apiUnavailable } = apiStatus;
+  const { availablePlatforms, availableProviders, issues } = apiStatus;
   const hasIssues = issues.length > 0;
 
   return (
