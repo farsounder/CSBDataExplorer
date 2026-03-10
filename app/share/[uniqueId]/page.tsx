@@ -1,7 +1,7 @@
 import SocialButtons from "@/app/_components/stats/social-buttons";
 import StatsCard from "@/app/_components/stats/stats-card";
 import db from "@/lib/db";
-import { getPlatformInfoFromNoaa } from "@/services/noaa";
+import { getPlatformInfoFromNoaa } from "@/services/noaa-csb-api";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
 
 export async function generateMetadata({

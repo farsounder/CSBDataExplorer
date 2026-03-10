@@ -1,4 +1,4 @@
-import { getPlatformCountPerDayData, getProviderCountPerDayData } from "@/services/noaa";
+import { getPlatformCountPerDayData, getProviderCountPerDayData } from "@/services/noaa-csb-api";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import PlotClient from "./plot-client";
 

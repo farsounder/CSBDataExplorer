@@ -1,6 +1,6 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse, type NextRequest } from "next/server";
-import { NOAA_CACHE_TAG } from "@/services/noaa";
+import { NOAA_CACHE_TAG } from "@/services/noaa-csb-api";
 
 export async function POST(request: NextRequest) {
   const expectedToken = process.env.NOAA_REVALIDATE_TOKEN;

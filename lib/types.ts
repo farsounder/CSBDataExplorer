@@ -28,3 +28,15 @@ export type CSBProvider = {
 export type CSBProviderData = {
   provider: string;
 } & CSBData;
+
+export type CSBCountData = {
+  count: number;
+  provider: string;
+  year: number;
+  day: number;
+  month: number;
+};
+
+export type CSBPlatformCountData = {
+  noaa_id: string;
+} & CSBCountData;

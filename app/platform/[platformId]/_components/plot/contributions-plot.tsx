@@ -1,6 +1,6 @@
 "use client";
 import Plot from "react-plotly.js";
-import { CSBData, CSBPlatformData } from "@/lib/types";
+import { CSBCountData, CSBPlatformCountData } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
 
 export default function ContributionsPlot({
@@ -8,13 +8,13 @@ export default function ContributionsPlot({
   providerContributions,
   timeWindowDays,
 }: {
-  userContributions: CSBPlatformData[];
-  providerContributions: CSBData[];
+  userContributions: CSBPlatformCountData[];
+  providerContributions: CSBCountData[];
   timeWindowDays: number;
 }) {
   const provider = providerContributions[0].provider;
-  const providerTotal = providerContributions.reduce((acc, d) => d.dataSize + acc, 0);
-  const userTotal = userContributions.reduce((acc, d) => d.dataSize + acc, 0);
+  const providerTotal = providerContributions.reduce((acc, d) => d.count + acc, 0);
+  const userTotal = userContributions.reduce((acc, d) => d.count + acc, 0);
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999);
 
@@ -28,17 +28,17 @@ export default function ContributionsPlot({
       data={[
         {
           x: providerContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
-          y: providerContributions.map((d) => d.dataSize),
+          y: providerContributions.map((d) => d.count),
           type: "bar",
           name: `All ${provider} (${formatNumber(providerTotal)})`,
-          hovertemplate: "Date: %{x}<br>Data: %{y}",
+          hovertemplate: "Date: %{x}<br>Points: %{y}",
         },
         {
           x: userContributions.map((d) => new Date(d.year, d.month - 1, d.day)),
-          y: userContributions.map((d) => d.dataSize),
+          y: userContributions.map((d) => d.count),
           type: "bar",
           name: `Your Contributions (${formatNumber(userTotal)})`,
-          hovertemplate: "Date: %{x}<br>Data: %{y}",
+          hovertemplate: "Date: %{x}<br>Points: %{y}",
         },
       ]}
       layout={{
@@ -56,7 +56,7 @@ export default function ContributionsPlot({
           range: [startDate, endDate],
         },
         yaxis: {
-          title: "Data (bytes)",
+          title: "Points",
         },
       }}
       config={{ responsive: true }}
