@@ -203,53 +203,56 @@ function removeSourceIfPresent(map: MapLibreMap, sourceId: string) {
   }
 }
 
-function addRasterOverlay({
+function ensureRasterOverlay({
   map,
   sourceId,
   layerId,
   tileUrl,
-  visible,
 }: {
   map: MapLibreMap;
   sourceId: string;
   layerId: string;
   tileUrl: string;
-  visible: boolean;
 }) {
-  removeLayerIfPresent(map, layerId);
-  removeSourceIfPresent(map, sourceId);
+  if (!map.getSource(sourceId)) {
+    map.addSource(sourceId, {
+      type: "raster",
+      tiles: [tileUrl],
+      tileSize: 256,
+    });
+  }
 
-  map.addSource(sourceId, {
-    type: "raster",
-    tiles: [tileUrl],
-    tileSize: 256,
-  });
-
-  map.addLayer({
-    id: layerId,
-    type: "raster",
-    source: sourceId,
-    layout: {
-      visibility: visible ? "visible" : "none",
-    },
-    paint: {
-      "raster-opacity": 0.75,
-    },
-  });
+  if (!map.getLayer(layerId)) {
+    map.addLayer({
+      id: layerId,
+      type: "raster",
+      source: sourceId,
+      layout: {
+        visibility: "visible",
+      },
+      paint: {
+        "raster-opacity": 0.75,
+      },
+    });
+  }
 }
 
 function syncOverlayLayers(map: MapLibreMap, { platformId, providerId, visibility }: OverlayConfig) {
-  if (!map.isStyleLoaded()) {
-    return;
-  }
+  const styleLoaded = map.isStyleLoaded();
 
-  addRasterOverlay({
-    map,
-    sourceId: NOAA_CSB_SOURCE_ID,
-    layerId: NOAA_CSB_LAYER_ID,
-    tileUrl: buildCsbTileUrl(),
-    visible: visibility[NOAA_CSB_LAYER_NAME],
-  });
+  if (visibility[NOAA_CSB_LAYER_NAME]) {
+    if (styleLoaded) {
+      ensureRasterOverlay({
+        map,
+        sourceId: NOAA_CSB_SOURCE_ID,
+        layerId: NOAA_CSB_LAYER_ID,
+        tileUrl: buildCsbTileUrl(),
+      });
+    }
+  } else {
+    removeLayerIfPresent(map, NOAA_CSB_LAYER_ID);
+    removeSourceIfPresent(map, NOAA_CSB_SOURCE_ID);
+  }
 
   const filterString = getLayerFilterString({
     platformId,
@@ -262,13 +265,21 @@ function syncOverlayLayers(map: MapLibreMap, { platformId, providerId, visibilit
     return;
   }
 
-  addRasterOverlay({
-    map,
-    sourceId: USER_CSB_SOURCE_ID,
-    layerId: USER_CSB_LAYER_ID,
-    tileUrl: buildCsbTileUrl(filterString),
-    visible: visibility[USER_CSB_LAYER_NAME],
-  });
+  if (visibility[USER_CSB_LAYER_NAME]) {
+    if (styleLoaded) {
+      ensureRasterOverlay({
+        map,
+        sourceId: USER_CSB_SOURCE_ID,
+        layerId: USER_CSB_LAYER_ID,
+        tileUrl: buildCsbTileUrl(filterString),
+      });
+    }
+  } else {
+    removeLayerIfPresent(map, USER_CSB_LAYER_ID);
+    removeSourceIfPresent(map, USER_CSB_SOURCE_ID);
+  }
+
+  map.triggerRepaint();
 }
 
 function LegendInfo({ text }: { text: string }) {
@@ -491,18 +502,27 @@ export default function MapViewer({
       return;
     }
 
-    if (mapRef.current.isStyleLoaded()) {
-      syncOverlayLayers(mapRef.current, overlayConfig);
+    const map = mapRef.current;
+    syncOverlayLayers(map, latestOverlayConfigRef.current);
+
+    if (map.isStyleLoaded()) {
       return;
     }
 
     const handleStyleData = () => {
-      if (mapRef.current) {
-        syncOverlayLayers(mapRef.current, overlayConfig);
+      if (!map.isStyleLoaded()) {
+        return;
       }
+
+      syncOverlayLayers(map, latestOverlayConfigRef.current);
+      map.off("styledata", handleStyleData);
     };
 
-    mapRef.current.once("styledata", handleStyleData);
+    map.on("styledata", handleStyleData);
+
+    return () => {
+      map.off("styledata", handleStyleData);
+    };
   }, [overlayConfig]);
 
   const handleToggleOverlay = (layerId: OverlayId) => {
