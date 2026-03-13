@@ -1,31 +1,18 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
-import { ChartConfig, ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { StackedChartData } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
-
-const fullDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-  timeZone: "UTC",
-});
-
-function formatTooltipDate(value: string | number) {
-  if (typeof value !== "string") {
-    return String(value);
-  }
-
-  return fullDateFormatter.format(new Date(`${value}T00:00:00Z`));
-}
 
 export default function StackedBarChart({
   data,
   emptyMessage,
+  tooltipContent,
 }: {
   data: StackedChartData;
   emptyMessage: string;
+  tooltipContent?: React.ReactElement;
 }) {
   if (data.series.length === 0) {
     return (
@@ -64,12 +51,7 @@ export default function StackedBarChart({
           />
           <Tooltip
             cursor={{ fill: "rgba(148, 163, 184, 0.12)" }}
-            content={
-              <ChartTooltipContent
-                labelFormatter={formatTooltipDate}
-                formatter={(value) => formatNumber(value)}
-              />
-            }
+            content={tooltipContent}
           />
           {data.series.map((series, index) => (
             <Bar
