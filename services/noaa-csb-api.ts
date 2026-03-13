@@ -325,11 +325,17 @@ export async function getPlatformCountPerDayData({
   timeWindowDays: number;
 }): Promise<CSBPlatformCountData[]> {
   try {
-    const payload = await fetchData<DailyResponse>({
-      path: `/stats/daily/platform/${encodeURIComponent(noaaId)}?days=${encodeURIComponent(
-        String(timeWindowDays)
-      )}`,
-    });
+    const [payload, platforms] = await Promise.all([
+      fetchData<DailyResponse>({
+        path: `/stats/daily/platform/${encodeURIComponent(noaaId)}?days=${encodeURIComponent(
+          String(timeWindowDays)
+        )}`,
+      }),
+      getAllPlatforms().catch(() => []),
+    ]);
+    const platformProvider =
+      platforms.find((platform) => platform.noaa_id.toUpperCase() === noaaId.toUpperCase())?.provider ??
+      "Unknown provider";
     return sortByDateAsc(payload.daily.map((row) => {
       const date = parseDateParts(row.date);
       if (!date) {
@@ -338,7 +344,7 @@ export async function getPlatformCountPerDayData({
       return {
         ...date,
         noaa_id: noaaId,
-        provider: row.provider ?? "Unknown provider",
+        provider: row.provider ?? platformProvider,
         count: row.points,
       };
     }).filter((row): row is CSBPlatformCountData => row !== null));
