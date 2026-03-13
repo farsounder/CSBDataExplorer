@@ -46,12 +46,6 @@ export default async function StatsPage({
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-6 w-full">
-      <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-        <div className="text-blue-800 text-2xl font-bold">Stats</div>
-        <div className="text-gray-600 text-sm mt-1">
-          Top contributors for the last <span className="font-semibold">{timeWindowDays} days</span>.
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 h-full">
