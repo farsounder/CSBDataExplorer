@@ -4,6 +4,11 @@ import {
   CSBPlatform,
   CSBPlatformCountData,
   CSBProvider,
+  ProviderPlatformStackedChartData,
+  ProviderSelectOption,
+  StackedChartData,
+  StackedChartRow,
+  StackedChartSeries,
 } from "@/lib/types";
 
 export const NOAA_CACHE_TAG = "noaa-data";
@@ -70,9 +75,58 @@ type DailyPointsRow = {
   provider?: string;
 };
 
+type DailyProviderPointsRow = {
+  date: string;
+  provider: string;
+  points: number;
+};
+
+type DailyPlatformPointsRow = {
+  date: string;
+  unique_id: string;
+  platform_name: string;
+  points: number;
+};
+
 type DailyResponse = {
   daily: DailyPointsRow[];
 };
+
+type DailyProvidersResponse = {
+  daily: DailyProviderPointsRow[];
+};
+
+type DailyPlatformsResponse = {
+  daily: DailyPlatformPointsRow[];
+};
+
+type DailyPlatformAggregateRow = CSBPlatformCountData & {
+  platform: string;
+};
+
+const chartDateLabelFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
+
+const CHART_COLORS = [
+  "#2563eb",
+  "#0f766e",
+  "#7c3aed",
+  "#db2777",
+  "#ea580c",
+  "#ca8a04",
+  "#0891b2",
+  "#4f46e5",
+  "#059669",
+  "#dc2626",
+  "#9333ea",
+  "#0284c7",
+];
+
+const OTHER_SERIES_COLOR = "#94a3b8";
+const MAX_PLATFORM_SERIES = 10;
 
 function buildApiUrl(path: string): string {
   return `${NOAA_ANALYTICS_API_BASE_URL.replace(/\/$/, "")}${path}`;
@@ -126,6 +180,69 @@ function sortByDateAsc<T extends { year: number; month: number; day: number }>(r
     }
     return a.day - b.day;
   });
+}
+
+function toDateKey({ year, month, day }: { year: number; month: number; day: number }): string {
+  return `${year.toString().padStart(4, "0")}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
+}
+
+function buildWindowRows(timeWindowDays: number): StackedChartRow[] {
+  const endDate = new Date();
+  endDate.setUTCHours(0, 0, 0, 0);
+
+  const rows: StackedChartRow[] = [];
+
+  for (let offset = timeWindowDays - 1; offset >= 0; offset -= 1) {
+    const date = new Date(endDate);
+    date.setUTCDate(endDate.getUTCDate() - offset);
+
+    const dateKey = date.toISOString().slice(0, 10);
+
+    rows.push({
+      date: dateKey,
+      dateLabel: chartDateLabelFormatter.format(date),
+      total: 0,
+    });
+  }
+
+  return rows;
+}
+
+function getSeriesColor(index: number): string {
+  return CHART_COLORS[index % CHART_COLORS.length];
+}
+
+function getSeriesKey(index: number): string {
+  return `series${index + 1}`;
+}
+
+function buildProviderOptions(rows: { provider: string }[]): ProviderSelectOption[] {
+  return rows.map((row) => ({
+    value: row.provider,
+    label: row.provider,
+  }));
+}
+
+function buildTopProvidersFromDailyRows(
+  rows: CSBCountData[],
+  limit: number
+): { provider: string; totalCount: number }[] {
+  const totalsByProvider = new Map<string, number>();
+
+  rows.forEach((row) => {
+    totalsByProvider.set(row.provider, (totalsByProvider.get(row.provider) ?? 0) + row.count);
+  });
+
+  return Array.from(totalsByProvider.entries())
+    .map(([provider, totalCount]) => ({
+      provider,
+      totalCount,
+    }))
+    .filter((row) => row.totalCount > 0)
+    .sort((a, b) => b.totalCount - a.totalCount)
+    .slice(0, limit);
 }
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
@@ -291,28 +408,67 @@ export async function getProviderCountPerDayData({
   }
 }
 
+async function getAllProviderCountsPerDayData({
+  timeWindowDays,
+}: {
+  timeWindowDays: number;
+}): Promise<CSBCountData[]> {
+  try {
+    const payload = await fetchData<DailyProvidersResponse>({
+      path: `/stats/daily/all/providers?days=${encodeURIComponent(String(timeWindowDays))}`,
+    });
+    return sortByDateAsc(
+      payload.daily
+        .map((row) => {
+          const date = parseDateParts(row.date);
+          if (!date) {
+            return null;
+          }
+          return {
+            ...date,
+            provider: row.provider,
+            count: row.points,
+          };
+        })
+        .filter((row): row is CSBCountData => row !== null)
+    );
+  } catch (error) {
+    console.error("Error fetching all-provider daily provider counts:", error);
+    return [];
+  }
+}
+
 export async function getTotalPerDayAllProviders({
   timeWindowDays,
 }: {
   timeWindowDays: number;
 }): Promise<CSBCountData[]> {
   try {
-    const payload = await fetchData<DailyResponse>({
-      path: `/stats/daily/all/providers?days=${encodeURIComponent(String(timeWindowDays))}`,
+    const providerRows = await getAllProviderCountsPerDayData({ timeWindowDays });
+    const totalsByDate = new Map<string, number>();
+
+    providerRows.forEach((row) => {
+      const dateKey = toDateKey(row);
+      totalsByDate.set(dateKey, (totalsByDate.get(dateKey) ?? 0) + row.count);
     });
-    return sortByDateAsc(payload.daily.map((row) => {
-      const date = parseDateParts(row.date);
-      if (!date) {
-        return null;
-      }
-      return {
-        ...date,
-        provider: row.provider ?? "All Providers",
-        count: row.points,
-      };
-    }).filter((row): row is CSBCountData => row !== null));
+
+    return sortByDateAsc(
+      Array.from(totalsByDate.entries())
+        .map(([dateKey, count]) => {
+          const date = parseDateParts(dateKey);
+          if (!date) {
+            return null;
+          }
+          return {
+            ...date,
+            provider: "All Providers",
+            count,
+          };
+        })
+        .filter((row): row is CSBCountData => row !== null)
+    );
   } catch (error) {
-    console.error("Error fetching all-provider daily counts:", error);
+    console.error("Error fetching total per day across all providers:", error);
     return [];
   }
 }
@@ -351,5 +507,243 @@ export async function getPlatformCountPerDayData({
   } catch (error) {
     console.error("Error fetching platform daily counts:", error);
     return [];
+  }
+}
+
+async function getAllPlatformCountsPerDayData({
+  timeWindowDays,
+  platformsById,
+}: {
+  timeWindowDays: number;
+  platformsById?: Map<string, CSBPlatform>;
+}): Promise<DailyPlatformAggregateRow[]> {
+  try {
+    const [payload, allPlatforms] = await Promise.all([
+      fetchData<DailyPlatformsResponse>({
+        path: `/stats/daily/all/platforms?days=${encodeURIComponent(String(timeWindowDays))}`,
+      }),
+      platformsById ? Promise.resolve(null) : getAllPlatforms().catch(() => []),
+    ]);
+
+    const resolvedPlatformsById =
+      platformsById ??
+      new Map((allPlatforms ?? []).map((platform) => [platform.noaa_id.toUpperCase(), platform]));
+
+    return sortByDateAsc(
+      payload.daily
+        .map((row) => {
+          const date = parseDateParts(row.date);
+          if (!date || !row.unique_id) {
+            return null;
+          }
+
+          const normalizedId = row.unique_id.toUpperCase();
+          const platformInfo = resolvedPlatformsById.get(normalizedId);
+
+          return {
+            ...date,
+            noaa_id: normalizedId,
+            provider: platformInfo?.provider ?? "Unknown provider",
+            platform: platformInfo?.platform ?? row.platform_name,
+            count: row.points,
+          };
+        })
+        .filter((row): row is DailyPlatformAggregateRow => row !== null)
+    );
+  } catch (error) {
+    console.error("Error fetching all-platform daily counts:", error);
+    return [];
+  }
+}
+
+export async function getProviderDailyStackedChartData({
+  timeWindowDays,
+  limit,
+}: {
+  timeWindowDays: number;
+  limit: number;
+}): Promise<StackedChartData> {
+  // TODO most of this logic belongs not in here
+  const rows = buildWindowRows(timeWindowDays);
+  const rowByDate = new Map(rows.map((row) => [row.date, row]));
+
+  try {
+    const allProviderRows = await getAllProviderCountsPerDayData({ timeWindowDays });
+    const topProviders = buildTopProvidersFromDailyRows(allProviderRows, limit);
+    const providerSeriesKeyByName = new Map<string, string>();
+    const series: StackedChartSeries[] = topProviders.map((providerRow, index) => {
+      const seriesKey = getSeriesKey(index);
+      providerSeriesKeyByName.set(providerRow.provider, seriesKey);
+
+      return {
+        key: seriesKey,
+        label: providerRow.provider,
+        color: getSeriesColor(index),
+        total: providerRow.totalCount,
+      };
+    });
+
+    let otherTotal = 0;
+
+    allProviderRows.forEach((row) => {
+      const chartRow = rowByDate.get(toDateKey(row));
+      if (!chartRow) {
+        return;
+      }
+
+      chartRow.total += row.count;
+
+      const seriesKey = providerSeriesKeyByName.get(row.provider);
+      if (seriesKey) {
+        chartRow[seriesKey] = Number(chartRow[seriesKey] ?? 0) + row.count;
+      } else {
+        chartRow.other = Number(chartRow.other ?? 0) + row.count;
+        otherTotal += row.count;
+      }
+    });
+
+    if (otherTotal > 0) {
+      series.push({
+        key: "other",
+        label: "Other",
+        color: OTHER_SERIES_COLOR,
+        total: otherTotal,
+      });
+    }
+
+    return {
+      rows,
+      series,
+    };
+  } catch (error) {
+    console.error("Error building provider stacked chart data:", error);
+    return {
+      rows,
+      series: [],
+    };
+  }
+}
+
+export async function getProviderPlatformDailyStackedChartData({
+  timeWindowDays,
+  limit,
+  selectedProvider,
+}: {
+  timeWindowDays: number;
+  limit: number;
+  selectedProvider?: string;
+}): Promise<ProviderPlatformStackedChartData> {
+  // TODO most of this logic belongs not in here
+  const rows = buildWindowRows(timeWindowDays);
+  const rowByDate = new Map(rows.map((row) => [row.date, row]));
+
+  try {
+    const platforms = await getPlatformInfoFromNoaa();
+    const platformsById = new Map(platforms.map((platform) => [platform.noaa_id.toUpperCase(), platform]));
+    const [allProviderRows, allPlatformRows] = await Promise.all([
+      getAllProviderCountsPerDayData({ timeWindowDays }),
+      getAllPlatformCountsPerDayData({ timeWindowDays, platformsById }),
+    ]);
+
+    // TODO this should just be all providers
+    const providerOptions = buildProviderOptions(buildTopProvidersFromDailyRows(allProviderRows, limit));
+    const resolvedProvider =
+      providerOptions.find((provider) => provider.value === selectedProvider)?.value ??
+      providerOptions[0]?.value ??
+      "";
+
+    if (!resolvedProvider) {
+      return {
+        selectedProvider: "",
+        providerOptions,
+        rows,
+        series: [],
+      };
+    }
+
+    const providerPlatformRows = allPlatformRows.filter((row) => row.provider === resolvedProvider);
+    const totalsByPlatformId = new Map<string, DailyPlatformAggregateRow & { total: number }>();
+
+    providerPlatformRows.forEach((row) => {
+      const platformIdKey = row.noaa_id.toUpperCase();
+      const existing = totalsByPlatformId.get(platformIdKey);
+      if (existing) {
+        existing.total += row.count;
+        return;
+      }
+
+      totalsByPlatformId.set(platformIdKey, {
+        ...row,
+        total: row.count,
+      });
+    });
+
+    const sortedPlatformResults = Array.from(totalsByPlatformId.values())
+      .filter((platformResult) => platformResult.total > 0)
+      .sort((a, b) => b.total - a.total);
+
+    const topPlatformResults = sortedPlatformResults.slice(0, MAX_PLATFORM_SERIES);
+    const visibleSeriesKeyByPlatformId = new Map<string, string>();
+    const series: StackedChartSeries[] = topPlatformResults.map((platformResult, index) => {
+      const seriesKey = getSeriesKey(index);
+      visibleSeriesKeyByPlatformId.set(platformResult.noaa_id.toUpperCase(), seriesKey);
+
+      const platformInfo = platformsById.get(platformResult.noaa_id.toUpperCase());
+      const label = platformInfo?.platform
+        ? `${platformInfo.platform} (${platformInfo.noaa_id})`
+        : platformResult.platform
+          ? `${platformResult.platform} (${platformResult.noaa_id})`
+          : platformResult.noaa_id;
+
+      return {
+        key: seriesKey,
+        label,
+        color: getSeriesColor(index),
+        total: platformResult.total,
+      };
+    });
+
+    let otherTotal = 0;
+
+    providerPlatformRows.forEach((row) => {
+      const chartRow = rowByDate.get(toDateKey(row));
+      if (!chartRow) {
+        return;
+      }
+
+      chartRow.total += row.count;
+
+      const seriesKey = visibleSeriesKeyByPlatformId.get(row.noaa_id.toUpperCase());
+      if (seriesKey) {
+        chartRow[seriesKey] = Number(chartRow[seriesKey] ?? 0) + row.count;
+      } else {
+        chartRow.allOthers = Number(chartRow.allOthers ?? 0) + row.count;
+        otherTotal += row.count;
+      }
+    });
+
+    if (otherTotal > 0) {
+      series.push({
+        key: "allOthers",
+        label: "All Others",
+        color: OTHER_SERIES_COLOR,
+        total: otherTotal,
+      });
+    }
+
+    return {
+      selectedProvider: resolvedProvider,
+      providerOptions,
+      rows,
+      series,
+    };
+  } catch (error) {
+    console.error("Error building provider platform stacked chart data:", error);
+    return {
+      selectedProvider: "",
+      providerOptions: [],
+      rows,
+      series: [],
+    };
   }
 }

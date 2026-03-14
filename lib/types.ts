@@ -40,3 +40,31 @@ export type CSBCountData = {
 export type CSBPlatformCountData = {
   noaa_id: string;
 } & CSBCountData;
+
+export type StackedChartSeries = {
+  key: string;
+  label: string;
+  color: string;
+  total: number;
+};
+
+export type StackedChartRow = Record<string, number | string> & {
+  date: string;
+  dateLabel: string;
+  total: number;
+};
+
+export type StackedChartData = {
+  rows: StackedChartRow[];
+  series: StackedChartSeries[];
+};
+
+export type ProviderSelectOption = {
+  value: string;
+  label: string;
+};
+
+export type ProviderPlatformStackedChartData = StackedChartData & {
+  selectedProvider: string;
+  providerOptions: ProviderSelectOption[];
+};
