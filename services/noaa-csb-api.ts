@@ -218,10 +218,6 @@ function getSeriesKey(index: number): string {
   return `series${index + 1}`;
 }
 
-function sumCounts<T extends { count: number }>(rows: T[]): number {
-  return rows.reduce((sum, row) => sum + row.count, 0);
-}
-
 function buildProviderOptions(rows: { provider: string }[]): ProviderSelectOption[] {
   return rows.map((row) => ({
     value: row.provider,
@@ -669,13 +665,14 @@ export async function getProviderPlatformDailyStackedChartData({
     const totalsByPlatformId = new Map<string, DailyPlatformAggregateRow & { total: number }>();
 
     providerPlatformRows.forEach((row) => {
-      const existing = totalsByPlatformId.get(row.noaa_id);
+      const platformIdKey = row.noaa_id.toUpperCase();
+      const existing = totalsByPlatformId.get(platformIdKey);
       if (existing) {
         existing.total += row.count;
         return;
       }
 
-      totalsByPlatformId.set(row.noaa_id, {
+      totalsByPlatformId.set(platformIdKey, {
         ...row,
         total: row.count,
       });
