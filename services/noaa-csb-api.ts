@@ -75,8 +75,33 @@ type DailyPointsRow = {
   provider?: string;
 };
 
+type DailyProviderPointsRow = {
+  date: string;
+  provider: string;
+  points: number;
+};
+
+type DailyPlatformPointsRow = {
+  date: string;
+  unique_id: string;
+  platform_name: string;
+  points: number;
+};
+
 type DailyResponse = {
   daily: DailyPointsRow[];
+};
+
+type DailyProvidersResponse = {
+  daily: DailyProviderPointsRow[];
+};
+
+type DailyPlatformsResponse = {
+  daily: DailyPlatformPointsRow[];
+};
+
+type DailyPlatformAggregateRow = CSBPlatformCountData & {
+  platform: string;
 };
 
 const chartDateLabelFormatter = new Intl.DateTimeFormat("en-US", {
@@ -202,6 +227,26 @@ function buildProviderOptions(rows: { provider: string }[]): ProviderSelectOptio
     value: row.provider,
     label: row.provider,
   }));
+}
+
+function buildTopProvidersFromDailyRows(
+  rows: CSBCountData[],
+  limit: number
+): { provider: string; totalCount: number }[] {
+  const totalsByProvider = new Map<string, number>();
+
+  rows.forEach((row) => {
+    totalsByProvider.set(row.provider, (totalsByProvider.get(row.provider) ?? 0) + row.count);
+  });
+
+  return Array.from(totalsByProvider.entries())
+    .map(([provider, totalCount]) => ({
+      provider,
+      totalCount,
+    }))
+    .filter((row) => row.totalCount > 0)
+    .sort((a, b) => b.totalCount - a.totalCount)
+    .slice(0, limit);
 }
 
 async function getAllPlatforms(): Promise<CSBPlatform[]> {
@@ -367,28 +412,67 @@ export async function getProviderCountPerDayData({
   }
 }
 
+async function getAllProviderCountsPerDayData({
+  timeWindowDays,
+}: {
+  timeWindowDays: number;
+}): Promise<CSBCountData[]> {
+  try {
+    const payload = await fetchData<DailyProvidersResponse>({
+      path: `/stats/daily/all/providers?days=${encodeURIComponent(String(timeWindowDays))}`,
+    });
+    return sortByDateAsc(
+      payload.daily
+        .map((row) => {
+          const date = parseDateParts(row.date);
+          if (!date) {
+            return null;
+          }
+          return {
+            ...date,
+            provider: row.provider,
+            count: row.points,
+          };
+        })
+        .filter((row): row is CSBCountData => row !== null)
+    );
+  } catch (error) {
+    console.error("Error fetching all-provider daily provider counts:", error);
+    return [];
+  }
+}
+
 export async function getTotalPerDayAllProviders({
   timeWindowDays,
 }: {
   timeWindowDays: number;
 }): Promise<CSBCountData[]> {
   try {
-    const payload = await fetchData<DailyResponse>({
-      path: `/stats/daily/all/providers?days=${encodeURIComponent(String(timeWindowDays))}`,
+    const providerRows = await getAllProviderCountsPerDayData({ timeWindowDays });
+    const totalsByDate = new Map<string, number>();
+
+    providerRows.forEach((row) => {
+      const dateKey = toDateKey(row);
+      totalsByDate.set(dateKey, (totalsByDate.get(dateKey) ?? 0) + row.count);
     });
-    return sortByDateAsc(payload.daily.map((row) => {
-      const date = parseDateParts(row.date);
-      if (!date) {
-        return null;
-      }
-      return {
-        ...date,
-        provider: row.provider ?? "All Providers",
-        count: row.points,
-      };
-    }).filter((row): row is CSBCountData => row !== null));
+
+    return sortByDateAsc(
+      Array.from(totalsByDate.entries())
+        .map(([dateKey, count]) => {
+          const date = parseDateParts(dateKey);
+          if (!date) {
+            return null;
+          }
+          return {
+            ...date,
+            provider: "All Providers",
+            count,
+          };
+        })
+        .filter((row): row is CSBCountData => row !== null)
+    );
   } catch (error) {
-    console.error("Error fetching all-provider daily counts:", error);
+    console.error("Error fetching total per day across all providers:", error);
     return [];
   }
 }
@@ -430,6 +514,52 @@ export async function getPlatformCountPerDayData({
   }
 }
 
+async function getAllPlatformCountsPerDayData({
+  timeWindowDays,
+  platformsById,
+}: {
+  timeWindowDays: number;
+  platformsById?: Map<string, CSBPlatform>;
+}): Promise<DailyPlatformAggregateRow[]> {
+  try {
+    const [payload, allPlatforms] = await Promise.all([
+      fetchData<DailyPlatformsResponse>({
+        path: `/stats/daily/all/platforms?days=${encodeURIComponent(String(timeWindowDays))}`,
+      }),
+      platformsById ? Promise.resolve(null) : getAllPlatforms().catch(() => []),
+    ]);
+
+    const resolvedPlatformsById =
+      platformsById ??
+      new Map((allPlatforms ?? []).map((platform) => [platform.noaa_id.toUpperCase(), platform]));
+
+    return sortByDateAsc(
+      payload.daily
+        .map((row) => {
+          const date = parseDateParts(row.date);
+          if (!date || !row.unique_id) {
+            return null;
+          }
+
+          const normalizedId = row.unique_id.toUpperCase();
+          const platformInfo = resolvedPlatformsById.get(normalizedId);
+
+          return {
+            ...date,
+            noaa_id: row.unique_id,
+            provider: platformInfo?.provider ?? "Unknown provider",
+            platform: platformInfo?.platform ?? row.platform_name,
+            count: row.points,
+          };
+        })
+        .filter((row): row is DailyPlatformAggregateRow => row !== null)
+    );
+  } catch (error) {
+    console.error("Error fetching all-platform daily counts:", error);
+    return [];
+  }
+}
+
 export async function getProviderDailyStackedChartData({
   timeWindowDays,
   limit,
@@ -437,71 +567,42 @@ export async function getProviderDailyStackedChartData({
   timeWindowDays: number;
   limit: number;
 }): Promise<StackedChartData> {
+  // TODO most of this logic belongs not in here
   const rows = buildWindowRows(timeWindowDays);
   const rowByDate = new Map(rows.map((row) => [row.date, row]));
 
   try {
-    const [topProviders, totalData] = await Promise.all([
-      getTopProvidersByCount({ timeWindowDays, limit }),
-      getTotalPerDayAllProviders({ timeWindowDays }),
-    ]);
+    const allProviderRows = await getAllProviderCountsPerDayData({ timeWindowDays });
+    const topProviders = buildTopProvidersFromDailyRows(allProviderRows, limit);
+    const providerSeriesKeyByName = new Map<string, string>();
+    const series: StackedChartSeries[] = topProviders.map((providerRow, index) => {
+      const seriesKey = getSeriesKey(index);
+      providerSeriesKeyByName.set(providerRow.provider, seriesKey);
 
-    totalData.forEach((row) => {
-      const dateKey = toDateKey(row);
-      const chartRow = rowByDate.get(dateKey);
-      if (chartRow) {
-        chartRow.total = row.count;
-      }
-    });
-
-    const providerResults = await Promise.all(
-      topProviders.map(async (providerRow) => ({
-        provider: providerRow.provider,
-        rows: await getProviderCountPerDayData({
-          provider: providerRow.provider,
-          timeWindowDays,
-        }),
-      }))
-    );
-
-    const series: StackedChartSeries[] = [];
-
-    providerResults.forEach((providerResult) => {
-      const providerTotal = sumCounts(providerResult.rows);
-      if (providerTotal <= 0) {
-        return;
-      }
-
-      const seriesKey = getSeriesKey(series.length);
-
-      providerResult.rows.forEach((row) => {
-        const chartRow = rowByDate.get(toDateKey(row));
-        if (chartRow) {
-          chartRow[seriesKey] = row.count;
-        }
-      });
-
-      series.push({
+      return {
         key: seriesKey,
-        label: providerResult.provider,
-        color: getSeriesColor(series.length),
-        total: providerTotal,
-      });
+        label: providerRow.provider,
+        color: getSeriesColor(index),
+        total: providerRow.totalCount,
+      };
     });
 
     let otherTotal = 0;
 
-    rows.forEach((row) => {
-      const visibleTotal = series.reduce((sum, currentSeries) => {
-        return sum + Number(row[currentSeries.key] ?? 0);
-      }, 0);
+    allProviderRows.forEach((row) => {
+      const chartRow = rowByDate.get(toDateKey(row));
+      if (!chartRow) {
+        return;
+      }
 
-      row.total = Math.max(row.total, visibleTotal);
+      chartRow.total += row.count;
 
-      const other = Math.max(0, row.total - visibleTotal);
-      if (other > 0) {
-        row.other = other;
-        otherTotal += other;
+      const seriesKey = providerSeriesKeyByName.get(row.provider);
+      if (seriesKey) {
+        chartRow[seriesKey] = Number(chartRow[seriesKey] ?? 0) + row.count;
+      } else {
+        chartRow.other = Number(chartRow.other ?? 0) + row.count;
+        otherTotal += row.count;
       }
     });
 
@@ -536,16 +637,20 @@ export async function getProviderPlatformDailyStackedChartData({
   limit: number;
   selectedProvider?: string;
 }): Promise<ProviderPlatformStackedChartData> {
+  // TODO most of this logic belongs not in here
   const rows = buildWindowRows(timeWindowDays);
   const rowByDate = new Map(rows.map((row) => [row.date, row]));
 
   try {
-    const [topProviders, platforms] = await Promise.all([
-      getTopProvidersByCount({ timeWindowDays, limit }),
-      getPlatformInfoFromNoaa(),
+    const platforms = await getPlatformInfoFromNoaa();
+    const platformsById = new Map(platforms.map((platform) => [platform.noaa_id.toUpperCase(), platform]));
+    const [allProviderRows, allPlatformRows] = await Promise.all([
+      getAllProviderCountsPerDayData({ timeWindowDays }),
+      getAllPlatformCountsPerDayData({ timeWindowDays, platformsById }),
     ]);
 
-    const providerOptions = buildProviderOptions(topProviders);
+    // TODO this should just be all providers
+    const providerOptions = buildProviderOptions(buildTopProvidersFromDailyRows(allProviderRows, limit));
     const resolvedProvider =
       providerOptions.find((provider) => provider.value === selectedProvider)?.value ??
       providerOptions[0]?.value ??
@@ -560,65 +665,64 @@ export async function getProviderPlatformDailyStackedChartData({
       };
     }
 
-    const providerPlatforms = platforms.filter((platform) => platform.provider === resolvedProvider);
+    const providerPlatformRows = allPlatformRows.filter((row) => row.provider === resolvedProvider);
+    const totalsByPlatformId = new Map<string, DailyPlatformAggregateRow & { total: number }>();
 
-    const platformResults = await Promise.all(
-      providerPlatforms.map(async (platform) => ({
-        platform,
-        rows: await getPlatformCountPerDayData({
-          noaaId: platform.noaa_id,
-          timeWindowDays,
-        }),
-      }))
-    );
+    providerPlatformRows.forEach((row) => {
+      const existing = totalsByPlatformId.get(row.noaa_id);
+      if (existing) {
+        existing.total += row.count;
+        return;
+      }
 
-    const sortedPlatformResults = platformResults
-      .map((platformResult) => ({
-        ...platformResult,
-        total: sumCounts(platformResult.rows),
-      }))
+      totalsByPlatformId.set(row.noaa_id, {
+        ...row,
+        total: row.count,
+      });
+    });
+
+    const sortedPlatformResults = Array.from(totalsByPlatformId.values())
       .filter((platformResult) => platformResult.total > 0)
       .sort((a, b) => b.total - a.total);
 
     const topPlatformResults = sortedPlatformResults.slice(0, MAX_PLATFORM_SERIES);
-    const otherPlatformResults = sortedPlatformResults.slice(MAX_PLATFORM_SERIES);
+    const visibleSeriesKeyByPlatformId = new Map<string, string>();
+    const series: StackedChartSeries[] = topPlatformResults.map((platformResult, index) => {
+      const seriesKey = getSeriesKey(index);
+      visibleSeriesKeyByPlatformId.set(platformResult.noaa_id, seriesKey);
 
-    const series: StackedChartSeries[] = [];
+      const platformInfo = platformsById.get(platformResult.noaa_id.toUpperCase());
+      const label = platformInfo?.platform
+        ? `${platformInfo.platform} (${platformInfo.noaa_id})`
+        : platformResult.platform
+          ? `${platformResult.platform} (${platformResult.noaa_id})`
+          : platformResult.noaa_id;
 
-    topPlatformResults.forEach((platformResult) => {
-      const seriesKey = getSeriesKey(series.length);
-      const label = platformResult.platform.platform
-        ? `${platformResult.platform.platform} (${platformResult.platform.noaa_id})`
-        : platformResult.platform.noaa_id;
-
-      platformResult.rows.forEach((row) => {
-        const chartRow = rowByDate.get(toDateKey(row));
-        if (chartRow) {
-          chartRow[seriesKey] = row.count;
-        }
-      });
-
-      series.push({
+      return {
         key: seriesKey,
         label,
-        color: getSeriesColor(series.length),
+        color: getSeriesColor(index),
         total: platformResult.total,
-      });
+      };
     });
 
     let otherTotal = 0;
 
-    otherPlatformResults.forEach((platformResult) => {
-      const seriesKey = "allOthers";
+    providerPlatformRows.forEach((row) => {
+      const chartRow = rowByDate.get(toDateKey(row));
+      if (!chartRow) {
+        return;
+      }
 
-      platformResult.rows.forEach((row) => {
-        const chartRow = rowByDate.get(toDateKey(row));
-        if (chartRow) {
-          chartRow[seriesKey] = Number(chartRow[seriesKey] ?? 0) + row.count;
-        }
-      });
+      chartRow.total += row.count;
 
-      otherTotal += platformResult.total;
+      const seriesKey = visibleSeriesKeyByPlatformId.get(row.noaa_id);
+      if (seriesKey) {
+        chartRow[seriesKey] = Number(chartRow[seriesKey] ?? 0) + row.count;
+      } else {
+        chartRow.allOthers = Number(chartRow.allOthers ?? 0) + row.count;
+        otherTotal += row.count;
+      }
     });
 
     if (otherTotal > 0) {
@@ -629,10 +733,6 @@ export async function getProviderPlatformDailyStackedChartData({
         total: otherTotal,
       });
     }
-
-    rows.forEach((row) => {
-      row.total = series.reduce((sum, currentSeries) => sum + Number(row[currentSeries.key] ?? 0), 0);
-    });
 
     return {
       selectedProvider: resolvedProvider,
