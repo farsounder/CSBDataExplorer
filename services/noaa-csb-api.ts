@@ -542,7 +542,7 @@ async function getAllPlatformCountsPerDayData({
 
           return {
             ...date,
-            noaa_id: row.unique_id,
+            noaa_id: normalizedId,
             provider: platformInfo?.provider ?? "Unknown provider",
             platform: platformInfo?.platform ?? row.platform_name,
             count: row.points,
@@ -686,7 +686,7 @@ export async function getProviderPlatformDailyStackedChartData({
     const visibleSeriesKeyByPlatformId = new Map<string, string>();
     const series: StackedChartSeries[] = topPlatformResults.map((platformResult, index) => {
       const seriesKey = getSeriesKey(index);
-      visibleSeriesKeyByPlatformId.set(platformResult.noaa_id, seriesKey);
+      visibleSeriesKeyByPlatformId.set(platformResult.noaa_id.toUpperCase(), seriesKey);
 
       const platformInfo = platformsById.get(platformResult.noaa_id.toUpperCase());
       const label = platformInfo?.platform
@@ -713,7 +713,7 @@ export async function getProviderPlatformDailyStackedChartData({
 
       chartRow.total += row.count;
 
-      const seriesKey = visibleSeriesKeyByPlatformId.get(row.noaa_id);
+      const seriesKey = visibleSeriesKeyByPlatformId.get(row.noaa_id.toUpperCase());
       if (seriesKey) {
         chartRow[seriesKey] = Number(chartRow[seriesKey] ?? 0) + row.count;
       } else {
