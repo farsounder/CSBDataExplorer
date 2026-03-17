@@ -36,7 +36,7 @@
     "leaflet-defaulticon-compatibility": "^0.1.2",
     "lucide-react": "^0.268.0",
     "maplibre-gl": "^5.19.0",
-    "next": "16.1.6",
+    "next": "16.1.7",
     "next-share": "^0.27.0",
     "plotly.js": "^2.32.0",
     "postcss": "8.4.31",
