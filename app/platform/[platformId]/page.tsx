@@ -9,6 +9,7 @@ import StatsCard from "@/app/_components/stats/stats-card";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
 import SocialButtons from "@/app/_components/stats/social-buttons-with-create";
 import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
+import { PlatformNotFound } from "@/app/platform/[platformId]/_components/platform-not-found";
 // Next 16 requires segment config exports like `revalidate` to be statically analyzable.
 // Using an imported constant can be flagged as invalid, so keep this as a literal.
 export const revalidate = 21600; // 6 hours
@@ -79,10 +80,12 @@ export default async function Page({
   const validPlatformIds = validPlatforms.map((platform) => platform.noaa_id.toUpperCase());
 
   if (!validPlatformIds.includes(platformId.toUpperCase())) {
-    throw new Error("Invalid platform ID");
+    return <PlatformNotFound platformId={platformId} />;
   }
 
-  const platform = validPlatforms.find((platform) => platform.noaa_id === platformId);
+  const platform = validPlatforms.find(
+    (p) => p.noaa_id.toUpperCase() === platformId.toUpperCase()
+  );
 
   const captureElementId = "stats-card-capture";
 
