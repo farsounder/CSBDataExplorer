@@ -29,7 +29,7 @@
     "autoprefixer": "10.4.15",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
-    "deck.gl": "^8.9.30",
+    "deck.gl": "^9.3.1",
     "eslint": "^9.39.2",
     "eslint-config-next": "16.1.1",
     "html-to-image": "^1.11.13",
