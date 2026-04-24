@@ -2,8 +2,8 @@ import type { NextRequest } from "next/server";
 import { getPlatformCountPerDayData } from "@/services/noaa-csb-api";
 import {
   parseSvgStatsCardOptions,
+  parseSvgIdentifier,
   renderSvgStatsCard,
-  stripSvgSuffix,
   svgResponse,
 } from "../../_shared/svg-stats-card";
 
@@ -16,13 +16,18 @@ export async function GET(
     return new Response("no id provided", { status: 404 });
   }
 
+  const parsedPlatformId = parseSvgIdentifier(platformId, "platformId");
+  if ("error" in parsedPlatformId) {
+    return new Response(parsedPlatformId.error, { status: parsedPlatformId.status });
+  }
+
   const { searchParams } = new URL(request.url);
   const parsed = parseSvgStatsCardOptions(searchParams);
   if ("error" in parsed) {
     return new Response(parsed.error, { status: parsed.status });
   }
 
-  const noaaId = stripSvgSuffix(platformId);
+  const noaaId = parsedPlatformId.identifier;
   const data = await getPlatformCountPerDayData({
     noaaId,
     timeWindowDays: parsed.options.timeWindowDays,

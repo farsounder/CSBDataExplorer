@@ -51,6 +51,7 @@ const MIN_WIDTH = 320;
 const MAX_WIDTH = 1200;
 const MIN_HEIGHT = 180;
 const MAX_HEIGHT = 630;
+const MAX_IDENTIFIER_LENGTH = 160;
 
 const THEMES: Record<ThemeName, Theme> = {
   light: {
@@ -99,6 +100,36 @@ const THEMES: Record<ThemeName, Theme> = {
 
 export function stripSvgSuffix(value: string): string {
   return value.endsWith(".svg") ? value.slice(0, -4) : value;
+}
+
+export function parseSvgIdentifier(value: string, name: string):
+  | { identifier: string }
+  | { error: string; status: number } {
+  let decodedValue: string;
+  try {
+    decodedValue = decodeURIComponent(value);
+  } catch {
+    return { error: `${name} is not valid URL encoding`, status: 400 };
+  }
+
+  const identifier = stripSvgSuffix(decodedValue).trim();
+  if (!identifier) {
+    return { error: `${name} is required`, status: 400 };
+  }
+  if (identifier.length > MAX_IDENTIFIER_LENGTH) {
+    return {
+      error: `${name} must be ${MAX_IDENTIFIER_LENGTH} characters or less`,
+      status: 400,
+    };
+  }
+  if (/[\u0000-\u001F\u007F]/.test(identifier)) {
+    return { error: `${name} contains invalid characters`, status: 400 };
+  }
+  if (/[<>"'`]/.test(identifier)) {
+    return { error: `${name} contains invalid characters`, status: 400 };
+  }
+
+  return { identifier };
 }
 
 export function parseSvgStatsCardOptions(searchParams: URLSearchParams):
@@ -151,6 +182,7 @@ export function svgResponse(svg: string): Response {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Cache-Control": `public, max-age=0, s-maxage=${DATA_CACHE_SECONDS}, stale-while-revalidate=${DATA_CACHE_SECONDS}`,
+      "Content-Security-Policy": "default-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'",
       "Content-Type": "image/svg+xml; charset=utf-8",
       "X-Content-Type-Options": "nosniff",
     },

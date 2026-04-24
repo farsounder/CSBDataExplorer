@@ -2,8 +2,8 @@ import type { NextRequest } from "next/server";
 import { getProviderCountPerDayData } from "@/services/noaa-csb-api";
 import {
   parseSvgStatsCardOptions,
+  parseSvgIdentifier,
   renderSvgStatsCard,
-  stripSvgSuffix,
   svgResponse,
 } from "../../_shared/svg-stats-card";
 
@@ -16,13 +16,18 @@ export async function GET(
     return new Response("no id provided", { status: 404 });
   }
 
+  const parsedProviderId = parseSvgIdentifier(providerId, "providerId");
+  if ("error" in parsedProviderId) {
+    return new Response(parsedProviderId.error, { status: parsedProviderId.status });
+  }
+
   const { searchParams } = new URL(request.url);
   const parsed = parseSvgStatsCardOptions(searchParams);
   if ("error" in parsed) {
     return new Response(parsed.error, { status: parsed.status });
   }
 
-  const provider = stripSvgSuffix(decodeURIComponent(providerId));
+  const provider = parsedProviderId.identifier;
   const data = await getProviderCountPerDayData({
     provider,
     timeWindowDays: parsed.options.timeWindowDays,
