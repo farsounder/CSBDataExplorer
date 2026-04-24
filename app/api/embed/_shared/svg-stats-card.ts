@@ -20,6 +20,9 @@ type Theme = {
 
 type CountRow = {
   count: number;
+  year: number;
+  month: number;
+  day: number;
 };
 
 type StatCardOptions = {
@@ -52,6 +55,7 @@ const MAX_WIDTH = 1200;
 const MIN_HEIGHT = 180;
 const MAX_HEIGHT = 630;
 const MAX_IDENTIFIER_LENGTH = 160;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 const THEMES: Record<ThemeName, Theme> = {
   light: {
@@ -251,7 +255,16 @@ export function renderSvgStatsCard({
   })}
   <rect x="${contentX}" y="${footerTop}" width="${contentWidth}" height="${footerHeight}" rx="14" fill="${theme.chartBackground}" opacity="0.38"/>
   <line x1="${contentX + 12}" y1="${footerTop}" x2="${width - contentX - 12}" y2="${footerTop}" stroke="${theme.border}" stroke-width="1" opacity="0.55"/>
-  ${renderSparkline({ data, width, contentX, contentWidth, chartTop, chartHeight, theme })}
+  ${renderSparkline({
+    data,
+    timeWindowDays,
+    width,
+    contentX,
+    contentWidth,
+    chartTop,
+    chartHeight,
+    theme,
+  })}
   <text x="${contentX + 12}" y="${footerY}" fill="${theme.muted}" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="${statLabelSize}" font-weight="600">${escapeXml(label)}</text>
   <text x="${width - contentX - 12}" y="${footerY}" fill="${theme.muted}" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="${statLabelSize}" text-anchor="end">mycsb.farsounder.com</text>
 </svg>`;
@@ -334,6 +347,7 @@ function renderStats({
 
 function renderSparkline({
   data,
+  timeWindowDays,
   width,
   contentX,
   contentWidth,
@@ -342,6 +356,7 @@ function renderSparkline({
   theme,
 }: {
   data: CountRow[];
+  timeWindowDays: number;
   width: number;
   contentX: number;
   contentWidth: number;
@@ -360,16 +375,17 @@ function renderSparkline({
   </g>`;
   }
 
-  const maxCount = Math.max(...data.map((row) => row.count), 1);
-  const slotWidth = chartWidth / data.length;
+  const chartData = fillTimeWindowCounts(data, timeWindowDays);
+  const maxCount = Math.max(...chartData.map((row) => row.count), 1);
+  const slotWidth = chartWidth / chartData.length;
   const barWidth = Math.max(0.8, slotWidth * 0.62);
 
-  const bars = data
+  const bars = chartData
     .map((row, index) => {
-      const barHeight = Math.max(2, (row.count / maxCount) * (chartHeight - 10));
+      const barHeight = row.count > 0 ? Math.max(2, (row.count / maxCount) * (chartHeight - 10)) : 0;
       const x = chartX + index * slotWidth + (slotWidth - barWidth) / 2;
       const y = baselineY - barHeight;
-      return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${barHeight.toFixed(2)}" rx="2" fill="${theme.accent}" opacity="${barOpacity(index, data.length)}"/>`;
+      return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${barHeight.toFixed(2)}" rx="2" fill="${theme.accent}" opacity="${barOpacity(index, chartData.length)}"/>`;
     })
     .join("\n  ");
 
@@ -377,6 +393,35 @@ function renderSparkline({
     <line x1="${chartX}" y1="${baselineY}" x2="${chartX + chartWidth}" y2="${baselineY}" stroke="${theme.accentSoft}" stroke-width="2"/>
     ${bars}
   </g>`;
+}
+
+function fillTimeWindowCounts(data: CountRow[], timeWindowDays: number): CountRow[] {
+  const today = new Date();
+  const endTime = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const startTime = endTime - (timeWindowDays - 1) * MS_PER_DAY;
+  const countsByDate = new Map<string, number>();
+
+  for (const row of data) {
+    const key = dateKey(row.year, row.month, row.day);
+    countsByDate.set(key, (countsByDate.get(key) ?? 0) + row.count);
+  }
+
+  return Array.from({ length: timeWindowDays }, (_, index) => {
+    const date = new Date(startTime + index * MS_PER_DAY);
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
+    const day = date.getUTCDate();
+    return {
+      year,
+      month,
+      day,
+      count: countsByDate.get(dateKey(year, month, day)) ?? 0,
+    };
+  });
+}
+
+function dateKey(year: number, month: number, day: number): string {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function barOpacity(index: number, length: number): string {
