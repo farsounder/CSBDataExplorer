@@ -6,8 +6,19 @@ import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
 import InfoIcon from "../../../components/icons/infoicon";
 import { Button } from "../../../components/ui/button";
 
-const VECTOR_CHARTS_BASEMAP_NAME = "Vector Charts (US)";
 const OSM_BASEMAP_NAME = "OpenStreetMap";
+const VECTOR_CHARTS_BASEMAP_NAME = "Vector Charts (US)";
+const CHS_ENC_BASEMAP_NAME = "CHS ENC (Canada)";
+const SATELLITE_BASEMAP_NAME = "Satellite";
+const CHS_ENC_WMS_BASE_URL =
+  "https://egisp.dfo-mpo.gc.ca/arcgis/rest/services/chs/ENC_MaritimeChartService/MapServer/exts/MaritimeChartService/WMSServer";
+const CHS_ENC_WMS_LAYERS = "0,1,2,3,4,5,6,7,8,9,10,11,12";
+const BASEMAP_OPTIONS = [
+  OSM_BASEMAP_NAME,
+  VECTOR_CHARTS_BASEMAP_NAME,
+  CHS_ENC_BASEMAP_NAME,
+  SATELLITE_BASEMAP_NAME,
+] as const;
 const NOAA_CSB_LAYER_NAME = "IHO CSB Data";
 const USER_CSB_LAYER_NAME = "Your CSB Data";
 const VIEW_STATE_STORAGE_KEY = "viewState";
@@ -19,8 +30,13 @@ const CSB_EXPORT_BASE_URL =
   "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
 const basemapInfo = new Map<string, string>([
-  [VECTOR_CHARTS_BASEMAP_NAME, "Vector nautical charts for US waters only."],
   [OSM_BASEMAP_NAME, "A simple global basemap from OpenStreetMap."],
+  [VECTOR_CHARTS_BASEMAP_NAME, "Vector nautical charts for US waters only."],
+  [
+    CHS_ENC_BASEMAP_NAME,
+    "Canadian Hydrographic Service ENC charts as raster tiles, for Canadian waters only.",
+  ],
+  [SATELLITE_BASEMAP_NAME, "Esri World Imagery satellite basemap."],
 ]);
 
 const overlayInfo = new Map<string, string>([
@@ -34,8 +50,13 @@ const overlayDefaultVisibility = new Map<string, boolean>([
 ]);
 
 const basemapAttribution = new Map<string, string>([
-  [VECTOR_CHARTS_BASEMAP_NAME, "Vector Charts"],
   [OSM_BASEMAP_NAME, "© OpenStreetMap contributors"],
+  [VECTOR_CHARTS_BASEMAP_NAME, "Vector Charts"],
+  [CHS_ENC_BASEMAP_NAME, "© Canadian Hydrographic Service"],
+  [
+    SATELLITE_BASEMAP_NAME,
+    "Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+  ],
 ]);
 
 const overlayAttribution = new Map<string, string>([
@@ -56,7 +77,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 type ViewState = typeof INITIAL_VIEW_STATE;
-type BasemapId = typeof VECTOR_CHARTS_BASEMAP_NAME | typeof OSM_BASEMAP_NAME;
+type BasemapId = (typeof BASEMAP_OPTIONS)[number];
 type OverlayId = typeof NOAA_CSB_LAYER_NAME | typeof USER_CSB_LAYER_NAME;
 type OverlayVisibility = Record<OverlayId, boolean>;
 type MapStyle = Exclude<Parameters<MapLibreMap["setStyle"]>[0], null>;
@@ -85,7 +106,47 @@ const OSM_STYLE: Exclude<MapStyle, string> = {
   ],
 };
 
-const BASEMAP_OPTIONS: BasemapId[] = [VECTOR_CHARTS_BASEMAP_NAME, OSM_BASEMAP_NAME];
+const ESRI_IMAGERY_STYLE: Exclude<MapStyle, string> = {
+  version: 8,
+  sources: {
+    esri: {
+      type: "raster",
+      tiles: [
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+      attribution: "Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    },
+  },
+  layers: [
+    {
+      id: "esri",
+      type: "raster",
+      source: "esri",
+    },
+  ],
+};
+
+const CHS_ENC_STYLE: Exclude<MapStyle, string> = {
+  version: 8,
+  sources: {
+    chs_enc: {
+      type: "raster",
+      tiles: [
+        `${CHS_ENC_WMS_BASE_URL}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${CHS_ENC_WMS_LAYERS}&STYLES=&FORMAT=image/png&TRANSPARENT=true&HEIGHT=256&WIDTH=256&CRS=EPSG:3857&BBOX={bbox-epsg-3857}`,
+      ],
+      tileSize: 256,
+      attribution: "© Canadian Hydrographic Service",
+    },
+  },
+  layers: [
+    {
+      id: "chs-enc",
+      type: "raster",
+      source: "chs_enc",
+    },
+  ],
+};
 
 function buildVectorChartsStyleUrl(token: string): string {
   const params = new URLSearchParams({
@@ -105,6 +166,12 @@ function getMapStyle({
 }): MapStyle {
   if (basemapId === VECTOR_CHARTS_BASEMAP_NAME && vectorChartsToken) {
     return buildVectorChartsStyleUrl(vectorChartsToken);
+  }
+  if (basemapId === SATELLITE_BASEMAP_NAME) {
+    return ESRI_IMAGERY_STYLE;
+  }
+  if (basemapId === CHS_ENC_BASEMAP_NAME) {
+    return CHS_ENC_STYLE;
   }
   return OSM_STYLE;
 }

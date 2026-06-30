@@ -18,9 +18,11 @@ map between app specific unique ids and the NOAA external platform ids, so that
 there's a bit of obscurity between the two if a user shares their stats and
 doesn't want to share their associated NOAA external platform id.
 
-The map viewer can use Vector Charts as a basemap for US waters. To enable that
-option locally, set `NEXT_PUBLIC_VECTOR_CHARTS_TOKEN` in your root `.env`. If
-that token is not set, the viewer falls back to `OpenStreetMap`.
+The map viewer supports several basemap options: OpenStreetMap (default),
+Satellite (Esri World Imagery), CHS ENC (Canada), and Vector Charts (US). To
+enable Vector Charts locally, set `NEXT_PUBLIC_VECTOR_CHARTS_TOKEN` in your root
+`.env`. If that token is not set, the Vector Charts option is disabled in the
+layer picker.
 
 You can spin up a postgres database with docker-compose to run locally:
 
