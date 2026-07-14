@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import maplibregl, { Map as MapLibreMap } from "maplibre-gl";
+import maplibregl, { Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
 import InfoIcon from "../../../components/icons/infoicon";
 import { Button } from "../../../components/ui/button";
 
@@ -21,11 +21,21 @@ const BASEMAP_OPTIONS = [
 ] as const;
 const NOAA_CSB_LAYER_NAME = "IHO CSB Data";
 const USER_CSB_LAYER_NAME = "Your CSB Data";
+const OBSERVATIONS_LAYER_NAME = "Observations";
 const VIEW_STATE_STORAGE_KEY = "viewState";
 const NOAA_CSB_SOURCE_ID = "noaa-csb-source";
 const NOAA_CSB_LAYER_ID = "noaa-csb-layer";
 const USER_CSB_SOURCE_ID = "user-csb-source";
 const USER_CSB_LAYER_ID = "user-csb-layer";
+const OBSERVATIONS_SOURCE_ID = "observations-source";
+const OBSERVATIONS_LAYER_ID = "observations-layer";
+const OBSERVATIONS_GEOJSON_URL =
+  "https://storage.googleapis.com/farsounder-public-bucket/observations/observations.geojson";
+const OBSERVATION_ICONS = [
+  { id: "observation-whale", url: "/observations/whale.svg" },
+  { id: "observation-trash", url: "/observations/trash.svg" },
+  { id: "observation-hazard", url: "/observations/hazard.svg" },
+] as const;
 const CSB_EXPORT_BASE_URL =
   "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
@@ -41,26 +51,29 @@ const basemapInfo = new Map<string, string>([
 
 const overlayInfo = new Map<string, string>([
   [NOAA_CSB_LAYER_NAME, "Tracks from the DCDB Crowdsourced Bathymetry database."],
-  [USER_CSB_LAYER_NAME, "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel or provider you selected."],
+  [
+    USER_CSB_LAYER_NAME,
+    "Data contributed to the DCDB Crowdsourced Bathymetry database associated with the vessel or provider you selected.",
+  ],
+  [OBSERVATIONS_LAYER_NAME, "Reported whales, trash, and navigation hazards."],
 ]);
 
 const overlayDefaultVisibility = new Map<string, boolean>([
   [NOAA_CSB_LAYER_NAME, false],
   [USER_CSB_LAYER_NAME, true],
+  [OBSERVATIONS_LAYER_NAME, true],
 ]);
 
 const basemapAttribution = new Map<string, string>([
   [OSM_BASEMAP_NAME, "© OpenStreetMap contributors"],
   [VECTOR_CHARTS_BASEMAP_NAME, "Vector Charts"],
   [CHS_ENC_BASEMAP_NAME, "© Canadian Hydrographic Service"],
-  [
-    SATELLITE_BASEMAP_NAME,
-    "Esri, Maxar, Earthstar Geographics, and the GIS User Community",
-  ],
+  [SATELLITE_BASEMAP_NAME, "Esri, Maxar, Earthstar Geographics, and the GIS User Community"],
 ]);
 
 const overlayAttribution = new Map<string, string>([
   [NOAA_CSB_LAYER_NAME, "NOAA/DCDB CSB Database"],
+  [OBSERVATIONS_LAYER_NAME, "FarSounder Observations"],
 ]);
 
 const listFormatter = new Intl.ListFormat("en", {
@@ -78,7 +91,10 @@ const INITIAL_VIEW_STATE = {
 
 type ViewState = typeof INITIAL_VIEW_STATE;
 type BasemapId = (typeof BASEMAP_OPTIONS)[number];
-type OverlayId = typeof NOAA_CSB_LAYER_NAME | typeof USER_CSB_LAYER_NAME;
+type OverlayId =
+  | typeof NOAA_CSB_LAYER_NAME
+  | typeof USER_CSB_LAYER_NAME
+  | typeof OBSERVATIONS_LAYER_NAME;
 type OverlayVisibility = Record<OverlayId, boolean>;
 type MapStyle = Exclude<Parameters<MapLibreMap["setStyle"]>[0], null>;
 type OverlayConfig = {
@@ -304,8 +320,271 @@ function ensureRasterOverlay({
   }
 }
 
-function syncOverlayLayers(map: MapLibreMap, { platformId, providerId, visibility }: OverlayConfig) {
+const observationImagePromises = new Map<string, Promise<ImageData>>();
+const observationVisibility = new WeakMap<MapLibreMap, boolean>();
+
+type ObservationInteractionState = {
+  hoverPopup: maplibregl.Popup | null;
+  pinnedPopup: maplibregl.Popup | null;
+  handleMouseMove: (event: MapLayerMouseEvent) => void;
+  handleMouseLeave: () => void;
+  handleClick: (event: MapLayerMouseEvent) => void;
+};
+
+const observationInteractions = new WeakMap<MapLibreMap, ObservationInteractionState>();
+
+function loadObservationImage(url: string): Promise<ImageData> {
+  const existingPromise = observationImagePromises.get(url);
+  if (existingPromise) {
+    return existingPromise;
+  }
+
+  const imagePromise = new Promise<ImageData>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 32;
+      canvas.height = 32;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        reject(new Error(`Could not prepare observation icon: ${url}`));
+        return;
+      }
+
+      context.drawImage(image, 0, 0, 32, 32);
+      resolve(context.getImageData(0, 0, 32, 32));
+    };
+    image.onerror = () => reject(new Error(`Could not load observation icon: ${url}`));
+    image.src = url;
+  });
+
+  observationImagePromises.set(url, imagePromise);
+  return imagePromise;
+}
+
+function formatObservationPropertyName(name: string): string {
+  const words = name.replaceAll("_", " ").trim();
+  return words ? words[0].toUpperCase() + words.slice(1) : name;
+}
+
+function formatObservationPropertyValue(name: string, value: unknown): string {
+  if (name === "timestamp" && typeof value === "string") {
+    const match = value.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}(?:\.\d+)?)Z$/);
+    if (match) {
+      const [, year, month, day, hour, minute, second] = match;
+      const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}Z`);
+      if (!Number.isNaN(date.getTime())) {
+        return date.toLocaleString();
+      }
+    }
+  }
+
+  if (value === null || value === undefined || value === "") {
+    return "—";
+  }
+  if (typeof value === "object") {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function buildObservationPopupContent(properties: Record<string, unknown>): HTMLDivElement {
+  const container = document.createElement("div");
+  container.className = "min-w-48 max-w-72";
+
+  const title = document.createElement("p");
+  title.className = "mb-2 font-bold";
+  title.textContent =
+    typeof properties.observation_type === "string" ? properties.observation_type : "Observation";
+  container.appendChild(title);
+
+  for (const [name, value] of Object.entries(properties)) {
+    const row = document.createElement("div");
+    row.className = "grid grid-cols-[auto_1fr] gap-x-2 text-sm";
+
+    const label = document.createElement("span");
+    label.className = "font-semibold";
+    label.textContent = `${formatObservationPropertyName(name)}:`;
+
+    const displayedValue = document.createElement("span");
+    displayedValue.className = "break-words";
+    displayedValue.textContent = formatObservationPropertyValue(name, value);
+
+    row.append(label, displayedValue);
+    container.appendChild(row);
+  }
+
+  return container;
+}
+
+function getObservationProperties(event: MapLayerMouseEvent): Record<string, unknown> | null {
+  const properties = event.features?.[0]?.properties;
+  return properties ? (properties as Record<string, unknown>) : null;
+}
+
+function removeObservationInteractions(map: MapLibreMap) {
+  const interactions = observationInteractions.get(map);
+  if (!interactions) {
+    return;
+  }
+
+  map.off("mousemove", OBSERVATIONS_LAYER_ID, interactions.handleMouseMove);
+  map.off("mouseleave", OBSERVATIONS_LAYER_ID, interactions.handleMouseLeave);
+  map.off("click", OBSERVATIONS_LAYER_ID, interactions.handleClick);
+  interactions.hoverPopup?.remove();
+  interactions.pinnedPopup?.remove();
+  map.getCanvas().style.cursor = "";
+  observationInteractions.delete(map);
+}
+
+function ensureObservationInteractions(map: MapLibreMap) {
+  if (observationInteractions.has(map)) {
+    return;
+  }
+
+  const interactions: ObservationInteractionState = {
+    hoverPopup: null,
+    pinnedPopup: null,
+    handleMouseMove: () => {},
+    handleMouseLeave: () => {},
+    handleClick: () => {},
+  };
+
+  interactions.handleMouseMove = (event) => {
+    map.getCanvas().style.cursor = "pointer";
+    if (interactions.pinnedPopup) {
+      return;
+    }
+
+    const properties = getObservationProperties(event);
+    if (!properties) {
+      return;
+    }
+
+    interactions.hoverPopup?.remove();
+    interactions.hoverPopup = new maplibregl.Popup({
+      anchor: "top",
+      closeButton: false,
+      closeOnClick: false,
+      offset: 18,
+    })
+      .setLngLat(event.lngLat)
+      .setDOMContent(buildObservationPopupContent(properties))
+      .addTo(map);
+  };
+
+  interactions.handleMouseLeave = () => {
+    map.getCanvas().style.cursor = "";
+    interactions.hoverPopup?.remove();
+    interactions.hoverPopup = null;
+  };
+
+  interactions.handleClick = (event) => {
+    const properties = getObservationProperties(event);
+    if (!properties) {
+      return;
+    }
+
+    interactions.hoverPopup?.remove();
+    interactions.hoverPopup = null;
+    interactions.pinnedPopup?.remove();
+
+    const popup = new maplibregl.Popup({
+      anchor: "top",
+      closeButton: true,
+      closeOnClick: true,
+      offset: 18,
+    })
+      .setLngLat(event.lngLat)
+      .setDOMContent(buildObservationPopupContent(properties))
+      .addTo(map);
+    interactions.pinnedPopup = popup;
+    popup.once("close", () => {
+      if (interactions.pinnedPopup === popup) {
+        interactions.pinnedPopup = null;
+      }
+    });
+  };
+
+  map.on("mousemove", OBSERVATIONS_LAYER_ID, interactions.handleMouseMove);
+  map.on("mouseleave", OBSERVATIONS_LAYER_ID, interactions.handleMouseLeave);
+  map.on("click", OBSERVATIONS_LAYER_ID, interactions.handleClick);
+  observationInteractions.set(map, interactions);
+}
+
+function removeObservationsOverlay(map: MapLibreMap) {
+  removeObservationInteractions(map);
+  removeLayerIfPresent(map, OBSERVATIONS_LAYER_ID);
+  removeSourceIfPresent(map, OBSERVATIONS_SOURCE_ID);
+}
+
+async function ensureObservationsOverlay(map: MapLibreMap) {
+  if (!observationVisibility.get(map) || !map.isStyleLoaded()) {
+    return;
+  }
+
+  if (!map.getSource(OBSERVATIONS_SOURCE_ID)) {
+    map.addSource(OBSERVATIONS_SOURCE_ID, {
+      type: "geojson",
+      data: OBSERVATIONS_GEOJSON_URL,
+    });
+  }
+
+  if (!map.getLayer(OBSERVATIONS_LAYER_ID)) {
+    map.addLayer({
+      id: OBSERVATIONS_LAYER_ID,
+      type: "symbol",
+      source: OBSERVATIONS_SOURCE_ID,
+      layout: {
+        "icon-image": [
+          "match",
+          ["get", "observation_type"],
+          ["Whale", "whale"],
+          "observation-whale",
+          ["Trash", "trash"],
+          "observation-trash",
+          "observation-hazard",
+        ],
+        "icon-size": 1,
+        "icon-allow-overlap": true,
+      },
+    });
+  }
+
+  ensureObservationInteractions(map);
+
+  const icons = await Promise.all(
+    OBSERVATION_ICONS.map(async ({ id, url }) => ({
+      id,
+      image: await loadObservationImage(url),
+    }))
+  );
+
+  if (!observationVisibility.get(map) || !map.getLayer(OBSERVATIONS_LAYER_ID)) {
+    return;
+  }
+
+  for (const { id, image } of icons) {
+    if (!map.hasImage(id)) {
+      map.addImage(id, image, { pixelRatio: 1 });
+    }
+  }
+}
+
+function syncOverlayLayers(
+  map: MapLibreMap,
+  { platformId, providerId, visibility }: OverlayConfig
+) {
   const styleLoaded = map.isStyleLoaded();
+  observationVisibility.set(map, visibility[OBSERVATIONS_LAYER_NAME]);
+
+  if (visibility[OBSERVATIONS_LAYER_NAME]) {
+    if (styleLoaded) {
+      void ensureObservationsOverlay(map);
+    }
+  } else {
+    removeObservationsOverlay(map);
+  }
 
   if (visibility[NOAA_CSB_LAYER_NAME]) {
     if (styleLoaded) {
@@ -376,8 +655,8 @@ function LayerLegend({
   vectorChartsEnabled: boolean;
 }) {
   const overlayEntries: OverlayId[] = showUserLayer
-    ? [NOAA_CSB_LAYER_NAME, USER_CSB_LAYER_NAME]
-    : [NOAA_CSB_LAYER_NAME];
+    ? [NOAA_CSB_LAYER_NAME, USER_CSB_LAYER_NAME, OBSERVATIONS_LAYER_NAME]
+    : [NOAA_CSB_LAYER_NAME, OBSERVATIONS_LAYER_NAME];
 
   return (
     <div className="p-3 bg-white/90 border rounded-lg shadow-sm min-w-64">
@@ -466,6 +745,7 @@ export default function MapViewer({
   const [overlayVisibility, setOverlayVisibility] = useState<OverlayVisibility>({
     [NOAA_CSB_LAYER_NAME]: overlayDefaultVisibility.get(NOAA_CSB_LAYER_NAME) ?? false,
     [USER_CSB_LAYER_NAME]: overlayDefaultVisibility.get(USER_CSB_LAYER_NAME) ?? true,
+    [OBSERVATIONS_LAYER_NAME]: overlayDefaultVisibility.get(OBSERVATIONS_LAYER_NAME) ?? true,
   });
   const overlayConfig = useMemo<OverlayConfig>(
     () => ({
@@ -502,7 +782,12 @@ export default function MapViewer({
   }, []);
 
   useEffect(() => {
-    if (!mapContainerRef.current || mapRef.current || containerSize.width === 0 || containerSize.height === 0) {
+    if (
+      !mapContainerRef.current ||
+      mapRef.current ||
+      containerSize.width === 0 ||
+      containerSize.height === 0
+    ) {
       return;
     }
 
@@ -533,6 +818,8 @@ export default function MapViewer({
     return () => {
       map.off("load", handleLoad);
       map.off("moveend", handleMoveEnd);
+      observationVisibility.set(map, false);
+      removeObservationInteractions(map);
       map.remove();
       mapRef.current = null;
     };
@@ -546,6 +833,7 @@ export default function MapViewer({
     mapRef.current.once("styledata", () => {
       syncOverlayLayers(mapRef.current!, latestOverlayConfigRef.current);
     });
+    removeObservationInteractions(mapRef.current);
     mapRef.current.setStyle(
       getMapStyle({
         basemapId: activeBasemapId,
@@ -601,7 +889,12 @@ export default function MapViewer({
 
   const attributionParts = [
     basemapAttribution.get(activeBasemapId),
-    ...(overlayVisibility[NOAA_CSB_LAYER_NAME] ? [overlayAttribution.get(NOAA_CSB_LAYER_NAME)] : []),
+    ...(overlayVisibility[NOAA_CSB_LAYER_NAME]
+      ? [overlayAttribution.get(NOAA_CSB_LAYER_NAME)]
+      : []),
+    ...(overlayVisibility[OBSERVATIONS_LAYER_NAME]
+      ? [overlayAttribution.get(OBSERVATIONS_LAYER_NAME)]
+      : []),
   ];
 
   return (
@@ -626,7 +919,9 @@ export default function MapViewer({
           <GlobeAmericasIcon className="h-6 w-6 text-gray-600" />
         )}
       </Button>
-      <div className={`absolute top-4 right-4 z-10 ${legendVisible ? "visible" : "invisible md:visible"}`}>
+      <div
+        className={`absolute top-4 right-4 z-10 ${legendVisible ? "visible" : "invisible md:visible"}`}
+      >
         <LayerLegend
           basemapId={basemapId}
           onBasemapChange={setBasemapId}
