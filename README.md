@@ -46,3 +46,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Stats API
+The DCDB data is all available in a bucket and via REST through their map services - but I found it limiting for the stats I wanted to show. So this app was swapped to use a cache (https://github.com/farsounder/CSBDataExplorerStatsCache), it scans for new in the noaa bucket data nightly and basically stores the counts so it's easier to compute stats.
