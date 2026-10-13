@@ -22,7 +22,6 @@ export default function DisplayPanel({
   const pathname = usePathname();
   const router = useRouter();
   const isStats = pathname.includes("/stats");
-  if (isStats) return null;
   const isPlatform = pathname.includes("platform");
   const isProvider = pathname.includes("provider");
 
@@ -31,6 +30,7 @@ export default function DisplayPanel({
   // - Otherwise, fall back to the base pages (which themselves may redirect).
   const [providerData, , providerHydrated] = useLocalStorage<CSBProvider>("provider", undefined);
   const [userData, , userHydrated] = useLocalStorage<UserData>("user", undefined);
+  if (isStats) return null;
   const providerId = providerData?.provider;
   const platformId = userData?.csbPlatform?.noaa_id;
   const hasProviderPreset = Boolean(providerId);
@@ -96,7 +96,7 @@ function ModeSelectDialog({
             onClick={onChooseProvider}
             className={cn(
               "rounded-lg border p-4 text-left transition-colors",
-              "hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              "hover:bg-gray-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
             )}
           >
             <div className="flex items-center gap-2 font-semibold text-blue-900">
@@ -111,7 +111,7 @@ function ModeSelectDialog({
             onClick={onChoosePlatform}
             className={cn(
               "rounded-lg border p-4 text-left transition-colors",
-              "hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              "hover:bg-gray-50 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500"
             )}
           >
             <div className="flex items-center gap-2 font-semibold text-blue-900">
@@ -157,13 +157,13 @@ function ModeToggle({
           onClick={onToggle}
           className={cn(
             "relative inline-flex h-7 w-12 items-center rounded-full transition-colors",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+            "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
             isPlatform ? "bg-blue-700" : "bg-gray-300"
           )}
         >
           <span
             className={cn(
-              "inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform",
+              "inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform",
               isPlatform ? "translate-x-6" : "translate-x-1"
             )}
           />

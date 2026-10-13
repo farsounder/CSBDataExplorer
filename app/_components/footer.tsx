@@ -126,7 +126,7 @@ const SponsorDetails = [
 
 export default function Footer() {
   return (
-    <footer className="flex flex-col w-full border-t-1 border-t-gray-200 pb-1">
+    <footer className="flex flex-col w-full border-t border-t-gray-200 pb-1">
       <div className="w-full text-center p-2 md:hidden text-xs text-gray-800">
         Made possible by the following organizations:
       </div>

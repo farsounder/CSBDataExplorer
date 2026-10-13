@@ -26,7 +26,7 @@ export default function ToggleStatsCard({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="p-2 bg-white bg-opacity-80 rounded-lg flex items-center hover:cursor-pointer">
+        <div className="p-2 bg-white/80 rounded-lg flex items-center hover:cursor-pointer">
           <div className="p-2">
             <TableCellsIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
           </div>
