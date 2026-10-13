@@ -72,7 +72,7 @@ export default function StackedBarChart({
           {data.series.map((series) => (
             <div
               key={series.key}
-              className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-sm shadow-sm"
+              className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-sm shadow-xs"
             >
               <div className="flex min-w-0 items-center gap-2">
                 <span

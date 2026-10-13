@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import maplibregl, { Map as MapLibreMap, MapLayerMouseEvent } from "maplibre-gl";
+import { Map as MapLibreMap, MapLayerMouseEvent, Popup } from "maplibre-gl";
 import InfoIcon from "../../../components/icons/infoicon";
 import { Button } from "../../../components/ui/button";
 
@@ -324,8 +324,8 @@ const observationImagePromises = new Map<string, Promise<ImageData>>();
 const observationVisibility = new WeakMap<MapLibreMap, boolean>();
 
 type ObservationInteractionState = {
-  hoverPopup: maplibregl.Popup | null;
-  pinnedPopup: maplibregl.Popup | null;
+  hoverPopup: Popup | null;
+  pinnedPopup: Popup | null;
   handleMouseMove: (event: MapLayerMouseEvent) => void;
   handleMouseLeave: () => void;
   handleClick: (event: MapLayerMouseEvent) => void;
@@ -407,7 +407,7 @@ function buildObservationPopupContent(properties: Record<string, unknown>): HTML
     label.textContent = `${formatObservationPropertyName(name)}:`;
 
     const displayedValue = document.createElement("span");
-    displayedValue.className = "break-words";
+    displayedValue.className = "wrap-break-word";
     displayedValue.textContent = formatObservationPropertyValue(name, value);
 
     row.append(label, displayedValue);
@@ -462,7 +462,7 @@ function ensureObservationInteractions(map: MapLibreMap) {
     }
 
     interactions.hoverPopup?.remove();
-    interactions.hoverPopup = new maplibregl.Popup({
+    interactions.hoverPopup = new Popup({
       anchor: "top",
       closeButton: false,
       closeOnClick: false,
@@ -489,7 +489,7 @@ function ensureObservationInteractions(map: MapLibreMap) {
     interactions.hoverPopup = null;
     interactions.pinnedPopup?.remove();
 
-    const popup = new maplibregl.Popup({
+    const popup = new Popup({
       anchor: "top",
       closeButton: true,
       closeOnClick: true,
@@ -659,7 +659,7 @@ function LayerLegend({
     : [NOAA_CSB_LAYER_NAME, OBSERVATIONS_LAYER_NAME];
 
   return (
-    <div className="p-3 bg-white/90 border rounded-lg shadow-sm min-w-64">
+    <div className="p-3 bg-white/90 border rounded-lg shadow-xs min-w-64">
       <p className="border-b px-1 pb-1 font-bold">Available Layers</p>
       <div className="pt-2">
         <p className="px-1 text-xs font-semibold uppercase tracking-wide text-gray-600">Basemap</p>
@@ -756,7 +756,10 @@ export default function MapViewer({
     [overlayVisibility, platformId, providerId]
   );
   const latestOverlayConfigRef = useRef<OverlayConfig>(overlayConfig);
-  latestOverlayConfigRef.current = overlayConfig;
+
+  useEffect(() => {
+    latestOverlayConfigRef.current = overlayConfig;
+  }, [overlayConfig]);
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -792,7 +795,7 @@ export default function MapViewer({
     }
 
     const startingViewState = getStoredViewState();
-    const map = new maplibregl.Map({
+    const map = new MapLibreMap({
       container: mapContainerRef.current,
       attributionControl: false,
       style: getMapStyle({

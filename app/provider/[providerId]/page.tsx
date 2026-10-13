@@ -12,7 +12,7 @@ import SocialButtonsProvider from "@/app/_components/stats/social-buttons-provid
 
 const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
   return (
-    <div className="p-2 bg-white bg-opacity-80 rounded-lg flex items-center">
+    <div className="p-2 bg-white/80 rounded-lg flex items-center">
       <div className="p-2">
         <BuildingOfficeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
       </div>
