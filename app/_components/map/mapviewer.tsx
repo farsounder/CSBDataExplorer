@@ -306,17 +306,20 @@ function ensureRasterOverlay({
   }
 
   if (!map.getLayer(layerId)) {
-    map.addLayer({
-      id: layerId,
-      type: "raster",
-      source: sourceId,
-      layout: {
-        visibility: "visible",
+    map.addLayer(
+      {
+        id: layerId,
+        type: "raster",
+        source: sourceId,
+        layout: {
+          visibility: "visible",
+        },
+        paint: {
+          "raster-opacity": 0.75,
+        },
       },
-      paint: {
-        "raster-opacity": 0.75,
-      },
-    });
+      map.getLayer(OBSERVATIONS_LAYER_ID) ? OBSERVATIONS_LAYER_ID : undefined
+    );
   }
 }
 
@@ -359,6 +362,7 @@ function loadObservationImage(url: string): Promise<ImageData> {
   });
 
   observationImagePromises.set(url, imagePromise);
+  void imagePromise.catch(() => observationImagePromises.delete(url));
   return imagePromise;
 }
 
@@ -530,6 +534,25 @@ async function ensureObservationsOverlay(map: MapLibreMap) {
     });
   }
 
+  const source = map.getSource(OBSERVATIONS_SOURCE_ID);
+  const icons = await Promise.all(
+    OBSERVATION_ICONS.map(async ({ id, url }) => ({
+      id,
+      image: await loadObservationImage(url),
+    }))
+  );
+
+  // A toggle or basemap change may have replaced the source while icons loaded.
+  if (!observationVisibility.get(map) || map.getSource(OBSERVATIONS_SOURCE_ID) !== source) {
+    return;
+  }
+
+  for (const { id, image } of icons) {
+    if (!map.hasImage(id)) {
+      map.addImage(id, image, { pixelRatio: 1 });
+    }
+  }
+
   if (!map.getLayer(OBSERVATIONS_LAYER_ID)) {
     map.addLayer({
       id: OBSERVATIONS_LAYER_ID,
@@ -552,23 +575,6 @@ async function ensureObservationsOverlay(map: MapLibreMap) {
   }
 
   ensureObservationInteractions(map);
-
-  const icons = await Promise.all(
-    OBSERVATION_ICONS.map(async ({ id, url }) => ({
-      id,
-      image: await loadObservationImage(url),
-    }))
-  );
-
-  if (!observationVisibility.get(map) || !map.getLayer(OBSERVATIONS_LAYER_ID)) {
-    return;
-  }
-
-  for (const { id, image } of icons) {
-    if (!map.hasImage(id)) {
-      map.addImage(id, image, { pixelRatio: 1 });
-    }
-  }
 }
 
 function syncOverlayLayers(
@@ -580,7 +586,9 @@ function syncOverlayLayers(
 
   if (visibility[OBSERVATIONS_LAYER_NAME]) {
     if (styleLoaded) {
-      void ensureObservationsOverlay(map);
+      void ensureObservationsOverlay(map).catch((error) => {
+        console.error("Could not load observations overlay", error);
+      });
     }
   } else {
     removeObservationsOverlay(map);
