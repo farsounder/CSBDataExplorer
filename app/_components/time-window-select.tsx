@@ -12,24 +12,21 @@ import {
 } from "@/components/ui/select";
 import { CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { Loader2 } from "lucide-react";
+import { parseTimeWindowDays } from "@/lib/constants";
 
-const timeWindowDaysOptions: number[] = [14, 30, 60, 90, 180, 365];
-const DEFAULT_TIME_WINDOW_DAYS = 30;
+const timeWindowDaysOptions: number[] = [7, 14, 30, 60, 90, 180, 365];
 
-export function TimeWindowSelect() {
+export function TimeWindowSelect({ compact = false }: { compact?: boolean }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const parsedTimeWindowDays = Number(searchParams.get("timeWindowDays") ?? DEFAULT_TIME_WINDOW_DAYS);
-  const timeWindowDays = Number.isFinite(parsedTimeWindowDays)
-    ? parsedTimeWindowDays
-    : DEFAULT_TIME_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(searchParams.get("timeWindowDays"));
 
   return (
     <div className="relative flex text-gray-500">
       <div className="flex items-center justify-center gap-2">
-        <CalendarDaysIcon className="w-10 h-10 text-gray-500" />
+        {!compact && <CalendarDaysIcon className="w-10 h-10 text-gray-500" />}
         <Select
           value={timeWindowDays.toString()}
           disabled={isPending}
@@ -45,8 +42,15 @@ export function TimeWindowSelect() {
             });
           }}
         >
-          <SelectTrigger className="w-[180px] bg-white">
-            <SelectValue>{timeWindowDays} Days</SelectValue>
+          <SelectTrigger
+            aria-label="Time period"
+            title="Completed UTC days, ending yesterday"
+            className={compact ? "explorer-period-select" : "w-[180px] bg-white"}
+          >
+            <SelectValue>
+              {compact ? "Last " : ""}
+              {timeWindowDays} days
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>

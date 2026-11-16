@@ -21,7 +21,7 @@ type TooltipItem = {
   payload?: Record<string, unknown>;
 };
 
-type StatsStackedBarTooltipProps = {
+type DailyChartTooltipProps = {
   active?: boolean;
   payload?: TooltipItem[];
 };
@@ -53,10 +53,7 @@ function formatTooltipValue(value: TooltipValue | undefined) {
   return value == null ? "" : String(value);
 }
 
-export default function StatsStackedBarTooltip({
-  active,
-  payload,
-}: StatsStackedBarTooltipProps) {
+export default function DailyChartTooltip({ active, payload }: DailyChartTooltipProps) {
   if (!active || !payload?.length) {
     return null;
   }
@@ -83,7 +80,10 @@ export default function StatsStackedBarTooltip({
 
           return (
             <div key={key} className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ backgroundColor: indicatorColor }} />
+              <div
+                className="h-2.5 w-2.5 shrink-0 rounded-[2px]"
+                style={{ backgroundColor: indicatorColor }}
+              />
               <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
                 <span className="truncate text-muted-foreground">{item.name ?? key}</span>
                 <span className="font-mono font-medium tabular-nums text-foreground">

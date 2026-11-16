@@ -2,14 +2,14 @@
 
 import { StackedChartData } from "@/lib/types";
 import StackedBarChart from "./stacked-bar-chart";
-import StatsStackedBarTooltip from "./stats-stacked-bar-tooltip";
+import DailyChartTooltip from "@/components/charts/daily-chart-tooltip";
 
 export default function ProviderDailyStackedChart({ data }: { data: StackedChartData }) {
   return (
     <StackedBarChart
       data={data}
       emptyMessage="No provider contribution data was found for this time window."
-      tooltipContent={<StatsStackedBarTooltip />}
+      tooltipContent={<DailyChartTooltip />}
     />
   );
 }

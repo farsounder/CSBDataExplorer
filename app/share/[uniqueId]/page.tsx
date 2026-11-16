@@ -2,7 +2,7 @@ import SocialButtons from "@/app/_components/stats/social-buttons";
 import StatsCard from "@/app/_components/stats/stats-card";
 import db from "@/lib/db";
 import { getPlatformInfoFromNoaa } from "@/services/noaa-csb-api";
-import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
+import { parseTimeWindowDays } from "@/lib/constants";
 
 export async function generateMetadata({
   params,
@@ -13,7 +13,7 @@ export async function generateMetadata({
 }) {
   const { uniqueId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(sp?.timeWindowDays);
   return {
     title: `My CSB Data Summary | ${timeWindowDays} days`,
     description: `CSB data collected in the DCDB Crowd-sourced Bathymetry  Database.`,
@@ -41,7 +41,7 @@ export default async function Page({
 }) {
   const { uniqueId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(sp?.timeWindowDays);
 
   // hit db to get platformId, check if it's valid
   const res = await db.platformIdentifier.findUnique({

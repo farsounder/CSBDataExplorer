@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Layers, Plus, Minus } from "lucide-react";
+import { getLayerFilterString, getTrackDateFilter, buildCsbTileUrl } from "@/lib/map-track-filter";
+import type { MapOverlayVisibility } from "./map-workspace";
+import { useMediaQuery } from "@/app/hooks/useMediaQuery";
 import {
   getVersion,
   Map as MapLibreMap,
   MapLayerMouseEvent,
   Popup,
+  RasterTileSource,
   setWorkerUrl,
 } from "maplibre-gl";
 import InfoIcon from "../../../components/icons/infoicon";
@@ -45,8 +49,6 @@ const OBSERVATION_ICONS = [
   { id: "observation-trash", url: "/observations/trash.svg" },
   { id: "observation-hazard", url: "/observations/hazard.svg" },
 ] as const;
-const CSB_EXPORT_BASE_URL =
-  "https://gis.ngdc.noaa.gov/arcgis/rest/services/csb/MapServer/export?dpi=96&transparent=true&format=png32";
 
 const basemapInfo = new Map<string, string>([
   [OSM_BASEMAP_NAME, "A simple global basemap from OpenStreetMap."],
@@ -110,6 +112,7 @@ type OverlayConfig = {
   platformId?: string;
   providerId?: string;
   visibility: OverlayVisibility;
+  timeWindowDays?: number;
 };
 
 const OSM_STYLE: Exclude<MapStyle, string> = {
@@ -243,46 +246,6 @@ function persistViewState(map: MapLibreMap) {
   localStorage.setItem(VIEW_STATE_STORAGE_KEY, JSON.stringify(nextViewState));
 }
 
-function getLayerFilterString({
-  platformId,
-  providerId,
-}: {
-  platformId?: string;
-  providerId?: string;
-}): string {
-  if (platformId) {
-    return `UPPER(EXTERNAL_ID) LIKE '${platformId.toUpperCase()}'`;
-  }
-  if (providerId) {
-    return `UPPER(PROVIDER) LIKE '${providerId.toUpperCase()}'`;
-  }
-  return "";
-}
-
-function buildCsbTileUrl(filterString?: string): string {
-  const baseParts = [
-    CSB_EXPORT_BASE_URL,
-    "bbox={bbox-epsg-3857}",
-    "bboxSR=3857",
-    "imageSR=3857",
-    "size=256,256",
-    "f=image",
-  ];
-
-  if (!filterString) {
-    return baseParts.join("&");
-  }
-
-  const layerDefs = encodeURIComponent(
-    JSON.stringify({
-      0: filterString,
-      1: filterString,
-    })
-  );
-
-  return [...baseParts, `layerDefs=${layerDefs}`].join("&");
-}
-
 function removeLayerIfPresent(map: MapLibreMap, layerId: string) {
   if (map.getLayer(layerId)) {
     map.removeLayer(layerId);
@@ -313,6 +276,9 @@ function ensureRasterOverlay({
       tileSize: 256,
     });
   }
+
+  const raster = map.getSource(sourceId) as RasterTileSource;
+  if (raster.tiles?.[0] !== tileUrl) raster.setTiles([tileUrl]);
 
   if (!map.getLayer(layerId)) {
     map.addLayer(
@@ -588,7 +554,7 @@ async function ensureObservationsOverlay(map: MapLibreMap) {
 
 function syncOverlayLayers(
   map: MapLibreMap,
-  { platformId, providerId, visibility }: OverlayConfig
+  { platformId, providerId, visibility, timeWindowDays }: OverlayConfig
 ) {
   const styleLoaded = map.isStyleLoaded();
   observationVisibility.set(map, visibility[OBSERVATIONS_LAYER_NAME]);
@@ -609,7 +575,7 @@ function syncOverlayLayers(
         map,
         sourceId: NOAA_CSB_SOURCE_ID,
         layerId: NOAA_CSB_LAYER_ID,
-        tileUrl: buildCsbTileUrl(),
+        tileUrl: buildCsbTileUrl(getTrackDateFilter(timeWindowDays)),
       });
     }
   } else {
@@ -617,12 +583,9 @@ function syncOverlayLayers(
     removeSourceIfPresent(map, NOAA_CSB_SOURCE_ID);
   }
 
-  const filterString = getLayerFilterString({
-    platformId,
-    providerId,
-  });
+  const filterString = getLayerFilterString({ platformId, providerId, timeWindowDays });
 
-  if (!filterString) {
+  if (!platformId && !providerId) {
     removeLayerIfPresent(map, USER_CSB_LAYER_ID);
     removeSourceIfPresent(map, USER_CSB_SOURCE_ID);
     return;
@@ -647,12 +610,12 @@ function syncOverlayLayers(
 
 function LegendInfo({ text }: { text: string }) {
   return (
-    <div className="group relative duration-300">
+    <button type="button" aria-label={text} className="group relative duration-300">
       <InfoIcon />
-      <span className="absolute hidden group-hover:flex top-12 -left-64 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm">
+      <span className="absolute z-20 hidden group-hover:flex group-focus-visible:flex top-12 -left-48 -translate-y-full w-48 px-2 py-1 bg-gray-700 rounded-lg text-center text-white text-sm">
         {text}
       </span>
-    </div>
+    </button>
   );
 }
 
@@ -672,70 +635,56 @@ function LayerLegend({
   vectorChartsEnabled: boolean;
 }) {
   const overlayEntries: OverlayId[] = showUserLayer
-    ? [NOAA_CSB_LAYER_NAME, USER_CSB_LAYER_NAME, OBSERVATIONS_LAYER_NAME]
-    : [NOAA_CSB_LAYER_NAME, OBSERVATIONS_LAYER_NAME];
-
+    ? [USER_CSB_LAYER_NAME, OBSERVATIONS_LAYER_NAME, NOAA_CSB_LAYER_NAME]
+    : [OBSERVATIONS_LAYER_NAME, NOAA_CSB_LAYER_NAME];
+  const labels = {
+    [USER_CSB_LAYER_NAME]: "Your CSB tracks",
+    [OBSERVATIONS_LAYER_NAME]: "Observations",
+    [NOAA_CSB_LAYER_NAME]: "All IHO CSB data",
+  };
   return (
-    <div className="p-3 bg-white/90 border rounded-lg shadow-xs min-w-64">
-      <p className="border-b px-1 pb-1 font-bold">Available Layers</p>
-      <div className="pt-2">
-        <p className="px-1 text-xs font-semibold uppercase tracking-wide text-gray-600">Basemap</p>
-        {BASEMAP_OPTIONS.map((name) => {
-          const disabled = name === VECTOR_CHARTS_BASEMAP_NAME && !vectorChartsEnabled;
-          const label =
-            name === VECTOR_CHARTS_BASEMAP_NAME ? (
-              <span>
-                <a
-                  href="https://vectorcharts.com/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="underline underline-offset-2"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  Vector Charts
-                </a>{" "}
-                (US)
-              </span>
-            ) : (
-              <span>{name}</span>
-            );
-          return (
-            <label
-              key={name}
-              className={`flex items-center gap-2 px-1 py-1 ${disabled ? "cursor-not-allowed text-gray-400" : ""}`}
-            >
-              <input
-                type="radio"
-                name="basemap"
-                checked={basemapId === name}
-                disabled={disabled}
-                onChange={() => onBasemapChange(name)}
-              />
-              {label}
-              <LegendInfo text={basemapInfo.get(name) || ""} />
-            </label>
-          );
-        })}
-        {!vectorChartsEnabled ? (
-          <p className="px-1 pt-1 text-xs text-amber-700">
-            Set `NEXT_PUBLIC_VECTOR_CHARTS_TOKEN` to enable the Vector Charts basemap.
-          </p>
-        ) : null}
-      </div>
-      <div className="pt-3">
-        <p className="px-1 text-xs font-semibold uppercase tracking-wide text-gray-600">Overlays</p>
-        {overlayEntries.map((layerId) => (
-          <label key={layerId} className="flex items-center gap-2 px-1 py-1">
-            <input
-              type="checkbox"
-              checked={overlayVisibility[layerId]}
-              onChange={() => onToggleOverlay(layerId)}
-            />
-            <span>{layerId}</span>
-            <LegendInfo text={overlayInfo.get(layerId) || ""} />
-          </label>
+    <div className="explorer-layers" id="map-layer-controls">
+      <label htmlFor="explorer-basemap" className="explorer-eyebrow">
+        Basemap
+      </label>
+      <select
+        id="explorer-basemap"
+        className="explorer-native-select w-full"
+        value={basemapId}
+        onChange={(event) => onBasemapChange(event.target.value as BasemapId)}
+      >
+        {BASEMAP_OPTIONS.map((name) => (
+          <option
+            key={name}
+            value={name}
+            disabled={name === VECTOR_CHARTS_BASEMAP_NAME && !vectorChartsEnabled}
+          >
+            {name === OSM_BASEMAP_NAME ? "Street map" : name}
+          </option>
         ))}
-      </div>
+      </select>
+      <p className="text-xs text-[#5a5a5a]">{basemapInfo.get(basemapId)}</p>
+      {!vectorChartsEnabled && (
+        <p className="text-xs text-[#5a5a5a]">
+          US vector charts are unavailable in this installation.
+        </p>
+      )}
+      <fieldset className="space-y-2">
+        <legend className="explorer-eyebrow mb-1">Show</legend>
+        {overlayEntries.map((layerId) => (
+          <div key={layerId} className="flex items-center gap-2.5 text-sm">
+            <label className="flex items-center gap-2.5">
+              <input
+                type="checkbox"
+                checked={overlayVisibility[layerId]}
+                onChange={() => onToggleOverlay(layerId)}
+              />
+              <span>{labels[layerId]}</span>
+            </label>
+            <LegendInfo text={overlayInfo.get(layerId) || ""} />
+          </div>
+        ))}
+      </fieldset>
     </div>
   );
 }
@@ -743,9 +692,13 @@ function LayerLegend({
 export default function MapViewer({
   platformId,
   providerId,
+  timeWindowDays,
+  onOverlayVisibilityChange,
 }: {
   platformId?: string;
   providerId?: string;
+  timeWindowDays?: number;
+  onOverlayVisibilityChange?: (visibility: MapOverlayVisibility) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -753,7 +706,9 @@ export default function MapViewer({
   const vectorChartsToken = process.env.NEXT_PUBLIC_VECTOR_CHARTS_TOKEN?.trim();
   const vectorChartsEnabled = Boolean(vectorChartsToken);
   const showUserLayer = Boolean(platformId || providerId);
-  const [legendVisible, setLegendVisible] = useState(false);
+  const [legendVisible, setLegendVisible] = useState<boolean | null>(null);
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const layersOpen = legendVisible ?? isDesktop;
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [basemapId, setBasemapId] = useState<BasemapId>(OSM_BASEMAP_NAME);
   const appliedBasemapRef = useRef<BasemapId | null>(null);
@@ -769,10 +724,15 @@ export default function MapViewer({
       platformId,
       providerId,
       visibility: overlayVisibility,
+      timeWindowDays,
     }),
-    [overlayVisibility, platformId, providerId]
+    [overlayVisibility, platformId, providerId, timeWindowDays]
   );
   const latestOverlayConfigRef = useRef<OverlayConfig>(overlayConfig);
+
+  useEffect(() => {
+    onOverlayVisibilityChange?.(overlayVisibility);
+  }, [overlayVisibility, onOverlayVisibilityChange]);
 
   useEffect(() => {
     latestOverlayConfigRef.current = overlayConfig;
@@ -927,31 +887,48 @@ export default function MapViewer({
           height: containerSize.height ? `${containerSize.height}px` : "100%",
         }}
       />
-      <Button
-        variant="outline"
-        className="absolute top-4 right-4 z-10 bg-white/60 visible md:hidden"
-        onClick={() => setLegendVisible((current) => !current)}
-        style={legendVisible ? { right: 280 } : {}}
-      >
-        {legendVisible ? (
-          <XMarkIcon className="h-6 w-6 text-gray-600" />
-        ) : (
-          <GlobeAmericasIcon className="h-6 w-6 text-gray-600" />
-        )}
-      </Button>
-      <div
-        className={`absolute top-4 right-4 z-10 ${legendVisible ? "visible" : "invisible md:visible"}`}
-      >
-        <LayerLegend
-          basemapId={basemapId}
-          onBasemapChange={setBasemapId}
-          overlayVisibility={overlayVisibility}
-          onToggleOverlay={handleToggleOverlay}
-          showUserLayer={showUserLayer}
-          vectorChartsEnabled={vectorChartsEnabled}
-        />
+      <div className="absolute right-4 top-4 z-10 flex flex-col items-end gap-2">
+        <Button
+          variant="outline"
+          className="explorer-layers-toggle"
+          aria-label="Layers"
+          aria-controls="map-layer-controls"
+          aria-expanded={layersOpen}
+          onClick={() => setLegendVisible(!layersOpen)}
+        >
+          <Layers size={18} className="text-[#155196]" aria-hidden="true" />
+          Layers
+        </Button>
+        <div className={layersOpen ? "block" : "hidden"}>
+          <LayerLegend
+            basemapId={basemapId}
+            onBasemapChange={setBasemapId}
+            overlayVisibility={overlayVisibility}
+            onToggleOverlay={handleToggleOverlay}
+            showUserLayer={showUserLayer}
+            vectorChartsEnabled={vectorChartsEnabled}
+          />
+        </div>
       </div>
-      <div className="absolute bottom-2 right-2 z-10 text-xs bg-white/70 rounded px-2 py-1">
+      <div className="absolute bottom-12 right-4 z-10 flex flex-col overflow-hidden rounded-sm border border-[#a9b4c0] bg-white">
+        <button
+          type="button"
+          aria-label="Zoom in"
+          className="grid h-11 w-11 place-items-center border-b border-[#d5dce4] hover:bg-[#e4eef8]"
+          onClick={() => mapRef.current?.zoomIn()}
+        >
+          <Plus size={20} />
+        </button>
+        <button
+          type="button"
+          aria-label="Zoom out"
+          className="grid h-11 w-11 place-items-center hover:bg-[#e4eef8]"
+          onClick={() => mapRef.current?.zoomOut()}
+        >
+          <Minus size={20} />
+        </button>
+      </div>
+      <div className="absolute bottom-0 left-0 z-10 max-w-full bg-white/95 px-2 py-1 text-[11px] text-[#3f3f3f]">
         {listFormatter.format(attributionParts.filter((part): part is string => Boolean(part)))}
       </div>
     </div>

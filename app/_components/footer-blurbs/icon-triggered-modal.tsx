@@ -18,6 +18,7 @@ export default function IconTriggeredModal({
   description,
   link,
   socialLinks,
+  triggerLabel,
 }: {
   trigger?: React.ReactNode;
   icon: React.ReactNode;
@@ -25,11 +26,16 @@ export default function IconTriggeredModal({
   description: string;
   link: string;
   socialLinks?: { name: string; link: string; icon: React.ReactNode }[];
+  triggerLabel?: string;
 }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="z-50 border-0 bg-white/60">
+        <Button
+          variant="outline"
+          aria-label={triggerLabel ?? title}
+          className="z-50 border-0 bg-white/60"
+        >
           {trigger || icon}
         </Button>
       </DialogTrigger>

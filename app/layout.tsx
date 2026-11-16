@@ -1,13 +1,11 @@
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "@/components/ui/toaster";
 import Header from "./_components/header";
 import Footer from "./_components/footer";
-
-const inter = Inter({ subsets: ["latin"] });
+import { ExplorerUIProvider } from "./_components/explorer-ui-provider";
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 const title = "Crowdsourced Data Explorer";
@@ -56,15 +54,17 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         {/* Use a definite height so children using `h-full` (DeckGL) can resolve percentage heights */}
-        <section className="flex h-screen flex-col w-full overflow-hidden">
-          <Header />
-          <main className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
-            <div className="m-0 p-0 w-full flex flex-col flex-1 min-h-0">{children}</div>
-          </main>
-          <Footer />
-        </section>
+        <ExplorerUIProvider>
+          <section className="explorer-app flex h-dvh flex-col w-full overflow-hidden">
+            <Header />
+            <main className="flex flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+              <div className="m-0 p-0 w-full flex flex-col flex-1 min-h-0">{children}</div>
+            </main>
+            <Footer />
+          </section>
+        </ExplorerUIProvider>
         <Toaster />
         <Analytics />
       </body>

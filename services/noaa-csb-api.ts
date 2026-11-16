@@ -1,4 +1,5 @@
 import { DATA_CACHE_SECONDS } from "@/lib/constants";
+import { CHART_COLORS } from "@/lib/chart-colors";
 import {
   CSBCountData,
   CSBPlatform,
@@ -18,7 +19,8 @@ const NOAA_ANALYTICS_API_BASE_URL =
   process.env.NOAA_ANALYTICS_API_BASE_URL ??
   "https://noaa-csb-api-613155890800.us-central1.run.app";
 
-const MAP_LAYER_URL = "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/csb_vector_tiles/VectorTileServer";
+const MAP_LAYER_URL =
+  "https://tiles.arcgis.com/tiles/C8EMgrsFcRFL6LrL/arcgis/rest/services/csb_vector_tiles/VectorTileServer";
 
 type RequestConfig = {
   path: string;
@@ -110,21 +112,6 @@ const chartDateLabelFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
-const CHART_COLORS = [
-  "#2563eb",
-  "#0f766e",
-  "#7c3aed",
-  "#db2777",
-  "#ea580c",
-  "#ca8a04",
-  "#0891b2",
-  "#4f46e5",
-  "#059669",
-  "#dc2626",
-  "#9333ea",
-  "#0284c7",
-];
-
 const OTHER_SERIES_COLOR = "#94a3b8";
 const MAX_PLATFORM_SERIES = 10;
 
@@ -143,8 +130,12 @@ async function fetchData<T>({ path, revalidate = DATA_CACHE_SECONDS }: RequestCo
   });
 
   if (!response.ok) {
-    console.error(`[NOAA CSB API] Response error: ${response.status} ${response.statusText} for ${url}`);
-    throw new Error(`Failed to fetch NOAA CSB API data (${response.status} ${response.statusText})`);
+    console.error(
+      `[NOAA CSB API] Response error: ${response.status} ${response.statusText} for ${url}`
+    );
+    throw new Error(
+      `Failed to fetch NOAA CSB API data (${response.status} ${response.statusText})`
+    );
   }
 
   return (await response.json()) as T;
@@ -191,6 +182,7 @@ function toDateKey({ year, month, day }: { year: number; month: number; day: num
 function buildWindowRows(timeWindowDays: number): StackedChartRow[] {
   const endDate = new Date();
   endDate.setUTCHours(0, 0, 0, 0);
+  endDate.setUTCDate(endDate.getUTCDate() - 1);
 
   const rows: StackedChartRow[] = [];
 
@@ -260,12 +252,14 @@ async function getAllProviders(): Promise<CSBProvider[]> {
 }
 
 export async function getAPIAvailabilityStatus(): Promise<APIAvailabilityStatus> {
-  const [platformsResult, providersResult, healthResult, mapLayerResult] = await Promise.allSettled([
-    getAllPlatforms(),
-    getAllProviders(),
-    fetchData<unknown>({ path: "/health", revalidate: 60 }),
-    fetch(MAP_LAYER_URL),
-  ]);
+  const [platformsResult, providersResult, healthResult, mapLayerResult] = await Promise.allSettled(
+    [
+      getAllPlatforms(),
+      getAllProviders(),
+      fetchData<unknown>({ path: "/health", revalidate: 60 }),
+      fetch(MAP_LAYER_URL),
+    ]
+  );
 
   const availablePlatforms = platformsResult.status === "fulfilled" ? platformsResult.value : [];
   const availableProviders = providersResult.status === "fulfilled" ? providersResult.value : [];
@@ -390,17 +384,19 @@ export async function getProviderCountPerDayData({
       )}`,
     });
     return sortByDateAsc(
-      payload.daily.map((row) => {
-        const date = parseDateParts(row.date);
-        if (!date) {
-          return null;
-        }
-        return {
-          ...date,
-          provider: row.provider ?? provider,
-          count: row.points,
-        };
-      }).filter((row): row is CSBCountData => row !== null)
+      payload.daily
+        .map((row) => {
+          const date = parseDateParts(row.date);
+          if (!date) {
+            return null;
+          }
+          return {
+            ...date,
+            provider: row.provider ?? provider,
+            count: row.points,
+          };
+        })
+        .filter((row): row is CSBCountData => row !== null)
     );
   } catch (error) {
     console.error("Error fetching provider daily counts:", error);
@@ -490,20 +486,24 @@ export async function getPlatformCountPerDayData({
       getAllPlatforms().catch(() => []),
     ]);
     const platformProvider =
-      platforms.find((platform) => platform.noaa_id.toUpperCase() === noaaId.toUpperCase())?.provider ??
-      "Unknown provider";
-    return sortByDateAsc(payload.daily.map((row) => {
-      const date = parseDateParts(row.date);
-      if (!date) {
-        return null;
-      }
-      return {
-        ...date,
-        noaa_id: noaaId,
-        provider: row.provider ?? platformProvider,
-        count: row.points,
-      };
-    }).filter((row): row is CSBPlatformCountData => row !== null));
+      platforms.find((platform) => platform.noaa_id.toUpperCase() === noaaId.toUpperCase())
+        ?.provider ?? "Unknown provider";
+    return sortByDateAsc(
+      payload.daily
+        .map((row) => {
+          const date = parseDateParts(row.date);
+          if (!date) {
+            return null;
+          }
+          return {
+            ...date,
+            noaa_id: noaaId,
+            provider: row.provider ?? platformProvider,
+            count: row.points,
+          };
+        })
+        .filter((row): row is CSBPlatformCountData => row !== null)
+    );
   } catch (error) {
     console.error("Error fetching platform daily counts:", error);
     return [];
@@ -639,14 +639,18 @@ export async function getProviderPlatformDailyStackedChartData({
 
   try {
     const platforms = await getPlatformInfoFromNoaa();
-    const platformsById = new Map(platforms.map((platform) => [platform.noaa_id.toUpperCase(), platform]));
+    const platformsById = new Map(
+      platforms.map((platform) => [platform.noaa_id.toUpperCase(), platform])
+    );
     const [allProviderRows, allPlatformRows] = await Promise.all([
       getAllProviderCountsPerDayData({ timeWindowDays }),
       getAllPlatformCountsPerDayData({ timeWindowDays, platformsById }),
     ]);
 
     // TODO this should just be all providers
-    const providerOptions = buildProviderOptions(buildTopProvidersFromDailyRows(allProviderRows, limit));
+    const providerOptions = buildProviderOptions(
+      buildTopProvidersFromDailyRows(allProviderRows, limit)
+    );
     const resolvedProvider =
       providerOptions.find((provider) => provider.value === selectedProvider)?.value ??
       providerOptions[0]?.value ??

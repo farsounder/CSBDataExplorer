@@ -5,6 +5,7 @@ import type { CSBCountData, CSBPlatformCountData } from "@/lib/types";
 
 const ContributionsPlot = dynamic(() => import("./contributions-plot"), {
   ssr: false,
+  loading: () => <p className="text-sm text-muted-foreground">Loading daily contributions…</p>,
 });
 
 export default function PlotClient({
@@ -24,5 +25,3 @@ export default function PlotClient({
     />
   );
 }
-
-

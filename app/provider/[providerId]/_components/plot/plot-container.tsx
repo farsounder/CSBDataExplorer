@@ -1,7 +1,4 @@
-import {
-  getProviderCountPerDayData,
-  getTotalPerDayAllProviders,
-} from "@/services/noaa-csb-api";
+import { getProviderCountPerDayData, getTotalPerDayAllProviders } from "@/services/noaa-csb-api";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { CSBProvider } from "@/lib/types";
 import PlotClient from "./plot-client";
@@ -48,7 +45,11 @@ export default async function PlotContainer({
   return (
     <>
       {showPlot ? (
-        <PlotClient providerContributions={providerData} totalData={totalData} />
+        <PlotClient
+          providerContributions={providerData}
+          totalData={totalData}
+          timeWindowDays={timeWindowDays}
+        />
       ) : (
         <ErrorMessage timeWindowDays={timeWindowDays} />
       )}

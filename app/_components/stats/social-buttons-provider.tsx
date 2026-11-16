@@ -88,15 +88,15 @@ export default function SocialButtonsProvider({
   };
 
   return (
-    <div className="flex justify-center space-x-4">
-      <CopyIcon
-        className="w-8 h-8 text-blue-800 hover:cursor-pointer"
-        onClick={copyImageToClipboard}
-      />
-      <DownloadIcon
-        className="w-8 h-8 text-blue-800 hover:cursor-pointer"
-        onClick={downloadImage}
-      />
+    <div className="flex flex-wrap justify-center gap-3">
+      <button type="button" className="explorer-share-button" onClick={copyImageToClipboard}>
+        <CopyIcon size={16} aria-hidden="true" />
+        Copy image
+      </button>
+      <button type="button" className="explorer-share-button" onClick={downloadImage}>
+        <DownloadIcon size={16} aria-hidden="true" />
+        Download image
+      </button>
     </div>
   );
 }
