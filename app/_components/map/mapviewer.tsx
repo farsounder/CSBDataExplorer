@@ -2,9 +2,18 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { GlobeAmericasIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Map as MapLibreMap, MapLayerMouseEvent, Popup } from "maplibre-gl";
+import {
+  getVersion,
+  Map as MapLibreMap,
+  MapLayerMouseEvent,
+  Popup,
+  setWorkerUrl,
+} from "maplibre-gl";
 import InfoIcon from "../../../components/icons/infoicon";
 import { Button } from "../../../components/ui/button";
+
+// Keep the worker and its relative imports together, outside Next.js's asset hashing.
+setWorkerUrl(`/maplibre/${getVersion()}/maplibre-gl-worker.mjs`);
 
 const OSM_BASEMAP_NAME = "OpenStreetMap";
 const VECTOR_CHARTS_BASEMAP_NAME = "Vector Charts (US)";
