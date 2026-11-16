@@ -9,7 +9,7 @@ import XSocialIcon from "@/components/icons/xicon";
 const SponsorDetails = [
   {
     name: "FarSounder",
-    icon: <FSLogo />,
+    icon: <FSLogo width="100px" />,
     title: "FarSounder, Inc.",
     description:
       "FarSounder designs and manufactures 3D Forward Looking Sonar systems for commercial, recreational, and government vessels to improve navigational safety and situational awareness in real-time. FarSounder is proud to be a Trusted Node for the DCDB, allowing customers to contribute and share their bathymetric data. If you're a current customer, you can start to contribute your data by simply installing the latest software update and 'opting in' to share your data!",
@@ -126,28 +126,13 @@ const SponsorDetails = [
 
 export default function Footer() {
   return (
-    <footer className="flex flex-col w-full border-t border-t-gray-200 pb-1">
-      <div className="w-full text-center p-2 md:hidden text-xs text-gray-800">
-        Made possible by the following organizations:
-      </div>
-      <div className="md:hidden text-xs flex justify-center">
+    <footer className="explorer-footer">
+      <span>In partnership with</span>
+      <div className="explorer-sponsors">
         {SponsorDetails.map((sponsor) => (
-          <div key={sponsor.name} className="hover:cursor-pointer text-xs text-gray-800">
+          <div key={sponsor.name} className="explorer-sponsor">
             <IconTriggeredModal
-              title={sponsor.title}
-              icon={sponsor.icon}
-              trigger={<div className="text-xs">{sponsor.name}</div>}
-              description={sponsor.description}
-              link={sponsor.link}
-              socialLinks={sponsor.socialLinks}
-            />
-          </div>
-        ))}
-      </div>
-      <div className="border-b hidden md:flex justify-between w-full">
-        {SponsorDetails.map((sponsor) => (
-          <div key={sponsor.name} className="flex py-4 items-center px-4 gap-8">
-            <IconTriggeredModal
+              triggerLabel={sponsor.name}
               title={sponsor.title}
               icon={sponsor.icon}
               description={sponsor.description}

@@ -19,18 +19,22 @@ import { useMemo } from "react";
 import { CSBProvider } from "@/lib/types";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export function SelectProviderModal({
   availableProviders,
   selectedProvider,
   setSelectedProvider,
+  trigger,
 }: {
   availableProviders: CSBProvider[];
   selectedProvider?: string;
   setSelectedProvider: (provider: CSBProvider) => void;
+  trigger?: React.ReactNode;
 }) {
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // remove duplicates for provider list dropdown
   const uniqueProviders = useMemo(
@@ -47,8 +51,8 @@ export function SelectProviderModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="secondary" className="text-xs lg:text-sm">
-          Change Trusted Node
+        <Button variant="outline" className="explorer-node-picker">
+          {trigger ?? "Change Trusted Node"}
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -104,7 +108,9 @@ export function SelectProviderModal({
                   title: "Success!",
                   description: "Your Trusted Node has been updated",
                 });
-                router.push(`/provider/${selectedProvider}`);
+                router.push(
+                  `/provider/${encodeURIComponent(selectedProvider)}?${searchParams.toString()}`
+                );
               }}
             >
               Save

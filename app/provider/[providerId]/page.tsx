@@ -1,29 +1,11 @@
-import MapViewer from "@/app/_components/map/mapviewer";
+import MapWorkspace from "@/app/_components/map/map-workspace";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
-import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
-import { CSBProvider } from "@/lib/types";
+import { parseTimeWindowDays } from "@/lib/constants";
 import { getProviderInfoFromNoaa } from "@/services/noaa-csb-api";
-import { BuildingOfficeIcon } from "@heroicons/react/24/outline";
 import { Suspense } from "react";
 import StatsCardTrustedNode from "@/app/_components/stats/stats-card-provider";
-import ToggleChartButton from "@/app/provider/[providerId]/_components/plot/toggle-chart-button";
 import PlotContainer from "@/app/provider/[providerId]/_components/plot/plot-container";
 import SocialButtonsProvider from "@/app/_components/stats/social-buttons-provider";
-
-const ProviderInfoDisplay = ({ provider }: { provider: CSBProvider }) => {
-  return (
-    <div className="p-2 bg-white/80 rounded-lg flex items-center">
-      <div className="p-2">
-        <BuildingOfficeIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
-      </div>
-      <div>
-        <div className="text-sm font-bold text-blue-800">Displaying data for:</div>
-        <div className="text-xs">Trusted Node: {provider.provider}</div>
-        <div className="text-xs"> NOTE: Data displayed on the map is all time </div>
-      </div>
-    </div>
-  );
-};
 
 export async function generateMetadata({
   params,
@@ -34,7 +16,7 @@ export async function generateMetadata({
 }) {
   const { providerId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(sp?.timeWindowDays);
   return {
     title: `CSB Data for ID: ${providerId} | ${timeWindowDays} Days`,
     description: `CSB data collected by provider ${providerId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
@@ -64,7 +46,7 @@ export default async function ProviderPage({
 }) {
   const { providerId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(sp?.timeWindowDays);
   if (isNaN(timeWindowDays)) {
     throw new Error("Invalid time window days");
   }
@@ -88,39 +70,42 @@ export default async function ProviderPage({
   const captureElementId = "stats-card-provider-capture";
 
   return (
-    <div className="flex flex-col p-0 m-0 flex-1 min-h-0 relative">
-      {providerData && (
-        <ToggleChartButton>
-          <PlotContainer provider={providerData} timeWindowDays={timeWindowDays} />
-        </ToggleChartButton>
-      )}
-      <div className="flex-1 min-h-0">
-        <MapViewer providerId={decodedProviderId} />
-      </div>
-      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
-        {providerData && (
-          <Suspense fallback={<div>Loading...</div>}>
-            <ToggleStatsCard
-              triggerTitle="See/Share Platform Stats"
-              triggerDescription="Click to view a summary of the data collected by this provider over the selected time window."
-              title="Trusted Node Stats Summary"
-              description="A simple summary of the data collected by this provider over the selected time window."
+    <MapWorkspace
+      providerId={decodedProviderId}
+      sidebar={
+        providerData ? (
+          <>
+            <Suspense
+              fallback={<p className="text-sm text-muted-foreground">Loading contributions…</p>}
             >
-              <StatsCardTrustedNode
-                providerId={decodedProviderId}
-                timeWindowDays={timeWindowDays}
+              <PlotContainer provider={providerData} timeWindowDays={timeWindowDays} />
+            </Suspense>
+          </>
+        ) : null
+      }
+    >
+      {providerData && (
+        <Suspense fallback={null}>
+          <ToggleStatsCard
+            toolbarTrigger
+            triggerTitle="Share stats"
+            triggerDescription=""
+            title="Trusted Node Stats Summary"
+            description="A summary of the data collected by this provider over the selected time window."
+          >
+            <StatsCardTrustedNode
+              providerId={decodedProviderId}
+              timeWindowDays={timeWindowDays}
+              captureElementId={captureElementId}
+            >
+              <SocialButtonsProvider
                 captureElementId={captureElementId}
-              >
-                <SocialButtonsProvider
-                  captureElementId={captureElementId}
-                  fileBase={`csb-provider-${decodedProviderId}-${timeWindowDays}`}
-                />
-              </StatsCardTrustedNode>
-            </ToggleStatsCard>
-          </Suspense>
-        )}
-        {providerData && <ProviderInfoDisplay provider={providerData} />}
-      </div>
-    </div>
+                fileBase={`csb-provider-${decodedProviderId}-${timeWindowDays}`}
+              />
+            </StatsCardTrustedNode>
+          </ToggleStatsCard>
+        </Suspense>
+      )}
+    </MapWorkspace>
   );
 }

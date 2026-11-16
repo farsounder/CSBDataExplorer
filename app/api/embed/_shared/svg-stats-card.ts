@@ -106,9 +106,10 @@ export function stripSvgSuffix(value: string): string {
   return value.endsWith(".svg") ? value.slice(0, -4) : value;
 }
 
-export function parseSvgIdentifier(value: string, name: string):
-  | { identifier: string }
-  | { error: string; status: number } {
+export function parseSvgIdentifier(
+  value: string,
+  name: string
+): { identifier: string } | { error: string; status: number } {
   let decodedValue: string;
   try {
     decodedValue = decodeURIComponent(value);
@@ -136,9 +137,9 @@ export function parseSvgIdentifier(value: string, name: string):
   return { identifier };
 }
 
-export function parseSvgStatsCardOptions(searchParams: URLSearchParams):
-  | { options: StatCardOptions }
-  | { error: string; status: number } {
+export function parseSvgStatsCardOptions(
+  searchParams: URLSearchParams
+): { options: StatCardOptions } | { error: string; status: number } {
   const timeWindowDays = parseIntegerParam(
     searchParams,
     "timeWindowDays",
@@ -186,7 +187,8 @@ export function svgResponse(svg: string): Response {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Cache-Control": `public, max-age=0, s-maxage=${DATA_CACHE_SECONDS}, stale-while-revalidate=${DATA_CACHE_SECONDS}`,
-      "Content-Security-Policy": "default-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'",
+      "Content-Security-Policy":
+        "default-src 'none'; script-src 'none'; object-src 'none'; base-uri 'none'",
       "Content-Type": "image/svg+xml; charset=utf-8",
       "X-Content-Type-Options": "nosniff",
     },
@@ -270,11 +272,7 @@ export function renderSvgStatsCard({
 </svg>`;
 }
 
-function parseIntegerParam(
-  searchParams: URLSearchParams,
-  name: string,
-  fallback: number
-): number {
+function parseIntegerParam(searchParams: URLSearchParams, name: string, fallback: number): number {
   const value = searchParams.get(name);
   return value === null || value === "" ? fallback : Number(value);
 }
@@ -382,7 +380,8 @@ function renderSparkline({
 
   const bars = chartData
     .map((row, index) => {
-      const barHeight = row.count > 0 ? Math.max(2, (row.count / maxCount) * (chartHeight - 10)) : 0;
+      const barHeight =
+        row.count > 0 ? Math.max(2, (row.count / maxCount) * (chartHeight - 10)) : 0;
       const x = chartX + index * slotWidth + (slotWidth - barWidth) / 2;
       const y = baselineY - barHeight;
       return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barWidth.toFixed(2)}" height="${barHeight.toFixed(2)}" rx="2" fill="${theme.accent}" opacity="${barOpacity(index, chartData.length)}"/>`;
@@ -397,7 +396,8 @@ function renderSparkline({
 
 function fillTimeWindowCounts(data: CountRow[], timeWindowDays: number): CountRow[] {
   const today = new Date();
-  const endTime = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const endTime =
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()) - MS_PER_DAY;
   const startTime = endTime - (timeWindowDays - 1) * MS_PER_DAY;
   const countsByDate = new Map<string, number>();
 

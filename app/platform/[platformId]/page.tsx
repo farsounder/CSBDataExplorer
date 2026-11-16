@@ -1,14 +1,11 @@
+import MapWorkspace from "@/app/_components/map/map-workspace";
 import { Suspense } from "react";
-import MapViewer from "@/app/_components/map/mapviewer";
 import PlotContainer from "@/app/platform/[platformId]/_components/plot/plot-container";
-import ToggleChartButton from "@/app/platform/[platformId]/_components/plot/toggle-chart-button";
-import { CSBPlatform } from "@/lib/types";
 import { getPlatformInfoFromNoaa } from "@/services/noaa-csb-api";
-import { ShipIcon } from "lucide-react";
 import StatsCard from "@/app/_components/stats/stats-card";
 import ToggleStatsCard from "@/app/_components/stats/toggle-stats-card";
 import SocialButtons from "@/app/_components/stats/social-buttons-with-create";
-import { DEFAULT_PLOT_WINDOW_DAYS } from "@/lib/constants";
+import { parseTimeWindowDays } from "@/lib/constants";
 import { PlatformNotFound } from "@/app/platform/[platformId]/_components/platform-not-found";
 // Next 16 requires segment config exports like `revalidate` to be statically analyzable.
 // Using an imported constant can be flagged as invalid, so keep this as a literal.
@@ -23,7 +20,7 @@ export async function generateMetadata({
 }) {
   const { platformId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(sp?.timeWindowDays);
   return {
     title: `CSB Data for ID: ${platformId} | ${timeWindowDays} Days`,
     description: `CSB data collected by platform ${platformId} in the DCDB Crowd-sourced Bathymetry Database over the last ${timeWindowDays} days.`,
@@ -44,23 +41,6 @@ export async function generateMetadata({
   };
 }
 
-function VesselInfoDisplay({ platform }: { platform: CSBPlatform }) {
-  return (
-    <div className="p-2 bg-white/80 rounded-lg flex items-center">
-      <div className="p-2">
-        <ShipIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-500" />
-      </div>
-      <div>
-        <div className="text-sm font-bold text-blue-800">Displaying data for:</div>
-        <div className="text-xs">Unique ID: {platform.noaa_id}</div>
-        <div className="text-xs">Vessel: {platform.platform}</div>
-        <div className="text-xs">Trusted Node: {platform.provider}</div>
-        <div className="text-xs"> NOTE: Data displayed on the map is all time </div>
-      </div>
-    </div>
-  );
-}
-
 export default async function Page({
   params,
   searchParams,
@@ -70,7 +50,7 @@ export default async function Page({
 }) {
   const { platformId } = await params;
   const sp = searchParams ? await searchParams : undefined;
-  const timeWindowDays = Number(sp?.timeWindowDays) || DEFAULT_PLOT_WINDOW_DAYS;
+  const timeWindowDays = parseTimeWindowDays(sp?.timeWindowDays);
   const validPlatforms = await getPlatformInfoFromNoaa();
 
   if (!validPlatforms || validPlatforms.length === 0) {
@@ -83,51 +63,58 @@ export default async function Page({
     return <PlatformNotFound platformId={platformId} />;
   }
 
-  const platform = validPlatforms.find(
-    (p) => p.noaa_id.toUpperCase() === platformId.toUpperCase()
-  );
+  const platform = validPlatforms.find((p) => p.noaa_id.toUpperCase() === platformId.toUpperCase());
 
   const captureElementId = "stats-card-capture";
 
   return (
-    <div className="flex flex-col p-0 m-0 flex-1 min-h-0 relative">
-      {platform?.provider && (
-        <ToggleChartButton>
-          <PlotContainer
-            platformId={platformId}
-            provider={platform.provider}
-            timeWindowDays={timeWindowDays}
-          />
-        </ToggleChartButton>
-      )}
-      <div className="flex-1 min-h-0">
-        <MapViewer platformId={platformId} />
-      </div>
-      <div className="absolute bottom-4 left-4 flex flex-col gap-2 w-full pr-8 max-w-lg">
-        {platform && (
-          <Suspense fallback={<div>Loading...</div>}>
-            <ToggleStatsCard
-              triggerTitle="See/Share Platform Stats"
-              triggerDescription="Click to view a summary of the data collected by this vessel over the selected time window."
-              title="Platform Stats Summary"
-              description="A simple summary of the data collected by this vessel over the selected time window."
+    <MapWorkspace
+      platformId={platformId}
+      sidebar={
+        platform ? (
+          <>
+            <Suspense
+              fallback={<p className="text-sm text-muted-foreground">Loading contributions…</p>}
             >
-              <StatsCard
+              <PlotContainer
+                platformId={platformId}
+                provider={platform.provider}
+                timeWindowDays={timeWindowDays}
+              />
+            </Suspense>
+            <div className="explorer-selection-info">
+              <span className="explorer-eyebrow">Selected vessel</span>
+              <strong>{platform.platform}</strong>
+              <span>{platform.noaa_id}</span>
+              <span>Trusted node: {platform.provider}</span>
+            </div>
+          </>
+        ) : null
+      }
+    >
+      {platform && (
+        <Suspense fallback={null}>
+          <ToggleStatsCard
+            toolbarTrigger
+            triggerTitle="Share stats"
+            triggerDescription=""
+            title="Platform Stats Summary"
+            description="A summary of the data collected by this vessel over the selected time window."
+          >
+            <StatsCard
+              platformId={platformId}
+              timeWindowDays={timeWindowDays}
+              captureElementId={captureElementId}
+            >
+              <SocialButtons
                 platformId={platformId}
                 timeWindowDays={timeWindowDays}
                 captureElementId={captureElementId}
-              >
-                <SocialButtons
-                  platformId={platformId}
-                  timeWindowDays={timeWindowDays}
-                  captureElementId={captureElementId}
-                />
-              </StatsCard>
-            </ToggleStatsCard>
-          </Suspense>
-        )}
-        {platform && <VesselInfoDisplay platform={platform} />}
-      </div>
-    </div>
+              />
+            </StatsCard>
+          </ToggleStatsCard>
+        </Suspense>
+      )}
+    </MapWorkspace>
   );
 }
